@@ -7,7 +7,7 @@ from sqlalchemy.exc import OperationalError
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
 from app.database.db import init_db
-from app.routers import auth_router, health
+from app.routers import auth_router, health, wallet
 
 
 @asynccontextmanager
@@ -36,6 +36,7 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api")
 app.include_router(auth_router.router, prefix="/api")
+app.include_router(wallet.router_wallet)
 
 
 @app.get("/")

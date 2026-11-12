@@ -10,12 +10,11 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 class Settings(BaseSettings):
     APP_NAME: str = "he thong dat do an"
-
     DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
     DB_USER: str = "root"
-    DB_PASSWORD: str = ""
-    DB_NAME: str = "quickbite"
+    DB_PASSWORD: str = "cellfite90"
+    DB_NAME: str = "foodpay_db"
 
     CORS_ORIGINS: str = "*"
 

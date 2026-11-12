@@ -9,6 +9,7 @@
 const MENU = [
   { href: "index.html", label: "Trang chủ" },
   { href: "pages/users.html", label: "Người dùng" },
+  { href: "pages/wallet.html", label: "Ví FoodPay" }
 ];
 
 function renderLayout() {

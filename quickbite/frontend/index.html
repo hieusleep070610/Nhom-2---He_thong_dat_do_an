@@ -3,41 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang chủ | KS25 Base</title>
+  <title>Ví Điện Tử & Thanh Toán | FoodPay</title>
   <link rel="icon" href="assets/images/logo.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-root="./">
+<body data-root="../">
   <header id="app-header"></header>
 
   <main class="container">
     <section class="card">
-      <h1>Base code Frontend (HTML · CSS · JS)</h1>
-      <p>Khung dự án cho các nhóm thực tập. Trang này kiểm tra kết nối <strong>Frontend → Backend → MySQL</strong>.</p>
+      <h2>Ví Điện Tử & Thanh Toán FoodPay</h2>
+      <p>Kiểm tra số dư và thực hiện thanh toán an toàn (bảo vệ chống trừ tiền 2 lần).</p>
 
-      <p>API đang dùng: <code id="api-url"></code> <span class="muted">(sửa trong <code>js/config.js</code>)</span></p>
-      <div id="health-status" class="status"></div>
-      <button id="btn-recheck" class="btn">Kiểm tra lại</button>
-    </section>
+      <div style="margin-bottom: 20px;">
+        <label for="input-wallet-id" style="font-weight: bold; display: block; margin-bottom: 5px;">Mã ví (Wallet ID):</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="number" id="input-wallet-id" placeholder="Nhập ID ví (vd: 1)" class="form-control" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+          <button id="btn-fetch-wallet" class="btn" onclick="fetchWalletInfo()">Tải Thông Tin</button>
+        </div>
+        <small id="wallet-error-message" style="color: red; display: block; margin-top: 4px;"></small>
+      </div>
 
-    <section class="card">
-      <h2>Bắt đầu từ đâu?</h2>
-      <ol>
-        <li>Xem trang <a href="pages/users.html">Người dùng</a>: danh sách user lấy từ MySQL qua API.</li>
-        <li>Đọc <code>js/api.js</code> để biết cách gọi API bằng axios.</li>
-        <li>Tạo trang mới: copy <code>pages/items.html</code> + <code>js/pages/items.js</code>, thêm link vào <code>js/layout.js</code>.</li>
-      </ol>
+      <!-- Hiển thị thông tin ví -->
+      <div id="wallet-info-box" style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none;">
+        <p><strong>Chủ ví (User ID):</strong> <span id="lbl-user-id">--</span></p>
+        <p><strong>Số dư hiện tại:</strong> <span id="lbl-balance" style="color: green; font-weight: bold; font-size: 1.2em;">--</span></p>
+        <p><strong>Trạng thái:</strong> <span id="lbl-status">--</span></p>
+      </div>
+
+      <!-- Thanh toán đơn hàng -->
+      <div style="border-top: 1px solid #eee; padding-top: 15px;">
+        <h3>Thanh Toán Đơn Hàng</h3>
+        <div style="margin-bottom: 15px;">
+          <label for="input-pay-amount" style="font-weight: bold; display: block; margin-bottom: 5px;">Số tiền thanh toán (₫):</label>
+          <input type="number" id="input-pay-amount" placeholder="Nhập số tiền cần thanh toán" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+          <small id="pay-error-message" style="color: red; display: block; margin-top: 4px;"></small>
+        </div>
+        <button id="btn-pay" class="btn" style="background-color: #d9534f; color: white; width: 100%; padding: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;" onclick="payOrder()">Thanh Toán Ngay</button>
+      </div>
     </section>
   </main>
 
   <footer id="app-footer"></footer>
 
-  <!-- Thứ tự quan trọng: axios -> config -> api -> utils -> layout -> script riêng của trang -->
+  <!-- Các script tiêu chuẩn của dự án -->
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/layout.js"></script>
-  <script src="js/pages/home.js"></script>
+
+  <script src="js/pages/wallet.js"></script>
 </body>
 </html>
