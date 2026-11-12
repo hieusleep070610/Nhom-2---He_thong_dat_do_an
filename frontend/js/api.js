@@ -1,72 +1,100 @@
-// Module gọi API bằng axios: cấu hình 1 lần, mọi trang dùng chung.
-// (axios được nạp từ CDN bằng thẻ <script> trong từng trang HTML, trước file này)
-//
-// Cách dùng (trong các file js/pages/*.js):
-//   const items = await api.get("/items");
-//   const items = await api.get("/items", { q: "com" });          // -> /items?q=com
-//   const created = await api.post("/items", { name: "Trà đá", price: 5000 });
-//   await api.put("/items/1", { name: "Tên mới" });
-//   await api.delete("/items/1");
-//
-// Các hàm trả về thẳng dữ liệu JSON (đã lấy sẵn response.data).
-// Nếu lỗi, hàm sẽ throw ApiError -> bắt bằng try/catch và hiện error.message cho người dùng.
 
 class ApiError extends Error {
-  constructor(message, status, data) {
-    super(message);
-    this.status = status; // mã HTTP: 404, 422, 500... (0 = không gọi được server)
-    this.data = data; // nội dung lỗi gốc server trả về
-  }
+    constructor(message, status, data) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+        this.data = data;
+    }
 }
 
-// Instance axios dùng chung: mọi request tự nối thêm baseURL phía trước
+// Tạo Axios instance
 const http = axios.create({
-  baseURL: CONFIG.API_BASE_URL,
-  timeout: 10000, // quá 10 giây không phản hồi thì báo lỗi
-  headers: { "Content-Type": "application/json" },
+    baseURL: CONFIG.API_BASE_URL,
+    timeout: 10000,
+    headers: {
+        "Content-Type": "application/json"
+    }
 });
 
-// Muốn gửi token đăng nhập cho mọi request (khi nhóm làm chức năng login), bỏ comment đoạn dưới:
-// http.interceptors.request.use((config) => {
-//   const token = localStorage.getItem("token");
-//   if (token) config.headers.Authorization = `Bearer ${token}`;
-//   return config;
-// });
+// Tự động gửi JWT trong mọi request
+http.interceptors.request.use((config) => {
+    const token =
+        localStorage.getItem("access_token") ||
+        sessionStorage.getItem("access_token");
 
-// Lấy câu thông báo lỗi dễ đọc từ response của FastAPI
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
+// Lấy nội dung lỗi từ Backend
 function getErrorMessage(data, status) {
-  if (data && Array.isArray(data.details) && data.details.length) {
-    return data.details
-      .map((e) => `${e.field ?? e.loc?.[e.loc.length - 1] ?? "field"}: ${e.msg}`)
-      .join("; ");
-  }
-  if (data && typeof data.message === "string") return data.message;
-  if (data && typeof data.detail === "string") return data.detail;
-  if (data && Array.isArray(data.detail)) {
-    return data.detail.map((e) => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join("; ");
-  }
-  return `Lỗi ${status}`;
+    if (data && typeof data.message === "string") {
+        return data.message;
+    }
+
+    if (data && typeof data.detail === "string") {
+        return data.detail;
+    }
+
+    if (data && Array.isArray(data.detail)) {
+        return data.detail.map((error) => {
+            const field = error.loc?.[error.loc.length - 1] || "field";
+            return `${field}: ${error.msg}`;
+        }).join("; ");
+    }
+
+    if (data && Array.isArray(data.details)) {
+        return data.details.map((error) => {
+            return `${error.field || "field"}: ${error.msg}`;
+        }).join("; ");
+    }
+
+    return `Lỗi ${status}`;
 }
 
-// Gom xử lý lỗi một chỗ: đổi lỗi của axios thành ApiError dễ dùng
+// Xử lý lỗi chung
 http.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      // Server có trả lời nhưng là lỗi (4xx, 5xx)
-      const { status, data } = error.response;
-      return Promise.reject(new ApiError(getErrorMessage(data, status), status, data));
+    (response) => response,
+
+    (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data;
+
+            return Promise.reject(
+                new ApiError(
+                    getErrorMessage(data, status),
+                    status,
+                    data
+                )
+            );
+        }
+
+        return Promise.reject(
+            new ApiError(
+                "Không kết nối được Backend. Hãy kiểm tra API URL.",
+                0,
+                null
+            )
+        );
     }
-    // Không có response: server tắt, sai URL, bị chặn CORS, hoặc quá thời gian chờ
-    return Promise.reject(new ApiError(
-      "Không kết nối được backend. Backend đã chạy chưa? Kiểm tra CONFIG.API_BASE_URL.", 0,
-    ));
-  },
 );
 
+// Các phương thức gọi API
 const api = {
-  get: (path, params) => http.get(path, { params }).then((res) => res.data),
-  post: (path, body) => http.post(path, body).then((res) => res.data),
-  put: (path, body) => http.put(path, body).then((res) => res.data),
-  delete: (path) => http.delete(path).then((res) => res.data),
+    get: (path, params) =>
+        http.get(path, { params }).then(res => res.data),
+
+    post: (path, body) =>
+        http.post(path, body).then(res => res.data),
+
+    put: (path, body) =>
+        http.put(path, body).then(res => res.data),
+
+    delete: (path) =>
+        http.delete(path).then(res => res.data)
 };
