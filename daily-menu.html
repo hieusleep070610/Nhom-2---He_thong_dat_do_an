@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thực Đơn Theo Ngày | Hệ Thống Đặt Đồ Ăn Nhóm 2</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/daily-menu.css">
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="daily-menu.html" class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
+                <span class="logo-text">Foodie<span>Hub</span></span>
+                <span class="badge-team">Nhóm 2</span>
+            </a>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn hôm nay...">
+                <button class="clear-search-btn" id="clearSearchBtn" title="Xóa tìm kiếm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="nav-actions">
+                <button class="cart-btn" id="cartBtn" title="Giỏ hàng">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="cart-label">Giỏ hàng</span>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </button>
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="user-avatar">
+                    <span class="user-name">Khách hàng</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= HERO BANNER ================= -->
+    <section class="hero-banner">
+        <div class="container hero-content">
+            <div class="hero-badge"><i class="fa-solid fa-clock"></i> Cập nhật hàng ngày vào 06:00</div>
+            <h1 class="hero-title">Thực Đơn Tươi Ngon Theo Ngày</h1>
+            <p class="hero-desc">Mỗi ngày một thực đơn riêng biệt, chế biến từ nguyên liệu tươi mới trong ngày. Chọn ngày và đặt trước để giữ suất ngon nhất nhé!</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fa-solid fa-bowl-food"></i>
+                    <div>
+                        <strong id="statTotalDishes">12+</strong>
+                        <span>Món ăn trong ngày</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-fire-burner"></i>
+                    <div>
+                        <strong>100%</strong>
+                        <span>Nấu mới mỗi ngày</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div>
+                        <strong>Chuẩn VSATTP</strong>
+                        <span>Đảm bảo dinh dưỡng</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="container main-layout">
+        
+        <!-- BỘ CHỌN NGÀY (DATE SELECTOR) -->
+        <section class="date-picker-section" aria-label="Bộ chọn ngày phục vụ">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title"><i class="fa-regular fa-calendar-days text-primary"></i> Lịch Thực Đơn</h2>
+                    <p class="section-subtitle">Xem trước thực đơn các ngày trong tuần hoặc chọn ngày bất kỳ</p>
+                </div>
+                <div class="custom-date-wrapper">
+                    <label for="customDatePicker" class="custom-date-label">
+                        <i class="fa-regular fa-calendar"></i> Chọn ngày khác:
+                    </label>
+                    <input type="date" id="customDatePicker" class="custom-date-input">
+                </div>
+            </div>
+
+            <!-- Thanh trượt chọn ngày nhanh -->
+            <div class="date-tabs-container">
+                <button class="date-nav-btn prev" id="prevDayBtn" title="Ngày trước"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="date-tabs" id="dateTabsWrapper">
+                    <!-- Sẽ render bằng JS tự động 7 ngày -->
+                </div>
+                <button class="date-nav-btn next" id="nextDayBtn" title="Ngày sau"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Thanh trạng thái ngày đang chọn -->
+            <div class="active-date-banner">
+                <div class="active-date-info">
+                    <span class="active-tag"><i class="fa-solid fa-calendar-check"></i> Đang xem thực đơn:</span>
+                    <strong id="selectedDateTitle">Hôm nay - Thứ Năm, 13/11/2026</strong>
+                    <span class="serving-time-badge"><i class="fa-solid fa-truck-fast"></i> Giao từ 10:30 - 13:30 & 17:30 - 20:30</span>
+                </div>
+                <div class="order-notice">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Số suất có hạn - Hệ thống tự trừ suất khi khách đặt
+                </div>
+            </div>
+        </section>
+
+        <!-- THANH LỌC DANH MỤC & SẮP XẾP -->
+        <section class="filter-bar">
+            <div class="category-filters" id="categoryFilters">
+                <button class="cat-pill active" data-category="all">
+                    <i class="fa-solid fa-border-all"></i> Tất cả (<span id="countAll">0</span>)
+                </button>
+                <button class="cat-pill" data-category="mon-chinh">
+                    <i class="fa-solid fa-drumstick-bite"></i> Món chính (<span id="countMain">0</span>)
+                </button>
+                <button class="cat-pill" data-category="mon-nuoc">
+                    <i class="fa-solid fa-bowl-rice"></i> Món nước / Bún Phở (<span id="countSoup">0</span>)
+                </button>
+                <button class="cat-pill" data-category="mon-chay">
+                    <i class="fa-solid fa-leaf"></i> Món chay (<span id="countVeggie">0</span>)
+                </button>
+                <button class="cat-pill" data-category="trang-mieng">
+                    <i class="fa-solid fa-mug-hot"></i> Đồ uống & Tráng miệng (<span id="countDrink">0</span>)
+                </button>
+            </div>
+
+            <div class="sort-wrapper">
+                <label for="sortSelect"><i class="fa-solid fa-arrow-down-short-wide"></i> Sắp xếp:</label>
+                <select id="sortSelect" class="sort-select">
+                    <option value="default">Phổ biến nhất</option>
+                    <option value="price-asc">Giá: Thấp đến Cao</option>
+                    <option value="price-desc">Giá: Cao đến Thấp</option>
+                    <option value="stock-desc">Suất còn nhiều nhất</option>
+                    <option value="stock-asc">Sắp hết suất trước</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- DANH SÁCH THẺ MÓN ĂN (FOOD CARDS GRID) -->
+        <section class="menu-grid-section">
+            <div class="menu-grid" id="menuGrid">
+                <!-- Sẽ được render động bằng JS từ dữ liệu giả lập -->
+            </div>
+
+            <!-- Giao diện trống khi không có kết quả -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon"><i class="fa-solid fa-utensils-slash"></i></div>
+                <h3>Không tìm thấy món ăn phù hợp</h3>
+                <p>Hãy thử tìm từ khóa khác hoặc chuyển sang danh mục hoặc ngày khác nhé!</p>
+                <button class="btn btn-primary" id="resetFilterBtn">Xem tất cả món hôm nay</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODAL XEM CHI TIẾT MÓN ================= -->
+    <div class="modal-overlay" id="foodModal">
+        <div class="modal-card">
+            <button class="modal-close-btn" id="modalCloseBtn" aria-label="Đóng modal">&times;</button>
+            <div class="modal-body" id="modalBody">
+                <!-- Content render bằng JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL GIỎ HÀNG MINI ================= -->
+    <div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+    <aside class="cart-drawer" id="cartDrawer">
+        <div class="cart-drawer-header">
+            <h3><i class="fa-solid fa-bag-shopping text-primary"></i> Suất Ăn Đã Chọn</h3>
+            <button class="drawer-close-btn" id="cartDrawerCloseBtn">&times;</button>
+        </div>
+        <div class="cart-drawer-items" id="cartDrawerItems">
+            <!-- Danh sách món trong giỏ -->
+        </div>
+        <div class="cart-drawer-footer">
+            <div class="cart-summary-row">
+                <span>Tổng số suất:</span>
+                <strong id="cartTotalQuantity">0 suất</strong>
+            </div>
+            <div class="cart-summary-row total-price-row">
+                <span>Tạm tính:</span>
+                <strong class="total-price-text" id="cartTotalPrice">0 ₫</strong>
+            </div>
+            <button class="btn btn-primary btn-block checkout-btn" id="checkoutBtn">
+                <i class="fa-solid fa-check"></i> Xác nhận đặt món
+            </button>
+            <p class="drawer-subnote"><i class="fa-solid fa-circle-info"></i> Suất ăn sẽ được giữ trong vòng 15 phút</p>
+        </div>
+    </aside>
+
+    <!-- ================= TOAST NOTIFICATION ================= -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-col">
+                <div class="footer-logo">
+                    <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
+                    <span class="logo-text">Foodie<span>Hub</span></span>
+                </div>
+                <p class="footer-desc">Hệ thống đặt đồ ăn theo ngày tiện lợi, đảm bảo an toàn vệ sinh thực phẩm, phục vụ cơm trưa và bữa tối văn phòng, sinh viên.</p>
+                <div class="team-meta">
+                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A5C3</strong></span>
+                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2</span>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Khung Giờ Phục Vụ</h4>
+                <ul class="footer-links">
+                    <li><i class="fa-regular fa-clock"></i> Bữa trưa: 10:30 - 13:30</li>
+                    <li><i class="fa-regular fa-clock"></i> Bữa tối: 17:30 - 20:30</li>
+                    <li><i class="fa-solid fa-bell"></i> Chốt đơn trưa trước: 10:00</li>
+                    <li><i class="fa-solid fa-bell"></i> Chốt đơn tối trước: 16:30</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Chính Sách & Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Quy trình giữ suất ăn</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Cam kết nguyên liệu sạch</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hỗ trợ đổi trả đơn hủy</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hotline: 1900 6868</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container footer-bottom-content">
+                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Dựng giao diện thực đơn theo ngày (Mã task: TF1A5C3).</p>
+                <p class="git-link-meta">
+                    <i class="fa-brands fa-github"></i> <a href="https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an" target="_blank">Nhom-2---He_thong_dat_do_an</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript Logic -->
+    <script src="js/daily-menu.js"></script>
+</body>
+</html>
