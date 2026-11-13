@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
 from app.database.db import init_db
 from app.routers import health, auth_router, wallet
+from app.routers import health
 
 
 @asynccontextmanager
