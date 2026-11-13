@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thực đơn & Kho - QuickBite</title>
+    <link rel="icon" href="../assets/images/logo.png">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-root="../">
+
+    <header id="app-header"></header>
+
+    <main class="container">
+        <section class="card">
+            <h2>🍔 Quản lý Thực đơn & Kho Nguyên Liệu</h2>
+            
+            <h3 style="margin-top: 20px;">Danh sách Món ăn & Trạng thái tồn kho (IsRemain)</h3>
+            <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #3498db; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Tên món</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Giá (VNĐ)</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Trạng thái tồn kho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">1</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Cơm tấm sườn bì chả</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">45,000</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><span style="color: #2ecc71; font-weight: bold;">Còn hàng (True)</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">2</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Phở bò đặc biệt</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">50,000</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><span style="color: #2ecc71; font-weight: bold;">Còn hàng (True)</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">3</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Bánh mì chảo full topping</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">35,000</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><span style="color: #e74c3c; font-weight: bold;">Hết hàng (False)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 30px;">Danh mục Nguyên liệu (Ingredient)</h3>
+            <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #3498db; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">ID Nguyên liệu</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Tên nguyên liệu</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Đơn vị tính (Unit)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">1</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Thịt heo sườn</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">kg</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;">2</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Gạo tấm</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">kg</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer id="app-footer"></footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/layout.js"></script>
+</body>
+</html>
