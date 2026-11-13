@@ -29,5 +29,5 @@ class WalletResponse(WalletBase):
         
 class PaymentRequest(BaseModel):
     wallet_id: int
-    amount: int = Field(..., gt=0, description="Số tiền thanh toán phải lớn hơn 0")
+    amount: int = Field(gt=0, description="Số tiền thanh toán phải lớn hơn 0")
     order_id: Optional[int] = None

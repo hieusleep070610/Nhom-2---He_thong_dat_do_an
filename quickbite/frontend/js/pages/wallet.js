@@ -6,11 +6,13 @@ async function fetchWalletInfo() {
     const infoBox = document.getElementById("wallet-info-box");
     
     errorEl.textContent = "";
+    walletIdInput.style.borderColor = "#ccc";
     infoBox.style.display = "none";
 
     const rawValue = walletIdInput.value.trim();
     if (!rawValue || isNaN(rawValue)) {
         errorEl.textContent = "Vui lòng nhập ID ví là một số hợp lệ!";
+        walletIdInput.style.borderColor = "red";
         return;
     }
 
@@ -19,13 +21,15 @@ async function fetchWalletInfo() {
     try {
         const wallet = await api.get(`/wallets/${walletId}`);
 
+        walletIdInput.style.borderColor = "#28a745";
         document.getElementById("lbl-user-id").textContent = wallet.user_id;
         document.getElementById("lbl-balance").textContent = formatMoney(wallet.balance);
         document.getElementById("lbl-status").textContent = wallet.status === 'active' ? 'Hoạt động (Active)' : 'Đã khóa';
         infoBox.style.display = "block";
 
     } catch (err) {
-        errorEl.textContent = err.message || "Không tìm thấy mã ví này!";
+        walletIdInput.style.borderColor = "red";
+        errorEl.textContent = err.message || "Không tìm thấy mã ví này hoặc lỗi kết nối API!";
     }
 }
 
@@ -42,6 +46,7 @@ async function payOrder() {
 
     if (!rawWalletId || isNaN(rawWalletId)) {
         payErrorEl.textContent = "Vui lòng tra cứu và nhập ID ví hợp lệ ở mục trên trước!";
+        document.getElementById("input-wallet-id").style.borderColor = "red";
         return;
     }
 
@@ -54,7 +59,6 @@ async function payOrder() {
         return;
     }
 
-    // Tự sinh một order_id ngẫu nhiên kiểu số nguyên nếu giao diện chưa có ô nhập order_id
     const fakeOrderId = Math.floor(Math.random() * 100000);
 
     isSubmitting = true;
@@ -67,16 +71,17 @@ async function payOrder() {
         const result = await api.post("/wallets/pay", {
             wallet_id: walletId,
             amount: amount,
-            order_id: fakeOrderId // Đảm bảo gửi lên dưới dạng số nguyên int
+            order_id: fakeOrderId
         });
 
         showToast(result.message || "Thanh toán thành công!", "success");
+        amountInput.style.borderColor = "#28a745";
         
         fetchWalletInfo();
         amountInput.value = "";
 
     } catch (err) {
-        payErrorEl.textContent = err.message || "Lỗi khi thực hiện thanh toán!";
+        payErrorEl.textContent = err.message || "Lỗi khi thực hiện giao dịch thanh toán!";
         amountInput.style.borderColor = "red";
     } finally {
         isSubmitting = false;
@@ -85,3 +90,30 @@ async function payOrder() {
         payButton.style.cursor = "pointer";
     }
 }
+
+async function checkDatabaseStatus() {
+    const statusBadge = document.getElementById("db-status-badge");
+    if (!statusBadge) return;
+
+    try {
+        const data = await api.get("/health");
+        
+        if (data && data.status === "ok" && data.database === "connected") {
+            statusBadge.textContent = "Đã kết nối Database";
+            statusBadge.style.background = "#d4edda";
+            statusBadge.style.color = "#155724";
+        } else {
+            statusBadge.textContent = "Lỗi kết nối Database";
+            statusBadge.style.background = "#f8d7da";
+            statusBadge.style.color = "#721c24";
+        }
+    } catch (err) {
+        statusBadge.textContent = "Không thể kết nối Database";
+        statusBadge.style.background = "#f8d7da";
+        statusBadge.style.color = "#721c24";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    checkDatabaseStatus();
+});

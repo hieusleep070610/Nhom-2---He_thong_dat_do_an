@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đặt món | KS25 Base</title>
+  <link rel="icon" href="../assets/images/logo.png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-root="../">
+  <header id="app-header"></header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Chọn món và giờ nhận</h1>
+      <p class="muted page-lead">Thực đơn cố định trên trang này. Đơn chỉ được ghi trên trình duyệt, không gửi lên server.</p>
+    </section>
+
+    <div class="order-layout">
+      <section>
+        <div class="chip-row" id="category-filters"></div>
+        <div class="menu-grid" id="menu-list"></div>
+      </section>
+
+      <aside class="card order-panel">
+        <h2>Giờ nhận</h2>
+        <label for="pickup-date">Ngày nhận</label>
+        <input id="pickup-date" type="date" required>
+
+        <div id="time-slots" class="time-slots"></div>
+        <p id="slot-hint" class="muted"></p>
+
+        <h2>Người nhận</h2>
+        <form id="order-form">
+          <label for="customer-name">Họ tên *</label>
+          <input id="customer-name" name="customerName" type="text" required maxlength="80" placeholder="Nguyễn Văn A">
+
+          <label for="customer-phone">Số điện thoại *</label>
+          <input id="customer-phone" name="customerPhone" type="tel" required inputmode="numeric" maxlength="15" placeholder="0901234567">
+
+          <label for="order-note">Ghi chú</label>
+          <textarea id="order-note" name="note" rows="2" maxlength="200" placeholder="Ít cay, không hành..."></textarea>
+
+          <h2>Đơn đang chọn</h2>
+          <div id="cart"></div>
+
+          <button id="btn-confirm" type="submit" class="btn btn-primary">Xác nhận đơn</button>
+        </form>
+
+        <div id="receipt" class="receipt" hidden></div>
+      </aside>
+    </div>
+  </main>
+
+  <footer id="app-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/layout.js"></script>
+  <script src="../js/pages/order.js"></script>
+</body>
+</html>

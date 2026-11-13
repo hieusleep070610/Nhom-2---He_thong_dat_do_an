@@ -8,8 +8,7 @@
 // Thêm trang mới vào menu: thêm 1 dòng vào mảng này (đường dẫn tính từ thư mục frontend/)
 const MENU = [
   { href: "index.html", label: "Trang chủ" },
-  { href: "pages/users.html", label: "Người dùng" },
-  { href: "pages/wallet.html", label: "Ví FoodPay" }
+  { href: "pages/order.html", label: "Đặt món" },
 ];
 
 function renderLayout() {
@@ -25,14 +24,14 @@ function renderLayout() {
   document.getElementById("app-header").innerHTML = `
     <div class="container header-inner">
       <a href="${root}index.html" class="brand">
-        <img src="${root}assets/images/logo.svg" alt="logo" width="28" height="28">
-        <span>${CONFIG.APP_NAME}</span>
+        <img src="${root}assets/images/logo.png" alt="logo" width="28" height="28">
+        <span>QuickBite</span>
       </a>
       <nav class="nav">${links}</nav>
     </div>`;
 
   document.getElementById("app-footer").innerHTML = `
-    <div class="container">© ${new Date().getFullYear()} HN-KS25-CNTT1 · Base code thực tập doanh nghiệp</div>`;
+    <div class="container">© ${new Date().getFullYear()} HN-KS25-CNTT4 · Base code thực tập doanh nghiệp</div>`;
 }
 
 renderLayout();

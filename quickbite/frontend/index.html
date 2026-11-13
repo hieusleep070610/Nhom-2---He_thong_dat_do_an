@@ -24,23 +24,15 @@
         <small id="wallet-error-message" style="color: red; display: block; margin-top: 4px;"></small>
       </div>
 
-      <!-- Hiển thị thông tin ví -->
-      <div id="wallet-info-box" style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none;">
-        <p><strong>Chủ ví (User ID):</strong> <span id="lbl-user-id">--</span></p>
-        <p><strong>Số dư hiện tại:</strong> <span id="lbl-balance" style="color: green; font-weight: bold; font-size: 1.2em;">--</span></p>
-        <p><strong>Trạng thái:</strong> <span id="lbl-status">--</span></p>
-      </div>
+    <section class="card">
+      <h2>Bắt đầu từ đâu?</h2>
+      <ol>
+        <li>Xem trang <a href="pages/order.html">Đặt món</a>.</li>
+        <li>Xem trang <a href="pages/wallet.html">Thanh toán</a>.</li>
 
-      <!-- Thanh toán đơn hàng -->
-      <div style="border-top: 1px solid #eee; padding-top: 15px;">
-        <h3>Thanh Toán Đơn Hàng</h3>
-        <div style="margin-bottom: 15px;">
-          <label for="input-pay-amount" style="font-weight: bold; display: block; margin-bottom: 5px;">Số tiền thanh toán (₫):</label>
-          <input type="number" id="input-pay-amount" placeholder="Nhập số tiền cần thanh toán" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-          <small id="pay-error-message" style="color: red; display: block; margin-top: 4px;"></small>
-        </div>
-        <button id="btn-pay" class="btn" style="background-color: #d9534f; color: white; width: 100%; padding: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;" onclick="payOrder()">Thanh Toán Ngay</button>
-      </div>
+        <li>Đọc <code>js/api.js</code> để biết cách gọi API bằng axios.</li>
+        <li>Tạo trang mới: thêm file HTML trong <code>pages/</code>, script trong <code>js/pages/</code>, rồi thêm link vào <code>js/layout.js</code>.</li>
+      </ol>
     </section>
   </main>
 
