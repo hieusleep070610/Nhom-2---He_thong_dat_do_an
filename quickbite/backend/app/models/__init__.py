@@ -1,2 +1,4 @@
-# Đăng ký model tại đây khi thêm bảng mới, ví dụ:
-# from app.models.order import Order
+from app.models.order import Order, OrderItem
+from app.models.pickup_slot import PickupSlot, SlotDailyQuota
+
+__all__ = ["Order", "OrderItem", "PickupSlot", "SlotDailyQuota"]
