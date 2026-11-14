@@ -1,4 +1,6 @@
-"""Đọc cấu hình từ file .env (hoặc biến môi trường).
+from pydantic_settings import BaseSettings
 
-Muốn thêm cấu hình mới: thêm 1 dòng vào class Settings + thêm vào .env.example.
-"""
+class Settings(BaseSettings):
+    DATABASE_URL: str = "sqlite:///./app.db"
+
+settings = Settings()
