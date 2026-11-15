@@ -1,0 +1,851 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodPulse - Đăng nhập hệ thống</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 md:p-8 bg-[#0b0f0d] relative overflow-x-hidden">
+
+    <!-- ==================== BACKGROUND ==================== -->
+
+    <div class="fixed top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="fixed bottom-1/4 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+
+    <!-- ==================== TOAST NOTIFICATION ==================== -->
+
+    <div
+        id="toastNotification"
+        class="fixed top-6 right-6 z-50 transform translate-x-96 transition-all duration-300 opacity-0 flex items-center gap-3 px-5 py-3.5 rounded-2xl glass-panel shadow-2xl border-l-4 border-emerald-500 text-sm"
+    >
+
+        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+
+        <span id="toastMsg" class="font-medium text-slate-100">
+            Thông báo thành công!
+        </span>
+
+    </div>
+
+
+    <!-- ==================== MAIN ==================== -->
+
+    <main class="w-full max-w-6xl z-10">
+
+
+        <!-- ================================================= -->
+        <!-- VIEW 1: LOGIN -->
+        <!-- ================================================= -->
+
+        <div
+            id="loginView"
+            class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+        >
+
+
+            <!-- ==================== LEFT SECTION ==================== -->
+
+            <section
+                class="lg:col-span-5 flex flex-col justify-between p-8 md:p-10 rounded-3xl bg-[#141816]/90 border border-[#212723] h-full shadow-2xl"
+            >
+
+                <div>
+
+                    <!-- LOGO -->
+
+                    <div class="flex items-center justify-between mb-8">
+
+                        <div class="flex items-center gap-3">
+
+                            <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+
+                                <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h1 class="text-xl font-bold tracking-tight font-heading text-white">
+
+                                    Food<span class="text-emerald-400">Pulse</span>
+
+                                </h1>
+
+                                <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+
+                                    High-Velocity Delivery
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
+
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+
+                            Live Node #84
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- TAGLINE -->
+
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20 mb-4">
+
+                        <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+
+                        Hệ sinh thái ẩm thực đô thị 24/7
+
+                    </span>
+
+
+                    <!-- TITLE -->
+
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-white font-heading leading-tight mb-4">
+
+                        Giao ngàn món ngon,
+
+                        <span class="text-emerald-400 underline decoration-emerald-500/30">
+
+                            chuẩn tốc độ
+
+                        </span>
+
+                        đêm ngày.
+
+                    </h2>
+
+
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+
+                        Nền tảng đặt đồ ăn và điều phối nhà hàng dành riêng cho thực khách, chủ nhà hàng, nhân viên và ban quản trị.
+
+                    </p>
+
+
+                    <!-- FOOD BANNER -->
+
+                    <div class="relative rounded-2xl overflow-hidden border border-white/10 group mb-6">
+
+                        <img
+                            src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=800&q=80"
+                            alt="Món ngon"
+                            class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
+                        >
+
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
+
+                            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+
+                                Món nổi bật
+
+                            </span>
+
+                            <div class="flex items-center justify-between mt-1">
+
+                                <span class="text-sm font-bold text-white">
+
+                                    Ramen Tôm Hùm Sa Tế Cay Bỏng
+
+                                </span>
+
+                                <span class="text-sm font-extrabold text-emerald-300">
+
+                                    129.000đ
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATISTICS -->
+
+                <div class="grid grid-cols-3 gap-3 pt-4 border-t border-white/10 text-center">
+
+                    <div>
+
+                        <p class="text-xl font-bold text-emerald-400 font-heading">
+
+                            50,000+
+
+                        </p>
+
+                        <p class="text-[11px] text-slate-400">
+
+                            Món sẵn sàng
+
+                        </p>
+
+                    </div>
+
+
+                    <div>
+
+                        <p class="text-xl font-bold text-emerald-400 font-heading">
+
+                            99.8%
+
+                        </p>
+
+                        <p class="text-[11px] text-slate-400">
+
+                            Giao đúng cam kết
+
+                        </p>
+
+                    </div>
+
+
+                    <div>
+
+                        <p class="text-xl font-bold text-amber-400 font-heading">
+
+                            4.9★
+
+                        </p>
+
+                        <p class="text-[11px] text-slate-400">
+
+                            Đánh giá
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- ==================== RIGHT SECTION ==================== -->
+
+            <section
+                class="lg:col-span-7 bg-[#141816] border border-[#212723] rounded-3xl p-8 md:p-10 shadow-2xl relative"
+            >
+
+
+                <!-- HEADER -->
+
+                <div class="flex items-center justify-between mb-2">
+
+                    <h2 class="text-3xl font-extrabold text-white font-heading">
+
+                        Đăng nhập tài khoản
+
+                    </h2>
+
+                    <div class="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+
+                    </div>
+
+                </div>
+
+
+                <p class="text-slate-400 text-sm mb-6">
+
+                    Truy cập vào hệ thống điều phối ẩm thực FoodPulse
+
+                </p>
+
+
+
+                <!-- ==================== DEMO ACCOUNTS ==================== -->
+
+                <div class="p-4 rounded-2xl bg-[#0e1210] border border-white/5 mb-6">
+
+                    <div class="flex items-center justify-between mb-3">
+
+                        <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+
+                            <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+
+                            Tài khoản mẫu thử nghiệm
+
+                        </span>
+
+                        <span class="text-[11px] text-slate-400">
+
+                            Chọn để điền nhanh:
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+
+
+                        <!-- CUSTOMER -->
+
+                        <button
+                            type="button"
+                            onclick="selectRolePreset('customer')"
+                            class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-white/5 bg-[#171d1a] hover:border-emerald-500/50 hover:bg-emerald-500/10 transition group"
+                        >
+
+                            <span class="text-xs font-bold text-white group-hover:text-emerald-300 flex items-center gap-1">
+
+                                <i data-lucide="utensils" class="w-3.5 h-3.5"></i>
+
+                                Khách hàng
+
+                            </span>
+
+                            <span class="text-[10px] text-slate-400 truncate max-w-full">
+
+                                nguyena
+
+                            </span>
+
+                        </button>
+
+
+
+                        <!-- RESTAURANT OWNER -->
+
+                        <button
+                            type="button"
+                            onclick="selectRolePreset('restaurant_owner')"
+                            class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-white/5 bg-[#171d1a] hover:border-amber-500/50 hover:bg-amber-500/10 transition group"
+                        >
+
+                            <span class="text-xs font-bold text-white group-hover:text-amber-300 flex items-center gap-1">
+
+                                <i data-lucide="store" class="w-3.5 h-3.5"></i>
+
+                                Chủ quán
+
+                            </span>
+
+                            <span class="text-[10px] text-slate-400 truncate max-w-full">
+
+                                owner_b
+
+                            </span>
+
+                        </button>
+
+
+
+                        <!-- STAFF -->
+
+                        <button
+                            type="button"
+                            onclick="selectRolePreset('staff')"
+                            class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-white/5 bg-[#171d1a] hover:border-cyan-500/50 hover:bg-cyan-500/10 transition group"
+                        >
+
+                            <span class="text-xs font-bold text-white group-hover:text-cyan-300 flex items-center gap-1">
+
+                                <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
+
+                                Nhân viên
+
+                            </span>
+
+                            <span class="text-[10px] text-slate-400 truncate max-w-full">
+
+                                staff_c
+
+                            </span>
+
+                        </button>
+
+
+
+                        <!-- ADMIN -->
+
+                        <button
+                            type="button"
+                            onclick="selectRolePreset('admin')"
+                            class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-white/5 bg-[#171d1a] hover:border-purple-500/50 hover:bg-purple-500/10 transition group"
+                        >
+
+                            <span class="text-xs font-bold text-white group-hover:text-purple-300 flex items-center gap-1">
+
+                                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+
+                                Quản trị
+
+                            </span>
+
+                            <span class="text-[10px] text-slate-400 truncate max-w-full">
+
+                                admin_system
+
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ==================== LOGIN FORM ==================== -->
+
+                <form
+                    id="authLoginForm"
+                    novalidate
+                    class="space-y-4"
+                >
+
+
+                    <!-- USERNAME / PHONE -->
+
+                    <div>
+
+                        <label
+                            for="identifierInput"
+                            class="block text-xs font-semibold text-slate-300 mb-1.5"
+                        >
+
+                            Tên đăng nhập hoặc Số điện thoại
+
+                            <span class="text-rose-400">*</span>
+
+                        </label>
+
+
+                        <div class="relative">
+
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+
+                                <i data-lucide="user" class="w-4 h-4"></i>
+
+                            </div>
+
+
+                            <input
+                                type="text"
+                                id="identifierInput"
+                                name="identifier"
+                                placeholder="Nhập username hoặc số điện thoại"
+                                autocomplete="username"
+                                class="w-full bg-[#1b221e] border border-white/10 rounded-2xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+                            >
+
+                        </div>
+
+
+                        <p
+                            id="identifierError"
+                            class="hidden text-xs text-rose-400 mt-1 flex items-center gap-1"
+                        ></p>
+
+                    </div>
+
+
+
+                    <!-- PASSWORD -->
+
+                    <div>
+
+                        <div class="flex items-center justify-between mb-1.5">
+
+                            <label
+                                for="passwordInput"
+                                class="block text-xs font-semibold text-slate-300"
+                            >
+
+                                Mật khẩu truy cập
+
+                                <span class="text-rose-400">*</span>
+
+                            </label>
+
+
+                            <a
+                                href="#"
+                                class="text-xs text-emerald-400 hover:text-emerald-300"
+                            >
+
+                                Quên mật khẩu?
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="relative">
+
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+
+                            </div>
+
+
+                            <input
+                                type="password"
+                                id="passwordInput"
+                                name="password"
+                                placeholder="Nhập mật khẩu"
+                                autocomplete="current-password"
+                                class="w-full bg-[#1b221e] border border-white/10 rounded-2xl pl-10 pr-11 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+                            >
+
+
+                            <button
+                                type="button"
+                                onclick="togglePasswordVisibility()"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white transition"
+                            >
+
+                                <i
+                                    id="eyeIcon"
+                                    data-lucide="eye"
+                                    class="w-4 h-4"
+                                ></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <p
+                            id="passwordError"
+                            class="hidden text-xs text-rose-400 mt-1 flex items-center gap-1"
+                        ></p>
+
+                    </div>
+
+
+
+                    <!-- REMEMBER LOGIN -->
+
+                    <div class="flex items-center justify-between py-1 text-xs">
+
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-300">
+
+                            <input
+                                type="checkbox"
+                                id="rememberMeCheckbox"
+                                checked
+                                class="w-4 h-4 rounded bg-[#1b221e] border-white/20 text-emerald-500 focus:ring-0 focus:ring-offset-0"
+                            >
+
+                            <span>
+
+                                Ghi nhớ đăng nhập trên thiết bị này
+
+                            </span>
+
+                        </label>
+
+
+                        <span class="text-slate-400 flex items-center gap-1">
+
+                            <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-400"></i>
+
+                            Bảo mật
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- SUBMIT BUTTON -->
+
+                    <button
+                        type="submit"
+                        id="submitBtn"
+                        class="w-full py-4 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-sm tracking-wide transition-all transform active:scale-[0.99] glow-effect flex items-center justify-center gap-2"
+                    >
+
+                        <span id="btnText">
+
+                            Vào Bảng Điều Khiển FoodPulse
+
+                        </span>
+
+
+                        <i
+                            id="btnArrow"
+                            data-lucide="arrow-right"
+                            class="w-4 h-4"
+                        ></i>
+
+
+                        <span
+                            id="btnSpinner"
+                            class="hidden animate-spin rounded-full h-4 w-4 border-2 border-neutral-950 border-t-transparent"
+                        ></span>
+
+                    </button>
+
+
+                </form>
+
+
+
+                <!-- REGISTER -->
+
+                <div class="mt-6 pt-5 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+
+                    <span>
+
+                        Chưa có tài khoản đối tác?
+
+                    </span>
+
+
+                    <a
+                        href="#"
+                        class="text-amber-400 hover:underline flex items-center gap-1"
+                    >
+
+                        Đăng ký cửa hàng / nhân viên
+
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+
+                    </a>
+
+                </div>
+
+
+            </section>
+
+        </div>
+
+
+
+        <!-- ================================================= -->
+        <!-- VIEW 2: DASHBOARD -->
+        <!-- ================================================= -->
+
+        <div
+            id="dashboardView"
+            class="hidden rounded-3xl bg-[#141816] border border-[#212723] p-6 md:p-8 shadow-2xl"
+        >
+
+
+            <!-- ==================== TOP BAR ==================== -->
+
+            <div class="flex flex-wrap items-center justify-between pb-6 border-b border-white/10 gap-4">
+
+
+                <!-- USER INFORMATION -->
+
+                <div class="flex items-center gap-3">
+
+                    <div
+                        id="userAvatarBadge"
+                        class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-lg font-heading"
+                    >
+
+                        US
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="flex items-center gap-2">
+
+                            <h3
+                                id="currentUserName"
+                                class="text-lg font-bold text-white font-heading"
+                            >
+
+                                Tên người dùng
+
+                            </h3>
+
+
+                            <span
+                                id="currentUserRoleBadge"
+                                class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                            >
+
+                                Vai trò
+
+                            </span>
+
+                        </div>
+
+
+                        <p
+                            id="currentUserTokenSnippet"
+                            class="text-xs text-slate-400 font-mono mt-0.5"
+                        >
+
+                            Token
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- LOGOUT BUTTON -->
+
+                <button
+                    type="button"
+                    id="logoutBtn"
+                    onclick="handleLogout()"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition"
+                >
+
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+
+                    <span class="text-sm font-semibold">
+
+                        Đăng xuất
+
+                    </span>
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- ==================== ROLE MENU ==================== -->
+
+            <div class="mt-6">
+
+                <div class="flex items-center justify-between mb-4">
+
+                    <h4 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+
+                        Danh mục chức năng dành cho bạn
+
+                    </h4>
+
+
+                    <span class="text-xs text-slate-400">
+
+                        Phân quyền theo tài khoản
+
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="dynamicRoleMenu"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+                >
+
+                    <!-- JavaScript render menu tại đây -->
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==================== ROLE CONTENT ==================== -->
+
+            <div class="mt-8 p-6 rounded-2xl bg-[#0d110f] border border-white/5">
+
+
+                <div class="flex items-center justify-between mb-4">
+
+                    <div class="flex items-center gap-2">
+
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+
+                        <span class="text-xs font-bold text-white uppercase tracking-wider">
+
+                            Dữ liệu theo vai trò
+
+                        </span>
+
+                    </div>
+
+
+                    <span class="text-xs text-emerald-400 font-mono">
+
+                        Trạng thái: Authenticated
+
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="roleWelcomeContent"
+                    class="text-sm text-slate-300 leading-relaxed"
+                >
+
+                    <!-- JavaScript render nội dung theo vai trò -->
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- ================================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ================================================= -->
+
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- API Configuration -->
+    <script src="../js/config.js"></script>
+
+    <!-- API Handler -->
+    <script src="../js/api.js"></script>
+
+    <!-- Authentication & Role Management -->
+    <script src="../js/auth.js"></script>
+
+
+</body>
+
+</html>
