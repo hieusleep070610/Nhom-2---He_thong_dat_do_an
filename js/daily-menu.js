@@ -1,11 +1,15 @@
 /**
  * FoodieHub - Hệ Thống Đặt Đồ Ăn - Nhóm 2
- * Quản lý & Hiển thị thực đơn theo ngày (Mã Task FE: TF1A5C3, Mã Task BE: TF1A638)
+ * Quản lý & Hiển thị thực đơn theo ngày nối Backend API
+ * Mã Task: TF1A6E9 ([FE] Trang xem thực đơn theo ngày nối API)
+ * Mã Task BE: TF1A638 (API trả thực đơn kèm số suất còn lại)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('[TF1A6E9] Khởi tạo Frontend Trang Xem Thực Đơn Theo Ngày Nối API');
+
     // =========================================================================
-    // DỮ LIỆU DỰ PHÒNG KHI KHÔNG KẾT NỐI ĐƯỢC BACKEND API (OFFLINE FALLBACK)
+    // DỮ LIỆU DỰ PHÒNG KHI OFFLINE (LOCAL FALLBACK REPOSITORY)
     // =========================================================================
     const LOCAL_FALLBACK_REPOSITORY = [
         {
@@ -191,16 +195,18 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // =========================================================================
-    // STATE ỨNG DỤNG
+    // STATE ỨNG DỤNG (TASK TF1A6E9)
     // =========================================================================
     const state = {
         selectedDate: new Date(),
-        selectedCategory: 'all',
+        selectedCategory: 'all', // all, mon-chinh, mon-nuoc, mon-chay, trang-mieng, available-only, out-of-stock-only
         searchTerm: '',
         sortBy: 'default',
         cart: [],
-        dailyMenuCache: {},
-        isBackendConnected: false
+        dailyMenuCache: {}, // { dateKey: { dishes: [...], meta: {...} } }
+        isBackendConnected: false,
+        isLoading: false,
+        isDemoEmptyDate: false
     };
 
     // DOM Elements
@@ -209,22 +215,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const customDatePicker = document.getElementById('customDatePicker');
     const prevDayBtn = document.getElementById('prevDayBtn');
     const nextDayBtn = document.getElementById('nextDayBtn');
+    const servingTimeBadge = document.getElementById('servingTimeBadge');
     
+    // Banner stats
+    const statTotalBadge = document.getElementById('statTotalBadge');
+    const statAvailBadge = document.getElementById('statAvailBadge');
+    const statOutBadge = document.getElementById('statOutBadge');
+    const btnQuickEmptyDemo = document.getElementById('btnQuickEmptyDemo');
+
+    // Menu and States (TF1A6E9: Loading, Menu Grid, Empty Menu, Empty Search)
+    const menuLoadingState = document.getElementById('menuLoadingState');
+    const loadingTextTitle = document.getElementById('loadingTextTitle');
+    const loadingTextSubtitle = document.getElementById('loadingTextSubtitle');
     const menuGrid = document.getElementById('menuGrid');
-    const emptyState = document.getElementById('emptyState');
-    const resetFilterBtn = document.getElementById('resetFilterBtn');
     
+    const emptyMenuState = document.getElementById('emptyMenuState');
+    const emptyMenuTitle = document.getElementById('emptyMenuTitle');
+    const emptyMenuDesc = document.getElementById('emptyMenuDesc');
+    const btnEmptyGoToday = document.getElementById('btnEmptyGoToday');
+    const btnEmptyGoTomorrow = document.getElementById('btnEmptyGoTomorrow');
+
+    const emptySearchState = document.getElementById('emptySearchState');
+    const emptySearchDesc = document.getElementById('emptySearchDesc');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+
+    // Search and Filters
     const searchInput = document.getElementById('searchInput');
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     const categoryFilters = document.getElementById('categoryFilters');
     const sortSelect = document.getElementById('sortSelect');
     
-    // Counts
+    // Category Counts
     const countAll = document.getElementById('countAll');
     const countMain = document.getElementById('countMain');
     const countSoup = document.getElementById('countSoup');
     const countVeggie = document.getElementById('countVeggie');
     const countDrink = document.getElementById('countDrink');
+    const countAvailableOnly = document.getElementById('countAvailableOnly');
+    const countOutOnly = document.getElementById('countOutOnly');
     const statTotalDishes = document.getElementById('statTotalDishes');
     
     // Modal
@@ -246,13 +274,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Thêm badge trạng thái kết nối Backend API trên header
     const addBackendStatusBadge = () => {
-        const teamBadge = document.querySelector('.badge-team');
-        if (teamBadge && !document.getElementById('apiStatusBadge')) {
+        const logo = document.querySelector('.logo');
+        if (logo && !document.getElementById('apiStatusBadge')) {
             const apiBadge = document.createElement('span');
             apiBadge.id = 'apiStatusBadge';
-            apiBadge.style.cssText = 'font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 9999px; background: #e0f2fe; color: #0284c7; margin-left: 6px;';
-            apiBadge.innerHTML = '<i class="fa-solid fa-server"></i> API: TF1A638';
-            teamBadge.parentNode.insertBefore(apiBadge, teamBadge.nextSibling);
+            apiBadge.style.cssText = 'font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px; background: #e0f2fe; color: #0284c7; margin-left: 6px; display: inline-flex; align-items: center; gap: 5px;';
+            apiBadge.innerHTML = '<i class="fa-solid fa-cloud"></i> Đang kết nối API...';
+            logo.appendChild(apiBadge);
         }
     };
     addBackendStatusBadge();
@@ -271,6 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${y}-${m}-${d}`;
     };
 
+    const formatDateVN = (date) => {
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+    };
+
     const getDayNameVietnamese = (date) => {
         const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         return days[date.getDay()];
@@ -283,69 +318,148 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // =========================================================================
-    // GỌI BACKEND API (TASK TF1A638) KÈM CƠ CHẾ DỰ PHÒNG OFFLINE
+    // 1. NỐI TRANG THỰC ĐƠN VỚI BACKEND API (TASK TF1A6E9)
     // =========================================================================
-    const fetchMenuFromAPI = async (dateKey) => {
-        // Nếu đã cache trong phiên làm việc
-        if (state.dailyMenuCache[dateKey]) {
-            return state.dailyMenuCache[dateKey];
+    const fetchMenuFromAPI = async (dateKey, forceEmpty = false) => {
+        const cacheKey = forceEmpty ? `${dateKey}-empty` : dateKey;
+
+        // Nếu đã cache kết quả
+        if (state.dailyMenuCache[cacheKey]) {
+            console.log(`[TF1A6E9] Lấy dữ liệu thực đơn từ Cache: ${cacheKey}`);
+            return state.dailyMenuCache[cacheKey];
         }
 
+        // Danh sách endpoint ứng viên để gọi API
+        const emptyQuery = forceEmpty ? '&empty=1' : '';
         const candidateUrls = [
-            `/api/menu?date=${dateKey}`,
-            `http://127.0.0.1:5000/api/menu?date=${dateKey}`,
-            `http://127.0.0.1:5001/api/menu?date=${dateKey}`,
-            `http://127.0.0.1:8000/api/menu?date=${dateKey}`
+            `/api/menu?date=${dateKey}${emptyQuery}`,
+            `http://127.0.0.1:5000/api/menu?date=${dateKey}${emptyQuery}`,
+            `http://127.0.0.1:5001/api/menu?date=${dateKey}${emptyQuery}`,
+            `http://127.0.0.1:8000/api/menu?date=${dateKey}${emptyQuery}`,
+            `http://127.0.0.1:8080/api/menu?date=${dateKey}${emptyQuery}`
         ];
 
         for (const url of candidateUrls) {
             try {
-                const response = await fetch(url, { method: 'GET' });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
                 if (response.ok) {
                     const resJson = await response.json();
                     if (resJson.success && Array.isArray(resJson.data)) {
                         state.isBackendConnected = true;
                         updateApiBadge(true);
-                        
-                        // Chuẩn hóa dữ liệu trả về từ API Backend
+
+                        console.log(`[TF1A6E9] Nối API thành công từ ${url}:`, {
+                            date: resJson.date,
+                            total: resJson.total_dishes,
+                            available: resJson.available_dishes,
+                            out_of_stock: resJson.out_of_stock_dishes
+                        });
+
+                        // Chuẩn hóa dữ liệu trả về từ API
                         const dishes = resJson.data.map(d => ({
                             id: d.id,
                             name: d.name,
                             category: d.category,
+                            categoryName: d.category_name || 'Món ăn',
                             mealTime: d.meal_time || 'Trưa & Tối',
                             price: d.price,
-                            originalPrice: d.original_price,
+                            originalPrice: d.original_price || Math.round(d.price * 1.15),
                             stock: d.stock,
-                            initialStock: d.initial_stock,
+                            initialStock: d.initial_stock || 25,
+                            isAvailable: (typeof d.is_available === 'boolean') ? d.is_available : (d.stock > 0),
+                            stockStatus: d.stock_status || (d.stock === 0 ? 'out_of_stock' : (d.stock <= 8 ? 'low_stock' : 'available')),
+                            stockLabel: d.stock_label || (d.stock === 0 ? 'Hết suất hôm nay' : `Còn ${d.stock} suất`),
                             tag: d.tag,
                             tagLabel: d.tag_label,
-                            calories: d.calories,
-                            image: d.image_url,
-                            description: d.description
+                            calories: d.calories || '550 kcal',
+                            image: d.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
+                            description: d.description || ''
                         }));
 
-                        state.dailyMenuCache[dateKey] = dishes;
-                        return dishes;
+                        const result = {
+                            dishes: dishes,
+                            meta: {
+                                total_dishes: resJson.total_dishes ?? dishes.length,
+                                available_dishes: resJson.available_dishes ?? dishes.filter(d => d.stock > 0).length,
+                                out_of_stock_dishes: resJson.out_of_stock_dishes ?? dishes.filter(d => d.stock === 0).length,
+                                day_of_week: resJson.day_of_week || getDayNameVietnamese(state.selectedDate),
+                                date_formatted: resJson.date_formatted || formatDateVN(state.selectedDate),
+                                serving_time: resJson.serving_time || { lunch: '10:30 - 13:30', dinner: '17:30 - 20:30' }
+                            }
+                        };
+
+                        state.dailyMenuCache[cacheKey] = result;
+                        return result;
                     }
                 }
             } catch (err) {
-                // Tiếp tục thử URL tiếp theo hoặc fallback
+                // Tiếp tục thử URL kế tiếp
             }
         }
 
-        // Nếu backend chưa bật hoặc mở file trực tiếp (file:///), tự sinh mock data
+        // =====================================================================
+        // CƠ CHẾ DỰ PHÒNG OFFLINE (KHI SERVER CHƯA BẬT HOẶC MỞ FILE TĨNH)
+        // =====================================================================
         updateApiBadge(false);
+        console.warn(`[TF1A6E9] Không kết nối được Backend API, chuyển sang chế độ dự phòng Offline Demo`);
+
+        // Trường hợp thử nghiệm thực đơn rỗng
+        if (forceEmpty || dateKey === '2026-01-01') {
+            const emptyResult = {
+                dishes: [],
+                meta: {
+                    total_dishes: 0,
+                    available_dishes: 0,
+                    out_of_stock_dishes: 0,
+                    day_of_week: getDayNameVietnamese(state.selectedDate),
+                    date_formatted: formatDateVN(state.selectedDate),
+                    serving_time: { lunch: 'Tạm ngưng', dinner: 'Tạm ngưng' }
+                }
+            };
+            state.dailyMenuCache[cacheKey] = emptyResult;
+            return emptyResult;
+        }
+
         const dayNumber = parseInt(dateKey.split('-')[2], 10) || 1;
         const fallbackDishes = LOCAL_FALLBACK_REPOSITORY.map((dish, idx) => {
             let stockVariation = (dish.stock + (dayNumber * (idx + 1)) % 17) % (dish.initialStock + 1);
-            if (idx === 4) stockVariation = 0;
-            if (idx === 1) stockVariation = 3;
-            if (idx === 11) stockVariation = 1;
-            return { ...dish, stock: stockVariation };
+            if (idx === 4) stockVariation = 0; // Luôn có món hết suất để kiểm thử (Cơm Niêu Cá Bống)
+            if (idx === 1) stockVariation = 3; // Món sắp hết suất
+            if (idx === 11) stockVariation = 1; // Món chỉ còn 1 suất
+
+            const isAvail = stockVariation > 0;
+            return {
+                ...dish,
+                stock: stockVariation,
+                isAvailable: isAvail,
+                stockStatus: stockVariation === 0 ? 'out_of_stock' : (stockVariation <= 8 ? 'low_stock' : 'available'),
+                stockLabel: stockVariation === 0 ? 'Hết suất hôm nay' : `Còn ${stockVariation} suất`
+            };
         });
 
-        state.dailyMenuCache[dateKey] = fallbackDishes;
-        return fallbackDishes;
+        const fallbackResult = {
+            dishes: fallbackDishes,
+            meta: {
+                total_dishes: fallbackDishes.length,
+                available_dishes: fallbackDishes.filter(d => d.stock > 0).length,
+                out_of_stock_dishes: fallbackDishes.filter(d => d.stock === 0).length,
+                day_of_week: getDayNameVietnamese(state.selectedDate),
+                date_formatted: formatDateVN(state.selectedDate),
+                serving_time: { lunch: '10:30 - 13:30', dinner: '17:30 - 20:30' }
+            }
+        };
+
+        state.dailyMenuCache[cacheKey] = fallbackResult;
+        return fallbackResult;
     };
 
     const updateApiBadge = (connected) => {
@@ -354,17 +468,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (connected) {
                 badge.style.background = '#dcfce7';
                 badge.style.color = '#15803d';
-                badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> API: Online';
+                badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> API: Online (TF1A6E9)';
             } else {
                 badge.style.background = '#fef3c7';
                 badge.style.color = '#b45309';
-                badge.innerHTML = '<i class="fa-solid fa-laptop-code"></i> Giao diện tĩnh';
+                badge.innerHTML = '<i class="fa-solid fa-laptop-code"></i> Offline Demo (TF1A6E9)';
             }
         }
     };
 
     // =========================================================================
-    // RENDER DATE TABS
+    // 2. CHỌN NGÀY (RENDER DATE TABS & BANNER)
     // =========================================================================
     const renderDateTabs = () => {
         dateTabsWrapper.innerHTML = '';
@@ -374,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabDate = new Date();
             tabDate.setDate(today.getDate() + i);
 
-            const isCurrentActive = isSameDate(tabDate, state.selectedDate);
+            const isCurrentActive = !state.isDemoEmptyDate && isSameDate(tabDate, state.selectedDate);
             const isToday = i === 0;
 
             const card = document.createElement('div');
@@ -391,6 +505,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             card.addEventListener('click', () => {
+                if (state.isLoading) return;
+                state.isDemoEmptyDate = false;
                 state.selectedDate = new Date(tabDate);
                 onDateChanged();
             });
@@ -404,25 +520,77 @@ document.addEventListener('DOMContentLoaded', () => {
             ? 'Hôm nay - ' + getDayNameVietnamese(state.selectedDate)
             : getDayNameVietnamese(state.selectedDate);
         
-        const dateStrFormatted = `${String(state.selectedDate.getDate()).padStart(2, '0')}/${String(state.selectedDate.getMonth() + 1).padStart(2, '0')}/${state.selectedDate.getFullYear()}`;
+        const dateStrFormatted = formatDateVN(state.selectedDate);
         selectedDateTitle.textContent = `${activeDayName}, ${dateStrFormatted}`;
     };
 
     // =========================================================================
-    // RENDER MENU GRID
+    // 3. HIỆN TRẠNG THÁI ĐANG TẢI (LOADING STATE)
+    // =========================================================================
+    const setLoading = (loading, dateStr = '') => {
+        state.isLoading = loading;
+        if (loading) {
+            menuLoadingState.style.display = 'flex';
+            loadingTextTitle.textContent = `Đang kết nối API và tải thực đơn...`;
+            loadingTextSubtitle.textContent = `Đang đồng bộ thực đơn ngày ${dateStr} từ máy chủ FoodieHub...`;
+            menuGrid.style.display = 'none';
+            emptyMenuState.style.display = 'none';
+            emptySearchState.style.display = 'none';
+        } else {
+            menuLoadingState.style.display = 'none';
+        }
+    };
+
+    // =========================================================================
+    // 4. RENDER MENU GRID VỚI CÁC TRẠNG THÁI: HẾT MÓN, ĐANG TẢI, RỖNG
     // =========================================================================
     const renderMenuGrid = async () => {
         const dateKey = formatDateKey(state.selectedDate);
-        
-        // Hiện hiệu ứng tải nếu cần
-        menuGrid.style.opacity = '0.6';
-        const allDishes = await fetchMenuFromAPI(dateKey);
-        menuGrid.style.opacity = '1';
+        const dateFormatted = formatDateVN(state.selectedDate);
+        const dayName = getDayNameVietnamese(state.selectedDate);
 
+        // KÍCH HOẠT TRẠNG THÁI ĐANG TẢI (LOADING STATE)
+        setLoading(true, dateFormatted);
+
+        // Tạo độ trễ thị giác tối thiểu (350ms) để người dùng cảm nhận mượt mà hiệu ứng tải
+        const [apiData] = await Promise.all([
+            fetchMenuFromAPI(dateKey, state.isDemoEmptyDate),
+            new Promise(resolve => setTimeout(resolve, 350))
+        ]);
+
+        const allDishes = apiData.dishes || [];
+        const meta = apiData.meta || {};
+
+        // TẮT TRẠNG THÁI ĐANG TẢI
+        setLoading(false);
+
+        // Cập nhật thông tin thống kê từ API lên thanh trạng thái ngày
+        updateDateBannerMeta(meta);
+
+        // Cập nhật số lượng trên các nút danh mục
         updateCategoryCounts(allDishes);
 
+        // =====================================================================
+        // TRƯỜNG HỢP 1: TRẠNG THÁI RỖNG - NGÀY NÀY KHÔNG CÓ THỰC ĐƠN
+        // =====================================================================
+        if (allDishes.length === 0) {
+            console.log(`[TF1A6E9] Trạng thái rỗng: Thực đơn ngày ${dateFormatted} trống.`);
+            menuGrid.style.display = 'none';
+            emptySearchState.style.display = 'none';
+            emptyMenuState.style.display = 'block';
+
+            emptyMenuTitle.textContent = `Chưa có thực đơn cho ${dayName} (${dateFormatted})`;
+            emptyMenuDesc.textContent = `Nhà hàng hiện chưa lên thực đơn hoặc tạm ngưng phục vụ trong ngày đã chọn. Quý khách vui lòng chọn ngày khác để tiếp tục đặt món nhé!`;
+            return;
+        }
+
+        // =====================================================================
+        // LỌC THEO DANH MỤC & TÌM KIẾM
+        // =====================================================================
         let filteredDishes = allDishes.filter(dish => {
             if (state.selectedCategory === 'all') return true;
+            if (state.selectedCategory === 'available-only') return dish.stock > 0;
+            if (state.selectedCategory === 'out-of-stock-only') return dish.stock === 0;
             return dish.category === state.selectedCategory;
         });
 
@@ -434,17 +602,35 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }
 
-        sortDishes(filteredDishes, state.sortBy);
-
-        menuGrid.innerHTML = '';
+        // =====================================================================
+        // TRƯỜNG HỢP 2: TRẠNG THÁI RỖNG - KHÔNG TÌM THẤY KẾT QUẢ TÌM KIẾM / LỌC
+        // =====================================================================
         if (filteredDishes.length === 0) {
+            console.log(`[TF1A6E9] Trạng thái rỗng: Không tìm thấy món ăn phù hợp với bộ lọc.`);
             menuGrid.style.display = 'none';
-            emptyState.style.display = 'block';
+            emptyMenuState.style.display = 'none';
+            emptySearchState.style.display = 'block';
+
+            if (state.searchTerm.trim()) {
+                emptySearchDesc.textContent = `Không có món ăn nào khớp với từ khóa "${state.searchTerm}". Hãy thử từ khóa khác nhé!`;
+            } else if (state.selectedCategory === 'out-of-stock-only') {
+                emptySearchDesc.textContent = `Tuyệt vời! Ngày hôm nay hiện không có món nào bị hết suất. Tất cả các món đều sẵn sàng phục vụ!`;
+            } else if (state.selectedCategory === 'available-only') {
+                emptySearchDesc.textContent = `Hiện các món trong danh mục này đã hết suất phục vụ cho ngày này.`;
+            } else {
+                emptySearchDesc.textContent = `Danh mục này hiện chưa có món ăn phù hợp cho ngày đã chọn.`;
+            }
             return;
         }
 
+        // Sắp xếp món ăn
+        sortDishes(filteredDishes, state.sortBy);
+
+        // HIỂN THỊ DANH SÁCH MÓN ĂN
+        emptyMenuState.style.display = 'none';
+        emptySearchState.style.display = 'none';
         menuGrid.style.display = 'grid';
-        emptyState.style.display = 'none';
+        menuGrid.innerHTML = '';
 
         filteredDishes.forEach(dish => {
             const card = createFoodCardElement(dish);
@@ -452,10 +638,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // =========================================================================
+    // 5. HIỆN TRẠNG THÁI HẾT MÓN (OUT OF STOCK FOOD CARD)
+    // =========================================================================
     const createFoodCardElement = (dish) => {
         const card = document.createElement('article');
-        const isOutOfStock = dish.stock === 0;
-        const isLowStock = dish.stock > 0 && dish.stock <= 8;
+        
+        // KIỂM TRA TRẠNG THÁI HẾT MÓN
+        const isOutOfStock = (dish.stock === 0) || (dish.isAvailable === false);
+        const isLowStock = !isOutOfStock && dish.stock <= 8;
 
         let stockStatusClass = 'stock-plenty';
         let stockText = `Còn ${dish.stock} suất`;
@@ -474,7 +665,9 @@ document.addEventListener('DOMContentLoaded', () => {
         card.setAttribute('data-id', dish.id);
 
         let tagHtml = '';
-        if (dish.tag && dish.tagLabel) {
+        if (isOutOfStock) {
+            tagHtml = `<span class="badge-tag badge-sold-out"><i class="fa-solid fa-circle-xmark"></i> Hết món</span>`;
+        } else if (dish.tag && dish.tagLabel) {
             tagHtml = `<span class="badge-tag ${dish.tag}">${dish.tagLabel}</span>`;
         }
 
@@ -485,11 +678,17 @@ document.addEventListener('DOMContentLoaded', () => {
             'trang-mieng': 'Tráng miệng / Đồ uống'
         };
 
+        // Lớp phủ nổi bật báo "HẾT MÓN" trên ảnh
+        const outOfStockOverlayHtml = isOutOfStock
+            ? `<div class="out-of-stock-overlay"><i class="fa-solid fa-ban"></i> ĐÃ HẾT MÓN</div>`
+            : '';
+
         card.innerHTML = `
             <div class="card-media">
                 <img src="${dish.image}" alt="${dish.name}" class="card-img" loading="lazy">
+                ${outOfStockOverlayHtml}
                 <div class="card-tags">${tagHtml}</div>
-                <span class="card-cat-badge">${categoryMap[dish.category] || 'Món ăn'}</span>
+                <span class="card-cat-badge">${categoryMap[dish.category] || dish.categoryName || 'Món ăn'}</span>
                 <span class="card-meal-time"><i class="fa-regular fa-clock"></i> ${dish.mealTime}</span>
             </div>
             <div class="card-body">
@@ -513,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="price-original">${formatCurrency(dish.originalPrice)}</span>
                         <span class="card-price">${formatCurrency(dish.price)}</span>
                     </div>
-                    <button class="btn-add-dish" ${isOutOfStock ? 'disabled' : ''} data-id="${dish.id}">
+                    <button class="btn-add-dish" ${isOutOfStock ? 'disabled title="Món này đã hết suất trong ngày"' : 'title="Thêm vào giỏ món ăn"'} data-id="${dish.id}">
                         ${isOutOfStock ? '<i class="fa-solid fa-ban"></i> Hết suất' : '<i class="fa-solid fa-plus"></i> Chọn món'}
                     </button>
                 </div>
@@ -537,13 +736,34 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     };
 
+    const updateDateBannerMeta = (meta) => {
+        if (!meta) return;
+        if (statTotalBadge) statTotalBadge.textContent = meta.total_dishes ?? 0;
+        if (statAvailBadge) statAvailBadge.textContent = meta.available_dishes ?? 0;
+        if (statOutBadge) statOutBadge.textContent = meta.out_of_stock_dishes ?? 0;
+        
+        if (meta.serving_time && servingTimeBadge) {
+            servingTimeBadge.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Giao trưa ${meta.serving_time.lunch || '10:30 - 13:30'} & tối ${meta.serving_time.dinner || '17:30 - 20:30'}`;
+        }
+    };
+
     const updateCategoryCounts = (dishes) => {
-        countAll.textContent = dishes.length;
-        countMain.textContent = dishes.filter(d => d.category === 'mon-chinh').length;
-        countSoup.textContent = dishes.filter(d => d.category === 'mon-nuoc').length;
-        countVeggie.textContent = dishes.filter(d => d.category === 'mon-chay').length;
-        countDrink.textContent = dishes.filter(d => d.category === 'trang-mieng').length;
-        statTotalDishes.textContent = dishes.length + '+';
+        const total = dishes.length;
+        const mainCount = dishes.filter(d => d.category === 'mon-chinh').length;
+        const soupCount = dishes.filter(d => d.category === 'mon-nuoc').length;
+        const veggieCount = dishes.filter(d => d.category === 'mon-chay').length;
+        const drinkCount = dishes.filter(d => d.category === 'trang-mieng').length;
+        const availCount = dishes.filter(d => d.stock > 0).length;
+        const outCount = dishes.filter(d => d.stock === 0).length;
+
+        if (countAll) countAll.textContent = total;
+        if (countMain) countMain.textContent = mainCount;
+        if (countSoup) countSoup.textContent = soupCount;
+        if (countVeggie) countVeggie.textContent = veggieCount;
+        if (countDrink) countDrink.textContent = drinkCount;
+        if (countAvailableOnly) countAvailableOnly.textContent = availCount;
+        if (countOutOnly) countOutOnly.textContent = outCount;
+        if (statTotalDishes) statTotalDishes.textContent = total > 0 ? `${total}+` : '0';
     };
 
     const sortDishes = (dishes, sortBy) => {
@@ -561,17 +781,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 dishes.sort((a, b) => b.stock - a.stock);
                 break;
             default:
+                // Mặc định: ưu tiên món còn suất lên đầu, món hết suất xếp cuối
                 dishes.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0));
                 break;
         }
     };
 
     // =========================================================================
-    // GIỎ HÀNG
+    // 6. GIỎ HÀNG
     // =========================================================================
     const addToCart = (dish) => {
         const dateKey = formatDateKey(state.selectedDate);
-        const dishes = state.dailyMenuCache[dateKey] || [];
+        const cache = state.dailyMenuCache[dateKey];
+        const dishes = cache ? cache.dishes : [];
         const targetDish = dishes.find(d => d.id === dish.id);
 
         if (!targetDish || targetDish.stock <= 0) {
@@ -648,8 +870,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             itemRow.querySelector('.btn-plus').addEventListener('click', () => {
-                const dishes = state.dailyMenuCache[item.dateKey];
-                const currentInStore = dishes ? dishes.find(d => d.id === item.dishId) : null;
+                const cache = state.dailyMenuCache[item.dateKey];
+                const dishes = cache ? cache.dishes : [];
+                const currentInStore = dishes.find(d => d.id === item.dishId);
                 if (currentInStore && currentInStore.stock > 0) {
                     currentInStore.stock -= 1;
                     item.quantity += 1;
@@ -673,9 +896,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const returnStock = (dishId, dateKey, qty) => {
-        const dishes = state.dailyMenuCache[dateKey];
-        if (dishes) {
-            const targetDish = dishes.find(d => d.id === dishId);
+        const cache = state.dailyMenuCache[dateKey];
+        if (cache && cache.dishes) {
+            const targetDish = cache.dishes.find(d => d.id === dishId);
             if (targetDish) {
                 targetDish.stock = Math.min(targetDish.initialStock || 30, targetDish.stock + qty);
             }
@@ -683,19 +906,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // =========================================================================
-    // MODAL CHI TIẾT MÓN ĂN
+    // 7. MODAL CHI TIẾT MÓN ĂN (HIỂN THỊ CẢNH BÁO KHI HẾT MÓN)
     // =========================================================================
     const openFoodModal = (dish) => {
-        const isOutOfStock = dish.stock === 0;
+        const isOutOfStock = dish.stock === 0 || dish.isAvailable === false;
+        
+        const outOfStockAlertHtml = isOutOfStock
+            ? `<div class="modal-stock-alert out">
+                   <i class="fa-solid fa-triangle-exclamation"></i>
+                   <div>
+                       <strong>Món ăn này hiện đã HẾT SUẤT hôm nay!</strong><br>
+                       <small>Quý khách vui lòng chọn món ăn khác hoặc đặt trước cho các ngày tiếp theo nhé.</small>
+                   </div>
+               </div>`
+            : '';
+
         modalBody.innerHTML = `
             <img src="${dish.image}" alt="${dish.name}" class="modal-dish-img">
             <div class="modal-info-padding">
                 <h2>${dish.name}</h2>
                 <div class="modal-meta-row">
                     <span class="badge-role"><i class="fa-regular fa-clock"></i> ${dish.mealTime}</span>
-                    <span class="badge-role"><i class="fa-solid fa-boxes-stacked"></i> Còn ${dish.stock} suất</span>
+                    <span class="badge-role ${isOutOfStock ? 'text-danger' : ''}"><i class="fa-solid fa-boxes-stacked"></i> ${isOutOfStock ? 'Hết suất' : `Còn ${dish.stock} suất`}</span>
                     <strong class="text-primary" style="font-size: 1.3rem;">${formatCurrency(dish.price)}</strong>
                 </div>
+
+                ${outOfStockAlertHtml}
+
                 <p class="modal-dish-desc">${dish.description}</p>
                 
                 <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--dark);">Giá trị dinh dưỡng ước tính:</h4>
@@ -715,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <button class="btn btn-primary btn-block modal-add-btn" ${isOutOfStock ? 'disabled' : ''}>
-                    ${isOutOfStock ? '<i class="fa-solid fa-ban"></i> Đã hết suất' : '<i class="fa-solid fa-cart-plus"></i> Đặt món ngay (' + formatCurrency(dish.price) + ')'}
+                    ${isOutOfStock ? '<i class="fa-solid fa-ban"></i> Đã hết suất hôm nay' : '<i class="fa-solid fa-cart-plus"></i> Đặt món ngay (' + formatCurrency(dish.price) + ')'}
                 </button>
             </div>
         `;
@@ -738,7 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // =========================================================================
-    // TOAST NOTIFICATION
+    // 8. TOAST NOTIFICATION
     // =========================================================================
     const showToast = (message, type = 'success') => {
         const toast = document.createElement('div');
@@ -757,7 +994,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMenuGrid();
     };
 
+    // =========================================================================
+    // 9. EVENT LISTENERS
+    // =========================================================================
     prevDayBtn.addEventListener('click', () => {
+        if (state.isLoading) return;
+        state.isDemoEmptyDate = false;
         const current = new Date(state.selectedDate);
         current.setDate(current.getDate() - 1);
         state.selectedDate = current;
@@ -765,6 +1007,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextDayBtn.addEventListener('click', () => {
+        if (state.isLoading) return;
+        state.isDemoEmptyDate = false;
         const current = new Date(state.selectedDate);
         current.setDate(current.getDate() + 1);
         state.selectedDate = current;
@@ -772,12 +1016,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     customDatePicker.addEventListener('change', (e) => {
+        if (state.isLoading) return;
         if (e.target.value) {
+            state.isDemoEmptyDate = false;
             const [y, m, d] = e.target.value.split('-').map(Number);
             state.selectedDate = new Date(y, m - 1, d);
             onDateChanged();
         }
     });
+
+    // Nút thử nghiệm nhanh trạng thái rỗng (Task TF1A6E9)
+    if (btnQuickEmptyDemo) {
+        btnQuickEmptyDemo.addEventListener('click', () => {
+            if (state.isLoading) return;
+            state.isDemoEmptyDate = !state.isDemoEmptyDate;
+            if (state.isDemoEmptyDate) {
+                // Chọn một ngày nghỉ lễ ví dụ 01/01/2026
+                state.selectedDate = new Date(2026, 0, 1);
+                showToast('Đang kích hoạt trạng thái thực đơn rỗng (Task TF1A6E9)...', 'warning');
+            } else {
+                state.selectedDate = new Date();
+                showToast('Trở về thực đơn ngày hôm nay', 'success');
+            }
+            onDateChanged();
+        });
+    }
+
+    // Nút quay về hôm nay khi gặp Empty Menu State
+    if (btnEmptyGoToday) {
+        btnEmptyGoToday.addEventListener('click', () => {
+            if (state.isLoading) return;
+            state.isDemoEmptyDate = false;
+            state.selectedDate = new Date();
+            onDateChanged();
+            showToast('Đã chuyển về thực đơn hôm nay!', 'success');
+        });
+    }
+
+    // Nút xem ngày mai khi gặp Empty Menu State
+    if (btnEmptyGoTomorrow) {
+        btnEmptyGoTomorrow.addEventListener('click', () => {
+            if (state.isLoading) return;
+            state.isDemoEmptyDate = false;
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            state.selectedDate = tomorrow;
+            onDateChanged();
+            showToast('Đã chuyển sang thực đơn ngày mai!', 'success');
+        });
+    }
 
     categoryFilters.addEventListener('click', (e) => {
         const pill = e.target.closest('.cat-pill');
@@ -857,7 +1144,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // =========================================================================
     // KHỞI CHẠY LẦN ĐẦU
+    // =========================================================================
     renderDateTabs();
     renderMenuGrid();
     updateCartUI();

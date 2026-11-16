@@ -58,6 +58,15 @@ def run_tests():
     print(f"     - Suất sau khi đặt: {order_res['remaining_stock']}")
     print("  -> TEST 4 PASSED!\n")
 
+    # 5. Test kiểm tra API trả thực đơn rỗng (Empty State - TF1A6E9)
+    print("[TEST 5] Kiểm tra API trả thực đơn rỗng (Task TF1A6E9):")
+    result_empty = get_menu_by_date("2026-01-01", mock_empty=True)
+    assert result_empty["success"] is True, "Thất bại: success phải là True"
+    assert result_empty["total_dishes"] == 0, "Thất bại: Tổng số món phải là 0"
+    assert len(result_empty["data"]) == 0, "Thất bại: Dữ liệu món ăn phải là mảng rỗng []"
+    print("  ✅ API trả về mảng rỗng chuẩn xác để Frontend kích hoạt Empty State.")
+    print("  -> TEST 5 PASSED!\n")
+
     print("=" * 60)
     print("  🎉 TẤT CẢ CÁC BÀI TEST ĐỀU THÀNH CÔNG RỰC RỠ (100% PASS)!")
     print("=" * 60)

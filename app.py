@@ -240,17 +240,38 @@ def initialize_daily_stock_if_needed(date_key: str, dt_obj: date):
 
     DAILY_STOCK_DB[date_key] = day_stock
 
-def get_menu_by_date(date_str: str = "today"):
+def get_menu_by_date(date_str: str = "today", mock_empty: bool = False):
     """
     [CORE API] Lấy danh sách thực đơn và số suất còn lại của từng món theo ngày
-    Mã Task: TF1A638
+    Mã Task: TF1A638 (BE API) & TF1A6E9 (FE Nối API)
     """
     dt = parse_date_str(date_str)
     date_key = dt.strftime("%Y-%m-%d")
+    day_name = WEEKDAYS_VN[dt.weekday()]
+
+    # Hỗ trợ kiểm thử trạng thái thực đơn rỗng (Empty state cho Task TF1A6E9)
+    if mock_empty or date_str in ("empty", "2026-01-01"):
+        return {
+            "success": True,
+            "task_id": "TF1A638",
+            "fe_task_id": "TF1A6E9",
+            "date": date_key,
+            "date_formatted": dt.strftime("%d/%m/%Y"),
+            "day_of_week": day_name,
+            "serving_time": {
+                "lunch": "Tạm ngưng",
+                "dinner": "Tạm ngưng"
+            },
+            "total_dishes": 0,
+            "available_dishes": 0,
+            "out_of_stock_dishes": 0,
+            "message": "Ngày này nhà hàng tạm ngưng phục vụ thực đơn.",
+            "data": []
+        }
+
     initialize_daily_stock_if_needed(date_key, dt)
 
     day_stocks = DAILY_STOCK_DB[date_key]
-    day_name = WEEKDAYS_VN[dt.weekday()]
 
     items = []
     for dish in DISH_CATALOG:
@@ -291,6 +312,7 @@ def get_menu_by_date(date_str: str = "today"):
     return {
         "success": True,
         "task_id": "TF1A638",
+        "fe_task_id": "TF1A6E9",
         "date": date_key,
         "date_formatted": dt.strftime("%d/%m/%Y"),
         "day_of_week": day_name,
@@ -384,16 +406,18 @@ if USE_FLASK:
     @app.route("/api/menu", methods=["GET"])
     def api_get_menu():
         date_param = request.args.get("date", "today")
+        mock_empty = request.args.get("empty", "").lower() in ("1", "true", "yes")
         try:
-            res = get_menu_by_date(date_param)
+            res = get_menu_by_date(date_param, mock_empty=mock_empty)
             return jsonify(res), 200
         except ValueError as e:
             return jsonify({"success": False, "error": str(e)}), 400
 
     @app.route("/api/menu/<date_str>", methods=["GET"])
     def api_get_menu_path(date_str):
+        mock_empty = request.args.get("empty", "").lower() in ("1", "true", "yes")
         try:
-            res = get_menu_by_date(date_str)
+            res = get_menu_by_date(date_str, mock_empty=mock_empty)
             return jsonify(res), 200
         except ValueError as e:
             return jsonify({"success": False, "error": str(e)}), 400
@@ -433,7 +457,7 @@ else:
             path = parsed_url.path
             params = urllib.parse.parse_qs(parsed_url.query)
 
-            # API: Lấy thực đơn theo ngày
+            # API: Lấy thực đơn theo ngày (Hỗ trợ Task TF1A638 & TF1A6E9)
             if path == "/api/menu" or path.startswith("/api/menu/"):
                 date_str = "today"
                 if path.startswith("/api/menu/") and len(path) > len("/api/menu/"):
@@ -441,8 +465,10 @@ else:
                 elif "date" in params:
                     date_str = params["date"][0]
 
+                mock_empty = "empty" in params and params["empty"][0].lower() in ("1", "true", "yes")
+
                 try:
-                    res = get_menu_by_date(date_str)
+                    res = get_menu_by_date(date_str, mock_empty=mock_empty)
                     self._send_json(200, res)
                 except ValueError as e:
                     self._send_json(400, {"success": False, "error": str(e)})

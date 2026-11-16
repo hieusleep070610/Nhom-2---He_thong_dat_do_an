@@ -22,6 +22,7 @@
                 <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
                 <span class="logo-text">Foodie<span>Hub</span></span>
                 <span class="badge-team">Nhóm 2</span>
+                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Task: <strong>TF1A6E9</strong></span>
             </a>
 
             <div class="search-box">
@@ -103,15 +104,18 @@
                 <button class="date-nav-btn next" id="nextDayBtn" title="Ngày sau"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
 
-            <!-- Thanh trạng thái ngày đang chọn -->
+            <!-- Thanh trạng thái ngày đang chọn (Nối API TF1A6E9) -->
             <div class="active-date-banner">
                 <div class="active-date-info">
                     <span class="active-tag"><i class="fa-solid fa-calendar-check"></i> Đang xem thực đơn:</span>
                     <strong id="selectedDateTitle">Hôm nay - Thứ Năm, 13/11/2026</strong>
-                    <span class="serving-time-badge"><i class="fa-solid fa-truck-fast"></i> Giao từ 10:30 - 13:30 & 17:30 - 20:30</span>
+                    <span class="serving-time-badge" id="servingTimeBadge"><i class="fa-solid fa-truck-fast"></i> Giao từ 10:30 - 13:30 & 17:30 - 20:30</span>
                 </div>
-                <div class="order-notice">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Số suất có hạn - Hệ thống tự trừ suất khi khách đặt
+                <div class="active-date-stats" id="activeDateStats">
+                    <span class="stat-pill stat-total"><i class="fa-solid fa-list-check"></i> <strong id="statTotalBadge">0</strong> món</span>
+                    <span class="stat-pill stat-avail"><i class="fa-solid fa-circle-check"></i> <strong id="statAvailBadge">0</strong> còn suất</span>
+                    <span class="stat-pill stat-out"><i class="fa-solid fa-circle-xmark"></i> <strong id="statOutBadge">0</strong> hết món</span>
+                    <button class="btn-quick-empty-demo" id="btnQuickEmptyDemo" title="Thử nghiệm trạng thái thực đơn rỗng (Task TF1A6E9)"><i class="fa-solid fa-flask"></i> Thử ngày rỗng</button>
                 </div>
             </div>
         </section>
@@ -134,6 +138,12 @@
                 <button class="cat-pill" data-category="trang-mieng">
                     <i class="fa-solid fa-mug-hot"></i> Đồ uống & Tráng miệng (<span id="countDrink">0</span>)
                 </button>
+                <button class="cat-pill pill-avail" data-category="available-only">
+                    <i class="fa-solid fa-circle-check"></i> Còn món (<span id="countAvailableOnly">0</span>)
+                </button>
+                <button class="cat-pill pill-out" data-category="out-of-stock-only">
+                    <i class="fa-solid fa-circle-xmark"></i> Hết món (<span id="countOutOnly">0</span>)
+                </button>
             </div>
 
             <div class="sort-wrapper">
@@ -148,18 +158,50 @@
             </div>
         </section>
 
-        <!-- DANH SÁCH THẺ MÓN ĂN (FOOD CARDS GRID) -->
+        <!-- DANH SÁCH THẺ MÓN ĂN & CÁC TRẠNG THÁI (ĐANG TẢI, HẾT MÓN, RỖNG) - TASK TF1A6E9 -->
         <section class="menu-grid-section">
-            <div class="menu-grid" id="menuGrid">
-                <!-- Sẽ được render động bằng JS từ dữ liệu giả lập -->
+            
+            <!-- 1. TRẠNG THÁI ĐANG TẢI (LOADING STATE) -->
+            <div class="menu-loading-state" id="menuLoadingState" style="display: none;">
+                <div class="loading-indicator">
+                    <div class="spinner"></div>
+                    <div class="loading-text-group">
+                        <h4 id="loadingTextTitle">Đang kết nối API và tải thực đơn...</h4>
+                        <p id="loadingTextSubtitle">Đang lấy dữ liệu thực đơn theo ngày từ máy chủ FoodieHub...</p>
+                    </div>
+                </div>
+                <div class="skeleton-grid">
+                    <div class="skeleton-card shimmer"><div class="skeleton-media"></div><div class="skeleton-body"><div class="skeleton-line title"></div><div class="skeleton-line desc-1"></div><div class="skeleton-line desc-2"></div><div class="skeleton-line stock"></div><div class="skeleton-line footer"></div></div></div>
+                    <div class="skeleton-card shimmer"><div class="skeleton-media"></div><div class="skeleton-body"><div class="skeleton-line title"></div><div class="skeleton-line desc-1"></div><div class="skeleton-line desc-2"></div><div class="skeleton-line stock"></div><div class="skeleton-line footer"></div></div></div>
+                    <div class="skeleton-card shimmer"><div class="skeleton-media"></div><div class="skeleton-body"><div class="skeleton-line title"></div><div class="skeleton-line desc-1"></div><div class="skeleton-line desc-2"></div><div class="skeleton-line stock"></div><div class="skeleton-line footer"></div></div></div>
+                    <div class="skeleton-card shimmer"><div class="skeleton-media"></div><div class="skeleton-body"><div class="skeleton-line title"></div><div class="skeleton-line desc-1"></div><div class="skeleton-line desc-2"></div><div class="skeleton-line stock"></div><div class="skeleton-line footer"></div></div></div>
+                    <div class="skeleton-card shimmer"><div class="skeleton-media"></div><div class="skeleton-body"><div class="skeleton-line title"></div><div class="skeleton-line desc-1"></div><div class="skeleton-line desc-2"></div><div class="skeleton-line stock"></div><div class="skeleton-line footer"></div></div></div>
+                    <div class="skeleton-card shimmer"><div class="skeleton-media"></div><div class="skeleton-body"><div class="skeleton-line title"></div><div class="skeleton-line desc-1"></div><div class="skeleton-line desc-2"></div><div class="skeleton-line stock"></div><div class="skeleton-line footer"></div></div></div>
+                </div>
             </div>
 
-            <!-- Giao diện trống khi không có kết quả -->
-            <div class="empty-state" id="emptyState" style="display: none;">
+            <!-- 2. DANH SÁCH MÓN ĂN THỰC TẾ (GRID) -->
+            <div class="menu-grid" id="menuGrid">
+                <!-- Sẽ được render động bằng JS từ API -->
+            </div>
+
+            <!-- 3. TRẠNG THÁI RỖNG: NGÀY ĐƯỢC CHỌN KHÔNG CÓ MÓN NÀO (EMPTY MENU STATE) -->
+            <div class="empty-state empty-menu-state" id="emptyMenuState" style="display: none;">
+                <div class="empty-icon"><i class="fa-regular fa-calendar-xmark"></i></div>
+                <h3 id="emptyMenuTitle">Chưa có thực đơn cho ngày này</h3>
+                <p id="emptyMenuDesc">Nhà hàng hiện chưa cập nhật thực đơn hoặc tạm ngưng phục vụ trong ngày đã chọn. Quý khách vui lòng chọn ngày khác để tiếp tục đặt món nhé!</p>
+                <div class="empty-actions">
+                    <button class="btn btn-primary" id="btnEmptyGoToday"><i class="fa-solid fa-calendar-day"></i> Xem thực đơn hôm nay</button>
+                    <button class="btn btn-secondary" id="btnEmptyGoTomorrow"><i class="fa-solid fa-arrow-right"></i> Xem ngày mai</button>
+                </div>
+            </div>
+
+            <!-- 4. TRẠNG THÁI RỖNG: TÌM KIẾM HOẶC LỌC DANH MỤC KHÔNG CÓ KẾT QUẢ (EMPTY SEARCH/FILTER STATE) -->
+            <div class="empty-state empty-search-state" id="emptySearchState" style="display: none;">
                 <div class="empty-icon"><i class="fa-solid fa-utensils-slash"></i></div>
                 <h3>Không tìm thấy món ăn phù hợp</h3>
-                <p>Hãy thử tìm từ khóa khác hoặc chuyển sang danh mục hoặc ngày khác nhé!</p>
-                <button class="btn btn-primary" id="resetFilterBtn">Xem tất cả món hôm nay</button>
+                <p id="emptySearchDesc">Hãy thử tìm từ khóa khác hoặc chuyển sang danh mục hoặc ngày khác nhé!</p>
+                <button class="btn btn-primary" id="resetFilterBtn"><i class="fa-solid fa-rotate-left"></i> Xem tất cả món của ngày này</button>
             </div>
         </section>
 
@@ -214,8 +256,8 @@
                 </div>
                 <p class="footer-desc">Hệ thống đặt đồ ăn theo ngày tiện lợi, đảm bảo an toàn vệ sinh thực phẩm, phục vụ cơm trưa và bữa tối văn phòng, sinh viên.</p>
                 <div class="team-meta">
-                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A5C3</strong></span>
-                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2</span>
+                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A6E9</strong></span>
+                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Trang xem thực đơn nối API)</span>
                 </div>
             </div>
             <div class="footer-col">
@@ -239,7 +281,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container footer-bottom-content">
-                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Dựng giao diện thực đơn theo ngày (Mã task: TF1A5C3).</p>
+                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Trang xem thực đơn theo ngày nối API (Mã task: TF1A6E9).</p>
                 <p class="git-link-meta">
                     <i class="fa-brands fa-github"></i> <a href="https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an" target="_blank">Nhom-2---He_thong_dat_do_an</a>
                 </p>

@@ -10,6 +10,7 @@ Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & 
 | :--- | :--- | :--- | :--- |
 | **`TF1A5C3`** | Frontend (FE) | Dựng trang tĩnh thực đơn theo ngày (chọn ngày, thẻ món, giá, số suất còn lại) | `feature/tf1a5c3-ngan` |
 | **`TF1A638`** | Backend (BE) | Viết API trả thực đơn theo ngày kèm số suất còn lại của từng món | `feature/tf1a638-ngan` |
+| **`TF1A6E9`** | Frontend (FE) | Trang xem thực đơn theo ngày nối API (chọn ngày, trạng thái hết món, đang tải và rỗng) | `feature/tf1a6e9-ngan` |
 
 ---
 
@@ -78,22 +79,72 @@ Nhấp đúp chuột vào file `daily-menu.html` hoặc `index.html` để mở 
 
 ---
 
-## 📤 4. Hướng Dẫn Đẩy Nhánh Lên GitHub (Nộp Task TF1A638)
+## 💻 4. Tài Liệu Chi Tiết Chức Năng [FE] Nối API (Task TF1A6E9)
 
-Chạy lần lượt các lệnh sau trong PowerShell hoặc Git Bash:
+Chức năng Frontend **Trang xem thực đơn theo ngày nối API** (`daily-menu.html` & `js/daily-menu.js`) đáp ứng trọn vẹn 4 yêu cầu nghiệp vụ cốt lõi:
+
+### 1. Nối Trang Thực Đơn Với API & Chọn Ngày
+- **Cơ chế gọi API**: Mỗi khi người dùng chọn ngày qua thanh 7 ngày kế tiếp (Date Tabs Carousel), nút Ngày trước / Ngày sau (Prev/Next), hoặc ô chọn ngày tùy ý (`<input type="date">`), frontend tự động thực hiện request `GET /api/menu?date=YYYY-MM-DD`.
+- **Đồng bộ trạng thái**: Dữ liệu phản hồi từ backend API (tổng số món, số món còn suất, số món hết suất, khung giờ phục vụ) được cập nhật đồng bộ lên thanh trạng thái ngày và các bộ lọc danh mục.
+- **Dự phòng thông minh (Offline Fallback)**: Nếu chưa khởi động server backend, ứng dụng tự động kích hoạt cơ chế giả lập Offline Demo với đầy đủ dữ liệu món ăn và trạng thái mà không gây crash trang.
+
+### 2. Trạng Thái Đang Tải (Loading State)
+- Khi bắt đầu gọi API lấy thực đơn theo ngày mới, hệ thống kích hoạt giao diện **Skeleton Loading Cards** với hiệu ứng ánh sáng lướt qua (Shimmer Animation) và thanh hiển thị tiến trình xoay (Spinner).
+- Thông báo rõ ràng: `"Đang kết nối API và tải thực đơn ngày DD/MM/YYYY..."`.
+- Ngăn chặn thao tác trùng lặp trong lúc dữ liệu đang tải.
+
+### 3. Trạng Thái Hết Món (Out Of Stock State)
+- Các món ăn có số suất `stock === 0` hoặc `is_available === false`:
+  - **Dải nhãn nổi bật**: Hiển thị nhãn đỏ `ĐÃ HẾT MÓN` phủ trên ảnh món ăn và huy hiệu `Hết món`.
+  - **Thanh số suất**: Hiển thị nhãn đỏ `Hết suất hôm nay`, thanh tiến độ 0%.
+  - **Khóa đặt món**: Nút `"Chọn món"` tự động chuyển thành `<i class="fa-solid fa-ban"></i> Hết suất`, đổi màu xám và vô hiệu hóa (`disabled`), ngăn không cho thêm vào giỏ.
+  - **Modal chi tiết**: Khi xem chi tiết món ăn hết suất, hiển thị hộp cảnh báo màu đỏ thông báo món đã hết suất cho ngày đã chọn.
+  - **Bộ lọc nhanh**: Hỗ trợ nút lọc riêng cho danh mục `"Còn món"` và `"Hết món"` để người dùng và giảng viên dễ dàng kiểm tra.
+
+### 4. Trạng Thái Rỗng (Empty State)
+Hệ thống xử lý phân tách 2 tình huống giao diện rỗng độc lập, trực quan:
+- **Tình huống 1: Ngày được chọn không có thực đơn** (API trả về `data: []`):
+  - Hiển thị biểu tượng lịch rỗng kèm thông điệp: `"Chưa có thực đơn cho [Ngày, DD/MM/YYYY] - Nhà hàng hiện chưa cập nhật thực đơn hoặc tạm ngưng phục vụ trong ngày đã chọn."`
+  - Cung cấp nút điều hướng nhanh: `"Xem thực đơn hôm nay"` hoặc `"Xem ngày mai"`.
+  - Có nút `"Thử ngày rỗng"` trên thanh trạng thái để kiểm thử nhanh tình huống này.
+- **Tình huống 2: Không tìm thấy kết quả khi tìm kiếm hoặc lọc danh mục**:
+  - Hiển thị biểu tượng tìm kiếm rỗng kèm thông điệp: `"Không tìm thấy món ăn phù hợp với từ khóa..."`
+  - Cung cấp nút `"Xem tất cả món của ngày này"` để reset bộ lọc ngay lập tức.
+
+---
+
+## 📤 5. Hướng Dẫn Đẩy Nhánh Lên GitHub (Nộp Task TF1A6E9)
+
+Chạy lần lượt các lệnh sau trong PowerShell hoặc Git Bash để nộp minh chứng:
 
 ```powershell
-# 1. Tạo và chuyển sang nhánh mới cho task BE
-git checkout -b feature/tf1a638-ngan
+# 1. Tạo và chuyển sang nhánh mới cho task FE
+git checkout -b feature/tf1a6e9-ngan
 
-# 2. Thêm file và commit đúng mã task
+# 2. Thêm file và commit đúng mã task TF1A6E9
 git add .
-git commit -m "TF1A638: viết API trả thực đơn theo ngày kèm số suất còn lại"
+git commit -m "TF1A6E9: [FE] Trang xem thực đơn theo ngày nối API (chọn ngày, trạng thái hết món, đang tải và rỗng)"
 
 # 3. Đẩy nhánh lên GitHub
-git push -u origin feature/tf1a638-ngan
+git push -u origin feature/tf1a6e9-ngan
 ```
 
-Sau khi push thành công, bạn lấy link nhánh:
-`https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a638-ngan`
-hoặc tạo Pull Request với tiêu đề `TF1A638: API xem thực đơn theo ngày kèm số suất còn lại` để nộp minh chứng.
+### 🔗 Minh Chứng Nộp Bài (Task TF1A6E9):
+- **Link Nhánh GitHub**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a6e9-ngan`
+- **Link Tạo / Nộp Pull Request**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/pull/new/feature/tf1a6e9-ngan`
+  *(Tiêu đề PR: `TF1A6E9: [FE] Trang xem thực đơn theo ngày nối API`)*
+
+---
+
+## 📤 6. Hướng Dẫn Đẩy Nhánh Cho Task Backend (Task TF1A638)
+
+```powershell
+# Tạo nhánh và commit cho task BE
+git checkout -b feature/tf1a638-ngan
+git add .
+git commit -m "TF1A638: viết API trả thực đơn theo ngày kèm số suất còn lại"
+git push -u origin feature/tf1a638-ngan
+```
+Link nhánh BE: `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a638-ngan`
