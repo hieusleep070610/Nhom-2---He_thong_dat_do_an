@@ -7,7 +7,7 @@ from app.schemas.user_schemas import UserCreate
 
 
 def get_users(db: Session, keyword: str | None = None) -> list[User]:
-    query = select(User).order_by(User.id.desc())
+    query = select(User).order_by(User.user_id.desc())
     if keyword:
         like = f"%{keyword}%"
         query = query.where(or_(User.full_name.like(like), User.email.like(like)))

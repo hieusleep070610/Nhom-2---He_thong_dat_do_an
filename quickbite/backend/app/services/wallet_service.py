@@ -11,7 +11,7 @@ def get_wallet_by_user_id(db: Session, user_id: int):
     return db.query(WalletModel).filter(WalletModel.user_id == user_id).first()
 
 def create_wallet(db: Session, wallet_in: WalletCreate):
-    user_exists = db.query(User).filter(User.id == wallet_in.user_id).first()
+    user_exists = db.query(User).filter(User.user_id == wallet_in.user_id).first()
     if not user_exists:
         raise HTTPException(
             status_code=404,

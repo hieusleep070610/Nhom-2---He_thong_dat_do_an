@@ -32,8 +32,8 @@ def change_order_status(
         "status": "success",
         "message": "Cập nhật trạng thái đơn hàng thành công",
         "data": {
-            "order_id": order.order_id,
-            "order_status": order.order_status
+            "order_id": order.id,
+            "order_status": order.status
         }
     }
 
@@ -47,7 +47,7 @@ def get_order_status_history(
     # Kiểm tra đơn hàng có tồn tại không
     order = (
         db.query(Order)
-        .filter(Order.order_id == order_id)
+        .filter(Order.id == order_id)
         .first()
     )
 
