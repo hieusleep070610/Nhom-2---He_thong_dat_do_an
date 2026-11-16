@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DB_PORT: int = 3306
     DB_USER: str = "root"
     DB_PASSWORD: str = "cellfite90"
-    DB_NAME: str = "foodpay_db"
+    DB_NAME: str = "quickbite_db_demo"
 
     CORS_ORIGINS: str = "*"
 

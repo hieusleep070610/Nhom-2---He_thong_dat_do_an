@@ -28,7 +28,6 @@ def create_wallet(db: Session, wallet_in: WalletCreate):
     db_wallet = WalletModel(
         user_id=wallet_in.user_id,
         balance=wallet_in.initial_balance,
-        xu=0,
         status="active"
     )
     db.add(db_wallet)
@@ -36,7 +35,7 @@ def create_wallet(db: Session, wallet_in: WalletCreate):
     db.refresh(db_wallet)
     return db_wallet
 
-def update_wallet(db: Session, wallet_id: int, balance: int = None, xu: int = None, status: str = None):
+def update_wallet(db: Session, wallet_id: int, balance: int = None, status: str = None):
     wallet = get_wallet_by_id(db, wallet_id)
     if not wallet:
         raise HTTPException(status_code=404, detail="Không tìm thấy ví để cập nhật")
@@ -45,10 +44,6 @@ def update_wallet(db: Session, wallet_id: int, balance: int = None, xu: int = No
         if balance < 0:
             raise HTTPException(status_code=400, detail="Số dư ví không được âm")
         wallet.balance = balance
-    if xu is not None:
-        if xu < 0:
-            raise HTTPException(status_code=400, detail="Số xu không được âm")
-        wallet.xu = xu
     if status is not None:
         wallet.status = status
         

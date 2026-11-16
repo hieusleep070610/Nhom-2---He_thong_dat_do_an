@@ -1,17 +1,14 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.schemas.wallet import WalletCreate, WalletResponse, PaymentRequest
-
-from app.routers.wallet import (
-    get_wallet_by_id, 
-    get_wallet_by_user_id, 
-    create_wallet, 
-    update_wallet, 
-    process_payment
-)
+from app.services.wallet_service import get_wallet_by_id, create_wallet, process_payment
 
 router_wallet = APIRouter(prefix="/api/wallets", tags=["Wallet"])
+
+@router_wallet.post("/", response_model=WalletResponse, status_code=201)
+def create_new_wallet(wallet_in: WalletCreate, db: Session = Depends(get_db)):
+    return create_wallet(db, wallet_in=wallet_in)
 
 @router_wallet.post("/pay")
 def pay_order(data: PaymentRequest, db: Session = Depends(get_db)):
@@ -26,10 +23,6 @@ def pay_order(data: PaymentRequest, db: Session = Depends(get_db)):
         "message": "Thanh toán thành công!",
         "new_balance": updated_wallet.balance
     }
-
-@router_wallet.post("/", response_model=WalletResponse, status_code=status.HTTP_201_CREATED)
-def create_new_wallet(wallet_in: WalletCreate, db: Session = Depends(get_db)):
-    return create_wallet(db, wallet_in=wallet_in)
 
 @router_wallet.get("/{wallet_id}", response_model=WalletResponse)
 def get_wallet(wallet_id: int, db: Session = Depends(get_db)):
