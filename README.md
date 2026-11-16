@@ -11,6 +11,7 @@ Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & 
 | **`TF1A5C3`** | Frontend (FE) | Dựng trang tĩnh thực đơn theo ngày (chọn ngày, thẻ món, giá, số suất còn lại) | `feature/tf1a5c3-ngan` |
 | **`TF1A638`** | Backend (BE) | Viết API trả thực đơn theo ngày kèm số suất còn lại của từng món | `feature/tf1a638-ngan` |
 | **`TF1A6E9`** | Frontend (FE) | Trang xem thực đơn theo ngày nối API (chọn ngày, trạng thái hết món, đang tải và rỗng) | `feature/tf1a6e9-ngan` |
+| **`TF1A785`** | Backend (BE) | Viết API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng) | `feature/tf1a785-ngan` |
 
 ---
 
@@ -31,6 +32,7 @@ Sau khi chạy lệnh, bạn có thể mở các đường dẫn sau trên trìn
 - 🌐 **Giao diện Web đầy đủ**: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 - 📡 **API thực đơn hôm nay**: [http://127.0.0.1:5000/api/menu](http://127.0.0.1:5000/api/menu)
 - 📡 **API thực đơn theo ngày bất kỳ**: [http://127.0.0.1:5000/api/menu?date=2026-11-20](http://127.0.0.1:5000/api/menu?date=2026-11-20)
+- 📡 **API chi tiết món ăn (Task TF1A785)**: [http://127.0.0.1:5000/api/dishes/dish-1](http://127.0.0.1:5000/api/dishes/dish-1)
 
 ### Cách 2: Chạy kiểm thử tự động (Unit Test)
 Chạy script kiểm tra logic API mà không cần mở trình duyệt:
@@ -138,13 +140,93 @@ git push -u origin feature/tf1a6e9-ngan
 
 ---
 
-## 📤 6. Hướng Dẫn Đẩy Nhánh Cho Task Backend (Task TF1A638)
+## 🍲 5. Tài Liệu Chi Tiết API Chi Tiết Món Ăn (Task TF1A785)
+
+### Endpoint: `GET /api/dishes/<dish_id>` (hoặc `GET /api/dish/<dish_id>`)
+* **Mô tả**: Trả về thông tin chi tiết đầy đủ của một món ăn bao gồm hình ảnh, mô tả, đơn giá, danh sách nguyên liệu, thông tin dị ứng và bảng dinh dưỡng.
+* **Ví dụ Request**: `GET http://127.0.0.1:5000/api/dishes/dish-1`
+* **Cấu trúc JSON phản hồi thành công (200 OK)**:
+```json
+{
+  "success": true,
+  "task_id": "TF1A785",
+  "data": {
+    "id": "dish-1",
+    "name": "Cơm Tấm Sườn Bì Chả Đặc Biệt",
+    "category": "mon-chinh",
+    "category_name": "Món chính",
+    "meal_time": "Trưa & Tối",
+    "price": 52000,
+    "price_formatted": "52.000 ₫",
+    "original_price": 60000,
+    "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+    "description": "Sườn cốt lết ướp mật ong nướng than hồng thơm lừng, bì dai giòn cùng chả trứng hấp béo ngậy kèm đồ chua và nước mắm kẹo đậm đà.",
+    "ingredients": [
+      "Gạo tấm thơm ST25",
+      "Sườn cốt lết heo tươi ướp mật ong",
+      "Bì heo thái chỉ sợi thính gạo rang",
+      "Chả trứng hấp mộc nhĩ nấm mèo",
+      "Mỡ hành lá phi thơm tóp mỡ giòn",
+      "Nước mắm chua ngọt pha kẹo",
+      "Đồ chua (củ cải trắng, cà rốt ngâm giấm)"
+    ],
+    "allergy_info": [
+      "Có chứa trứng gà (trong chả trứng)",
+      "Có chứa đậu nành (trong nước sốt ướp sườn)",
+      "Không chứa đậu phộng",
+      "Không chứa sữa động vật"
+    ],
+    "allergens": [
+      "Trứng",
+      "Đậu nành"
+    ],
+    "nutrition": {
+      "calories": "650 kcal",
+      "protein": "32g",
+      "carbs": "68g",
+      "fat": "24g"
+    },
+    "preparation_time": "10 - 15 phút"
+  }
+}
+```
+* **Cấu trúc JSON phản hồi khi không tìm thấy món (404 Not Found)**:
+```json
+{
+  "success": false,
+  "task_id": "TF1A785",
+  "error": "Không tìm thấy món ăn với ID 'dish-xyz'",
+  "code": "DISH_NOT_FOUND"
+}
+```
+
+---
+
+## 📤 6. Hướng Dẫn Đẩy Nhánh Lên GitHub (Nộp Task TF1A785)
+
+Chạy lần lượt các lệnh sau trong PowerShell hoặc Git Bash để nộp minh chứng:
 
 ```powershell
-# Tạo nhánh và commit cho task BE
-git checkout -b feature/tf1a638-ngan
+# 1. Tạo và chuyển sang nhánh mới cho task BE TF1A785
+git checkout -b feature/tf1a785-ngan
+
+# 2. Thêm file và commit đúng mã task TF1A785
 git add .
-git commit -m "TF1A638: viết API trả thực đơn theo ngày kèm số suất còn lại"
-git push -u origin feature/tf1a638-ngan
+git commit -m "TF1A785: [BE] API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng)"
+
+# 3. Đẩy nhánh lên GitHub
+git push -u origin feature/tf1a785-ngan
 ```
-Link nhánh BE: `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a638-ngan`
+
+### 🔗 Minh Chứng Nộp Bài (Task TF1A785):
+- **Link Nhánh GitHub**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a785-ngan`
+- **Link Tạo / Nộp Pull Request**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/pull/new/feature/tf1a785-ngan`
+  *(Tiêu đề PR: `TF1A785: [BE] API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng)`)*
+
+---
+
+## 📤 7. Hướng Dẫn Đẩy Nhánh Cho Các Task Khác
+* **Task FE TF1A6E9**: Nhánh `feature/tf1a6e9-ngan` | PR: `TF1A6E9: [FE] Trang xem thực đơn theo ngày nối API`
+* **Task BE TF1A638**: Nhánh `feature/tf1a638-ngan` | PR: `TF1A638: API xem thực đơn theo ngày kèm số suất còn lại`

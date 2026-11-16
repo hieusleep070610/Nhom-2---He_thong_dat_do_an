@@ -6,7 +6,7 @@ Chạy bằng lệnh: python test_api.py
 """
 
 import json
-from app import get_menu_by_date, order_dish, parse_date_str
+from app import get_menu_by_date, order_dish, parse_date_str, get_dish_detail
 
 def run_tests():
     print("=" * 60)
@@ -66,6 +66,38 @@ def run_tests():
     assert len(result_empty["data"]) == 0, "Thất bại: Dữ liệu món ăn phải là mảng rỗng []"
     print("  ✅ API trả về mảng rỗng chuẩn xác để Frontend kích hoạt Empty State.")
     print("  -> TEST 5 PASSED!\n")
+
+    # 6. Test API chi tiết món ăn (Task TF1A785)
+    print("[TEST 6] Kiểm tra API chi tiết món ăn (Task TF1A785):")
+    detail_res, detail_status = get_dish_detail("dish-1")
+    assert detail_status == 200, f"Thất bại gọi API chi tiết món: status code {detail_status}"
+    assert detail_res["success"] is True, "Thất bại: success phải là True"
+    assert detail_res["task_id"] == "TF1A785", f"Thất bại: Sai mã Task ID: {detail_res.get('task_id')}"
+    
+    dish_data = detail_res["data"]
+    assert "image_url" in dish_data and dish_data["image_url"], "Thất bại: Thiếu trường 'image_url'"
+    assert "description" in dish_data and dish_data["description"], "Thất bại: Thiếu trường 'description'"
+    assert "price" in dish_data and dish_data["price"] > 0, "Thất bại: Thiếu hoặc sai trường 'price'"
+    assert "ingredients" in dish_data and isinstance(dish_data["ingredients"], list) and len(dish_data["ingredients"]) > 0, "Thất bại: Thiếu danh sách 'ingredients'"
+    assert "allergy_info" in dish_data and isinstance(dish_data["allergy_info"], list), "Thất bại: Thiếu danh sách 'allergy_info'"
+    assert "allergens" in dish_data and isinstance(dish_data["allergens"], list), "Thất bại: Thiếu danh sách 'allergens'"
+    
+    print(f"  ✅ Tên món: {dish_data['name']}")
+    print(f"  ✅ Giá: {dish_data['price_formatted']}")
+    print(f"  ✅ Mô tả: {dish_data['description'][:60]}...")
+    print(f"  ✅ Ảnh: {dish_data['image_url'][:50]}...")
+    print(f"  ✅ Số lượng nguyên liệu: {len(dish_data['ingredients'])} nguyên liệu ({', '.join(dish_data['ingredients'][:3])}...)")
+    print(f"  ✅ Thông tin dị ứng: {len(dish_data['allergy_info'])} lưu ý (Dị ứng chính: {', '.join(dish_data['allergens']) if dish_data['allergens'] else 'Không có'})")
+    print("  -> TEST 6 PASSED!\n")
+
+    # 7. Test API chi tiết món ăn khi mã món không tồn tại (Task TF1A785 - Error 404)
+    print("[TEST 7] Kiểm tra lỗi 404 khi món không tồn tại (Task TF1A785):")
+    not_found_res, not_found_status = get_dish_detail("dish-khong-ton-tai-999")
+    assert not_found_status == 404, f"Thất bại: status code phải là 404, nhận được {not_found_status}"
+    assert not_found_res["success"] is False, "Thất bại: success phải là False"
+    assert not_found_res["code"] == "DISH_NOT_FOUND", "Thất bại: Mã lỗi phải là DISH_NOT_FOUND"
+    print(f"  ✅ Xử lý mã món không tồn tại đúng chuẩn HTTP 404: {not_found_res['error']}")
+    print("  -> TEST 7 PASSED!\n")
 
     print("=" * 60)
     print("  🎉 TẤT CẢ CÁC BÀI TEST ĐỀU THÀNH CÔNG RỰC RỠ (100% PASS)!")

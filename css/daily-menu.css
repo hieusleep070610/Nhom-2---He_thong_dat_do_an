@@ -1391,6 +1391,97 @@ input, select {
     color: var(--text-muted);
 }
 
+/* Modal Detail Sections (Task TF1A785: Nguyên liệu & Thông tin dị ứng) */
+.modal-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 18px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ingredients-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.ingredient-chip {
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ingredient-chip i {
+    color: var(--primary);
+    font-size: 0.75rem;
+}
+
+.allergy-box {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.allergy-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 8px;
+}
+
+.allergy-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.84rem;
+    color: #78350f;
+    padding-left: 4px;
+}
+
+.allergy-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.allergy-list li i {
+    font-size: 0.7rem;
+    color: #d97706;
+}
+
+.allergen-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.allergen-tag {
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
 /* ================= CART DRAWER (GIỎ HÀNG MINI) ================= */
 .cart-drawer-overlay {
     position: fixed;
