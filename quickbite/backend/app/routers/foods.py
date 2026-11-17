@@ -4,7 +4,7 @@ from datetime import date
 from typing import List
 
 from app.database.db import get_db
-from app.models.menu import Dish, DailyMenu
+from app.models.food import Dish, DailyMenu
 
 router = APIRouter(prefix="/menu", tags=["Menu Management"])
 

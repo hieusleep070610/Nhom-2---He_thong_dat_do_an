@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nguyên liệu &amp; tồn kho | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <div class="admin-shell">
+    <aside class="admin-side">
+      <strong>foodie</strong>
+      <small>Admin workspace</small>
+      <nav class="admin-nav" aria-label="Quản trị">
+        <span>Dashboard</span>
+        <span>Quản lý món ăn</span>
+        <span>Quản lý danh mục</span>
+        <a class="is-active" href="ingredients.html">Nguyên liệu &amp; tồn kho</a>
+        <span>Công thức món</span>
+        <span>Quản lý đơn hàng</span>
+        <span>Quản lý thanh toán</span>
+        <span>Quản lý người dùng</span>
+      </nav>
+    </aside>
+    <main class="admin-main">
+      <div class="admin-top">
+        <div>
+          <h1>Nguyên liệu &amp; tồn kho</h1>
+          <p class="ck-lead">Theo dõi nguyên liệu và trạng thái còn hàng của món.</p>
+        </div>
+      </div>
+      <section class="metric-grid">
+        <article class="metric-card"><i></i><div><small>Nguyên liệu</small><strong>2</strong></div></article>
+        <article class="metric-card green"><i></i><div><small>Dưới mức tối thiểu</small><strong>0</strong></div></article>
+        <article class="metric-card red"><i></i><div><small>Đã hết hàng</small><strong>1</strong></div></article>
+        <article class="metric-card blue"><i></i><div><small>Giá trị tồn kho</small><strong>—</strong></div></article>
+      </section>
+      <section class="panel">
+        <h2>Món ăn và trạng thái tồn kho</h2>
+        <table class="admin-table">
+          <thead>
+            <tr><th>ID</th><th>Tên món</th><th>Giá (VNĐ)</th><th>Trạng thái tồn kho</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Cơm tấm sườn bì chả</td><td>45,000</td><td>Còn hàng</td></tr>
+            <tr><td>2</td><td>Phở bò đặc biệt</td><td>50,000</td><td>Còn hàng</td></tr>
+            <tr><td>3</td><td>Bánh mì chảo full topping</td><td>35,000</td><td class="text-error">Hết hàng</td></tr>
+          </tbody>
+        </table>
+        <h2 style="margin-top:22px">Nguyên liệu</h2>
+        <table class="admin-table">
+          <thead>
+            <tr><th>ID Nguyên liệu</th><th>Tên nguyên liệu</th><th>Đơn vị tính</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Thịt heo sườn</td><td>kg</td></tr>
+            <tr><td>2</td><td>Gạo tấm</td><td>kg</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

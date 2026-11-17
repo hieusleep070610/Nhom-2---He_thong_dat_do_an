@@ -10,10 +10,23 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
+    phone: str | None = Field(default=None, max_length=20)
+
+
+class UserLogin(BaseModel):
+    account: str = Field(..., min_length=3, max_length=100)
+    password: str = Field(..., min_length=1)
 
 
 class UserResponse(UserBase):
     id: int = Field(validation_alias="user_id")
+    phone: str | None = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

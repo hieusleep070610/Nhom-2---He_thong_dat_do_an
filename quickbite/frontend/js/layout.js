@@ -1,19 +1,24 @@
 // Layout chung: tự chèn header (menu) và footer vào mọi trang,
 // để không phải copy lại HTML menu ở từng file.
 //
-// Mỗi trang cần có:  <body data-root="./">   (trang ở thư mục gốc)
-//              hoặc  <body data-root="../">  (trang trong thư mục pages/)
+// Mỗi trang cần có:  <body data-root="./">      (trang ở thư mục gốc)
+//              hoặc  <body data-root="../../"> (trang trong pages/customer hoặc pages/admin)
 // và hai thẻ rỗng:   <header id="app-header"></header> ... <footer id="app-footer"></footer>
 
 // Thêm trang mới vào menu: thêm 1 dòng vào mảng này (đường dẫn tính từ thư mục frontend/)
 const MENU = [
   { href: "index.html", label: "Trang chủ" },
-  { href: "pages/order.html", label: "Đặt món" },
-  { href: "pages/dish.html", label: "Chi tiết món" },
-  { href: "pages/checkout.html", label: "Thanh toán" },
+  { href: "pages/customer/dish.html", label: "Chi tiết món" },
+  { href: "pages/customer/checkout.html", label: "Thanh toán" },
+  { href: "pages/customer/wallet.html", label: "Ví" },
+  { href: "pages/admin/ingredients.html", label: "Nguyên liệu" },
 ];
 
 function renderLayout() {
+  const header = document.getElementById("app-header");
+  const footer = document.getElementById("app-footer");
+  if (!header || !footer) return;
+
   const root = document.body.dataset.root || "./";
   const currentPath = window.location.pathname;
 

@@ -17,7 +17,13 @@ function imageSrc(url) {
 
 function bindImageFallback(img) {
   img.addEventListener("error", () => {
-    if (img.src !== FALLBACK_IMAGE) img.src = FALLBACK_IMAGE;
+    if (img.dataset.plate === "1") return;
+    img.dataset.plate = "1";
+    img.hidden = true;
+    const plate = document.createElement("div");
+    plate.className = "plate";
+    plate.innerHTML = "<span><i></i><i></i><i></i></span>";
+    img.parentElement.appendChild(plate);
   });
 }
 
@@ -51,7 +57,15 @@ function renderPrice() {
 const heroImg = document.getElementById("dish-hero");
 const thumbsEl = document.getElementById("dish-thumbs");
 const gallery = dish.images.filter((url) => typeof url === "string" && url.trim());
-const photos = gallery.length ? gallery : [""];
+const photos = gallery;
+
+function showPlate(target) {
+  target.hidden = true;
+  const plate = document.createElement("div");
+  plate.className = "plate";
+  plate.innerHTML = "<span><i></i><i></i><i></i></span>";
+  target.parentElement.appendChild(plate);
+}
 
 function showPhoto(index) {
   heroImg.src = imageSrc(photos[index]);
@@ -60,7 +74,9 @@ function showPhoto(index) {
   });
 }
 
-photos.forEach((url, index) => {
+if (!photos.length) {
+  showPlate(heroImg);
+} else photos.forEach((url, index) => {
   const button = document.createElement("button");
   button.type = "button";
   button.setAttribute("aria-label", `Ảnh ${index + 1}`);
@@ -73,8 +89,10 @@ photos.forEach((url, index) => {
   thumbsEl.appendChild(button);
 });
 
-bindImageFallback(heroImg);
-showPhoto(0);
+if (photos.length) {
+  bindImageFallback(heroImg);
+  showPhoto(0);
+}
 
 const toppingsEl = document.getElementById("dish-toppings");
 dish.toppings.forEach((topping) => {
@@ -123,6 +141,14 @@ document.getElementById("qty-plus").addEventListener("click", () => {
 addBtn.addEventListener("click", () => {
   const toppings = [...document.querySelectorAll("#dish-toppings input:checked")]
     .map((input) => input.dataset.name);
+  addToCart({
+    name: dish.name,
+    size: state.size,
+    toppings,
+    unitPrice: BASE_PRICE + toppingTotal(),
+    qty: state.qty,
+    tone: "peach",
+  });
   const extra = toppings.length ? `, topping: ${toppings.join(", ")}` : "";
   showToast(`Đã thêm ${state.qty} Bún bò Huế (${state.size})${extra}`);
 });

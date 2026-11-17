@@ -106,5 +106,14 @@ confirmButton.addEventListener("click", () => {
     showToast("Hãy chọn khung giờ nhận món", "error");
     return;
   }
+  if (typeof readCart === "function" && readCart().length) {
+    const saved = JSON.parse(localStorage.getItem("foodie_orders") || "[]");
+    saved.unshift({
+      id: `local-${Date.now()}`,
+      title: readCart()[0].name,
+      status: "pending",
+    });
+    localStorage.setItem("foodie_orders", JSON.stringify(saved));
+  }
   showToast(`Đã ghi nhận giờ nhận ${formatDisplayDate(pickupDate.value)} lúc ${state.time}`);
 });
