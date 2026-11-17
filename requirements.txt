@@ -1,0 +1,5 @@
+# Thư viện Backend cho Hệ Thống Đặt Đồ Ăn - Nhóm 2 (Task ID: TF1A638)
+# Cài đặt bằng lệnh: pip install -r requirements.txt
+
+Flask>=2.0.0
+Flask-Cors>=3.0.0
