@@ -1,7 +1,7 @@
-const BASE_PRICE = 55000;
+let BASE_PRICE = 55000;
 const FALLBACK_IMAGE = "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg";
 
-const dish = {
+let dish = {
   name: "Bún bò Huế đặc biệt",
   images: [],
   toppings: [
@@ -142,6 +142,7 @@ addBtn.addEventListener("click", () => {
   const toppings = [...document.querySelectorAll("#dish-toppings input:checked")]
     .map((input) => input.dataset.name);
   addToCart({
+    dish_id: dish.id,
     name: dish.name,
     size: state.size,
     toppings,
@@ -154,3 +155,32 @@ addBtn.addEventListener("click", () => {
 });
 
 renderPrice();
+
+async function loadDish() {
+  addBtn.disabled = true;
+  const id = Number(new URLSearchParams(location.search).get("id"));
+  if (!Number.isInteger(id) || id < 1) {
+    addBtn.disabled = true;
+    showToast("Món chưa được chọn từ thực đơn.", "error");
+    return;
+  }
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/menu/dishes`);
+    if (!response.ok) throw new Error("API món ăn lỗi");
+    const rows = await response.json();
+    const selected = Array.isArray(rows) ? rows.find((row) => Number(row.id) === id) : null;
+    if (!selected) throw new Error("Không tìm thấy món");
+    dish = { ...dish, id, name: selected.name };
+    BASE_PRICE = Number(selected.price);
+    document.querySelector(".fd-info h1").textContent = selected.name;
+    document.querySelector(".fd-crumb").textContent = `Trang chủ / Thực đơn / ${selected.name}`;
+    document.getElementById("dish-hero").alt = selected.name;
+    renderPrice();
+    addBtn.disabled = false;
+  } catch (error) {
+    addBtn.disabled = true;
+    showToast("Không tải được món ăn từ máy chủ.", "error");
+  }
+}
+
+loadDish();

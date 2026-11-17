@@ -403,6 +403,9 @@ th { font-size: 13px; color: var(--color-muted); text-transform: uppercase; }
 .ck-slot:hover:not(:disabled) { border-color: #ff7626; }
 .ck-slot.is-selected { background: #fff1e8; border-color: #ff7626; color: #ff7626; }
 .ck-slot:disabled { color: #b7bec6; background: #f4f6f8; text-decoration: line-through; cursor: not-allowed; }
+.ck-slot { height: auto; min-height: 46px; display: grid; gap: 2px; text-align: left; }
+.ck-slot small { font-size: 11px; font-weight: 500; }
+.ck-slot.is-unavailable { text-decoration: none; }
 
 .ck-pays { display: grid; gap: 10px; margin-top: 14px; }
 .ck-pay {
@@ -426,7 +429,9 @@ th { font-size: 13px; color: var(--color-muted); text-transform: uppercase; }
 .ck-summary h2 { margin-bottom: 14px; }
 .ck-line { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
 .ck-line img { width: 54px; height: 54px; object-fit: contain; border-radius: 12px; background: #fff4ec; }
-.ck-line div { display: flex; flex: 1; justify-content: space-between; gap: 12px; }
+.ck-line img, .ck-line .cart-thumb { width: 54px; height: 54px; object-fit: contain; border-radius: 12px; background: #fff4ec; flex: none; }
+.ck-line > div:last-child { display: flex; flex: 1; justify-content: space-between; gap: 12px; }
+.ck-line small { display: block; color: #6a727d; font-size: 12px; }
 .ck-line strong { font-size: 14px; }
 .ck-line span { color: #6a727d; font-size: 14px; white-space: nowrap; }
 .ck-money { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; color: #6a727d; font-size: 14px; }

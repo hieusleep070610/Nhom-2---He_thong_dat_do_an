@@ -73,7 +73,7 @@
 
         <section class="ck-card" aria-labelledby="pickup-title">
           <h2 id="pickup-title"><span>02</span> Thời gian nhận món</h2>
-          <p class="ck-hint">Quán nhận món từ 10:30 đến 19:00. Mỗi khung giờ cách nhau 30 phút.</p>
+          <p class="ck-hint">Khung giờ và số chỗ được tải trực tiếp từ hệ thống.</p>
 
           <label>
             Ngày nhận
@@ -116,28 +116,15 @@
       <aside class="ck-card ck-summary">
         <h2>Đơn hàng của bạn</h2>
 
-        <article class="ck-line">
-          <img src="https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg" alt="">
-          <div>
-            <strong>Bún bò Huế đặc biệt × 1</strong>
-            <span>70.000đ</span>
-          </div>
-        </article>
-        <article class="ck-line">
-          <img src="https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg" alt="">
-          <div>
-            <strong>Cơm gà xối mỡ × 1</strong>
-            <span>49.000đ</span>
-          </div>
-        </article>
+        <div id="checkout-lines"></div>
 
         <div class="ck-money">
           <span>Tạm tính</span>
-          <span>119.000đ</span>
+          <span id="checkout-subtotal">0đ</span>
         </div>
         <div class="ck-money">
           <span>Phí giao hàng</span>
-          <span>15.000đ</span>
+          <span id="checkout-shipping">0đ</span>
         </div>
         <div class="ck-money ck-pickup-line">
           <span>Nhận món</span>
@@ -145,7 +132,7 @@
         </div>
         <div class="ck-money ck-total">
           <span>Tổng thanh toán</span>
-          <strong>134.000đ</strong>
+          <strong id="checkout-total">0đ</strong>
         </div>
 
         <button type="button" class="fd-add" id="btn-confirm">Xác nhận đặt hàng</button>
@@ -156,6 +143,7 @@
   </main>
 
   <script src="../../js/utils.js"></script>
+  <script src="../../js/config/config.js"></script>
   <script src="../../js/pages/customer/cart-store.js"></script>
   <script src="../../js/pages/customer/checkout.js"></script>
 </body>

@@ -1,16 +1,8 @@
-const MENU = [
-  { name: "Bún bò Huế", desc: "Đậm đà chuẩn vị cố đô", price: 55000, category: "Món nước", tone: "art-peach", rating: 4.9 },
-  { name: "Cơm gà xối mỡ", desc: "Da giòn, cơm thơm", price: 49000, category: "Cơm", tone: "art-green", rating: 4.8 },
-  { name: "Salad cá hồi", desc: "Tươi ngon, giàu dinh dưỡng", price: 69000, category: "Healthy", tone: "art-rose", rating: 4.7 },
-  { name: "Mì Ý bò bằm", desc: "Sốt cà chua đặc biệt", price: 65000, category: "Món nước", tone: "art-blue", rating: 4.6 },
-  { name: "Gỏi cuốn tôm thịt", desc: "Tươi mát mỗi ngày", price: 39000, category: "Healthy", tone: "art-mint", rating: 4.8 },
-  { name: "Bánh mì đặc biệt", desc: "Giòn rụm, đầy đặn", price: 32000, category: "Cơm", tone: "art-blush", rating: 4.5 },
-];
-
 const TONES = ["art-peach", "art-green", "art-rose", "art-blue", "art-mint", "art-blush"];
 const grid = document.getElementById("menu-grid");
 const priceInput = document.getElementById("menu-price");
-let dishes = MENU.slice();
+let dishes = [];
+let loadError = false;
 
 function dong(value) {
   return Number(value).toLocaleString("vi-VN") + "đ";
@@ -46,13 +38,14 @@ function render() {
   document.getElementById("menu-price-label").textContent = `20.000đ — ${dong(priceInput.value)}`;
   const rows = visibleDishes();
   document.getElementById("menu-count").textContent = `Hiển thị ${rows.length} món ăn`;
+  if (loadError) { grid.innerHTML = '<p class="cart-empty">Không tải được thực đơn. Vui lòng thử tải lại trang.</p>'; return; }
   if (!rows.length) {
     grid.innerHTML = '<p class="cart-empty">Không có món phù hợp bộ lọc.</p>';
     return;
   }
   grid.innerHTML = rows.map((dish, index) => `
     <article class="menu-card">
-      <a href="dish.html">
+      <a href="dish.html?id=${encodeURIComponent(dish.id)}">
         <div class="art ${dish.tone}"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
         <h3>${escapeHtml(dish.name)}</h3>
         <p>${escapeHtml(dish.desc)}</p>
@@ -66,6 +59,7 @@ function render() {
     button.addEventListener("click", () => {
       const dish = rows[Number(button.dataset.add)];
       addToCart({
+        dish_id: dish.id,
         name: dish.name,
         size: "Thường",
         toppings: [],
@@ -95,20 +89,21 @@ document.getElementById("menu-clear").addEventListener("click", () => {
 
 async function loadDishes() {
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/menu/dishes");
-    if (!response.ok) return;
+    const response = await fetch(`${CONFIG.API_BASE_URL}/menu/dishes`);
+    if (!response.ok) throw new Error("Không tải được thực đơn");
     const rows = await response.json();
-    if (!Array.isArray(rows) || !rows.length) return;
+    if (!Array.isArray(rows)) throw new Error("Dữ liệu thực đơn không hợp lệ");
     dishes = rows.map((dish, index) => ({
+      id: Number(dish.id),
       name: dish.name,
       desc: dish.description || "Món trong thực đơn hôm nay",
       price: Number(dish.price) || 0,
       category: "Món nước",
       tone: TONES[index % TONES.length],
       rating: 4.8,
-    }));
+    })).filter((dish) => Number.isInteger(dish.id) && dish.id > 0);
   } catch (error) {
-    dishes = MENU.slice();
+    loadError = true;
   }
   render();
 }
