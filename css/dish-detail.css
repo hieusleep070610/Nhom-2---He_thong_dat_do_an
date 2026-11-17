@@ -1,0 +1,1212 @@
+/* ==========================================================================
+   FoodieHub - Hệ Thống Đặt Đồ Ăn - Nhóm 2
+   Trang Chi Tiết Món Ăn - Frontend Style (Task ID: TF1A86F)
+   Kế thừa hệ màu và typography từ daily-menu.css
+   ========================================================================== */
+
+/* --- Biến CSS bổ sung riêng cho trang chi tiết --- */
+:root {
+    --detail-max-w: 1200px;
+    --img-ratio-h: 460px;
+}
+
+/* ================= BREADCRUMB ================= */
+.breadcrumb-section {
+    padding: 18px 0 10px;
+    background: transparent;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+.breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: var(--transition-fast);
+}
+
+.breadcrumb a:hover {
+    color: var(--primary);
+}
+
+.breadcrumb-separator {
+    color: var(--text-subtle);
+    font-size: 0.75rem;
+}
+
+.breadcrumb-current {
+    color: var(--dark);
+    font-weight: 700;
+}
+
+/* ================= NÚT ĐIỀU HƯỚNG TRÊN TOP ================= */
+.top-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-back-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+}
+
+.btn-back-menu:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateX(-3px);
+}
+
+.serving-date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--radius-full);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+/* ================= LAYOUT CHÍNH: 2 CỘT ================= */
+.dish-detail-main {
+    padding-bottom: 60px;
+}
+
+.dish-detail-grid {
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    gap: 36px;
+    align-items: start;
+    margin-bottom: 40px;
+}
+
+/* ================= CỘT TRÁI: HÌNH ẢNH MÓN ĂN ================= */
+.dish-media-col {
+    position: sticky;
+    top: 94px;
+}
+
+.dish-main-image-card {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: #fff;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    aspect-ratio: 4 / 3;
+    max-height: 440px;
+}
+
+.dish-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.dish-main-image-card:hover .dish-main-img {
+    transform: scale(1.04);
+}
+
+.dish-media-badges {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 5;
+}
+
+.dish-out-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    gap: 10px;
+    z-index: 6;
+}
+
+.dish-out-overlay i {
+    font-size: 2.2rem;
+    color: var(--danger);
+}
+
+/* Quick specs bar bên dưới ảnh */
+.dish-quick-specs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.quick-spec-item {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.quick-spec-icon {
+    font-size: 1.25rem;
+    color: var(--primary);
+    margin-bottom: 2px;
+}
+
+.quick-spec-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quick-spec-value {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--dark);
+}
+
+/* ================= CỘT PHẢI: THÔNG TIN & ĐẶT MÓN ================= */
+.dish-info-col {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 32px 36px;
+    box-shadow: var(--shadow-md);
+}
+
+.dish-meta-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.dish-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--bg-alt);
+    color: var(--text-main);
+    border-radius: var(--radius-full);
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: 1px solid var(--border-color);
+}
+
+.dish-meal-time-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.dish-name-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1.25;
+    margin-bottom: 12px;
+}
+
+/* Rating */
+.dish-rating-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stars-list {
+    color: #f59e0b;
+    font-size: 0.95rem;
+    display: flex;
+    gap: 2px;
+}
+
+.rating-score {
+    font-weight: 800;
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+.rating-count {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.dish-code-badge {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background: var(--bg-alt);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+}
+
+/* KHUNG GIÁ NỔI BẬT */
+.dish-price-banner {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    background: #fff8f5;
+    border: 1.5px solid #ffe2d6;
+    padding: 16px 22px;
+    border-radius: var(--radius-md);
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+
+.price-current-large {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.price-original-cross {
+    font-size: 1.25rem;
+    color: var(--text-subtle);
+    text-decoration: line-through;
+    font-weight: 600;
+}
+
+.price-discount-pill {
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+}
+
+.price-unit-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+/* KHUNG TRẠNG THÁI SUẤT ĂN CÒN LẠI */
+.dish-stock-status-card {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.dish-stock-status-card.status-out {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.dish-stock-status-card.status-low {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.stock-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.92rem;
+}
+
+.stock-status-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark);
+}
+
+.stock-status-value {
+    font-weight: 800;
+    color: var(--success);
+}
+
+.status-out .stock-status-value {
+    color: var(--danger);
+}
+
+.status-low .stock-status-value {
+    color: var(--warning);
+}
+
+.stock-detail-progress {
+    width: 100%;
+    height: 9px;
+    background: #e2e8f0;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.stock-detail-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: var(--radius-full);
+    transition: width 0.4s ease;
+}
+
+.status-low .stock-detail-progress-fill {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.status-out .stock-detail-progress-fill {
+    width: 0% !important;
+}
+
+/* MÔ TẢ MÓN ĂN */
+.dish-description-wrapper {
+    margin-bottom: 26px;
+}
+
+.section-subheading {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dish-full-description {
+    font-size: 1rem;
+    color: var(--text-main);
+    line-height: 1.7;
+}
+
+/* KHUNG CHỌN SỐ LƯỢNG VÀ NÚT THÊM VÀO ĐƠN */
+.order-action-box {
+    background: var(--bg-page);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.quantity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.quantity-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.quantity-stepper-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.stepper-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+    transition: var(--transition-fast);
+}
+
+.stepper-btn:hover:not(:disabled) {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.stepper-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.stepper-input {
+    width: 60px;
+    height: 42px;
+    border: none;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--dark);
+    background: #fff;
+}
+
+.subtotal-preview-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-color);
+    margin-bottom: 20px;
+}
+
+.subtotal-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.subtotal-amount {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* Nút thêm vào đơn & đặt món */
+.action-buttons-flex {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.btn-add-order {
+    background: var(--primary);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: var(--radius-md);
+    font-size: 1.02rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(255, 87, 34, 0.3);
+    transition: var(--transition-fast);
+}
+
+.btn-add-order:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+}
+
+.btn-add-order:disabled {
+    background: #cbd5e1;
+    color: #64748b;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-quick-order {
+    background: #0f172a;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: var(--radius-md);
+    font-size: 1.02rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+}
+
+.btn-quick-order:hover:not(:disabled) {
+    background: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-quick-order:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Cam kết an toàn */
+.trust-badges-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.trust-badge-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.trust-badge-item i {
+    color: var(--primary);
+    font-size: 0.95rem;
+}
+
+/* ================= CÁC TAB CHI TIẾT (NGUYÊN LIỆU, DỊ ỨNG, DINH DƯỠNG) ================= */
+.dish-details-tabs-section {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: 48px;
+}
+
+.detail-tabs-header {
+    display: flex;
+    background: #f8fafc;
+    border-bottom: 1.5px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.detail-tab-btn {
+    padding: 16px 26px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 3px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    transition: var(--transition-fast);
+}
+
+.detail-tab-btn:hover {
+    color: var(--primary);
+    background: rgba(255, 87, 34, 0.04);
+}
+
+.detail-tab-btn.active {
+    color: var(--primary);
+    background: #fff;
+    border-bottom-color: var(--primary);
+}
+
+.tab-pane-content {
+    padding: 32px;
+    display: none;
+}
+
+.tab-pane-content.active {
+    display: block;
+    animation: fadeInTab 0.3s ease;
+}
+
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* TAB 1: NGUYÊN LIỆU (TASK TF1A785 & TF1A86F) */
+.ingredients-showcase {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.ingredients-lead-text {
+    font-size: 0.98rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.ingredients-grid-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.ingredient-chip-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    background: #f8fafc;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+}
+
+.ingredient-chip-card:hover {
+    border-color: var(--primary);
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.ingredient-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.ingredient-chip-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.ingredients-quality-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: var(--radius-md);
+    color: #166534;
+}
+
+.ingredients-quality-banner i {
+    font-size: 1.8rem;
+    color: #16a34a;
+}
+
+.quality-banner-text strong {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.quality-banner-text p {
+    font-size: 0.86rem;
+    color: #15803d;
+    margin: 0;
+}
+
+/* TAB 2: THÔNG TIN DỊ ỨNG (TASK TF1A785) */
+.allergy-tab-showcase {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.allergy-alert-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 22px;
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: var(--radius-md);
+    color: #92400e;
+}
+
+.allergy-alert-banner i {
+    font-size: 1.8rem;
+    color: #d97706;
+    margin-top: 2px;
+}
+
+.allergy-banner-content h4 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #78350f;
+    margin-bottom: 4px;
+}
+
+.allergy-banner-content p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.allergens-pills-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+}
+
+.allergens-pills-label {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #991b1b;
+}
+
+.allergen-pill {
+    background: #ef4444;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: 0.84rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.allergy-detailed-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.allergy-detailed-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.94rem;
+    color: var(--text-main);
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: var(--radius-sm);
+}
+
+.allergy-detailed-list li i {
+    color: var(--warning);
+    font-size: 0.9rem;
+}
+
+/* TAB 3: BẢNG GIÁ TRỊ DINH DƯỠNG */
+.nutrition-tab-showcase {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.nutrition-grid-four {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.nutrition-stat-card {
+    background: #f8fafc;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 22px 18px;
+    text-align: center;
+    transition: var(--transition-fast);
+}
+
+.nutrition-stat-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+}
+
+.nutrition-stat-card .nutri-val {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.nutrition-stat-card .nutri-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--dark);
+    display: block;
+}
+
+.nutrition-stat-card .nutri-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* ================= MÓN ĂN GỢI Ý (RELATED DISHES) ================= */
+.related-dishes-section {
+    margin-bottom: 60px;
+}
+
+.section-header-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.section-title-large {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--dark);
+}
+
+.section-subtitle {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.related-dishes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+}
+
+.related-dish-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+}
+
+.related-dish-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+}
+
+.related-img-wrap {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+}
+
+.related-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.related-dish-card:hover .related-img {
+    transform: scale(1.05);
+}
+
+.related-card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.related-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 8px;
+    line-height: 1.35;
+}
+
+.related-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.related-card-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.btn-related-view {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-alt);
+    color: var(--text-main);
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: var(--transition-fast);
+}
+
+.btn-related-view:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* ================= MODAL ĐẶT MÓN NHANH (EXPRESS CHECKOUT MODAL) ================= */
+.quick-order-modal-card {
+    max-width: 520px;
+    padding: 28px;
+}
+
+.modal-header-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quick-order-dish-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    background: var(--bg-page);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+}
+
+.summary-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+}
+
+.summary-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.summary-info p {
+    font-size: 0.86rem;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 6px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.92rem;
+    transition: var(--transition-fast);
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.order-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+/* ================= STICKY BAR DƯỚI ĐÁY TRÊN MOBILE ================= */
+.mobile-sticky-action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+    padding: 12px 18px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 90;
+    gap: 14px;
+}
+
+.sticky-dish-mini-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.sticky-dish-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--dark);
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sticky-dish-price {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.btn-sticky-add {
+    padding: 10px 18px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ================= TRẠNG THÁI KHÔNG TÌM THẤY MÓN (404 / ERROR) ================= */
+.dish-error-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin: 40px auto;
+    max-width: 600px;
+}
+
+.dish-error-icon {
+    font-size: 4rem;
+    color: var(--text-subtle);
+    margin-bottom: 16px;
+}
+
+.dish-error-state h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.dish-error-state p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 992px) {
+    .dish-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+    
+    .dish-media-col {
+        position: static;
+    }
+
+    .dish-main-image-card {
+        max-height: 380px;
+    }
+
+    .nutrition-grid-four {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dish-info-col {
+        padding: 24px 20px;
+    }
+
+    .dish-name-title {
+        font-size: 1.55rem;
+    }
+
+    .price-current-large {
+        font-size: 1.8rem;
+    }
+
+    .action-buttons-flex {
+        grid-template-columns: 1fr;
+    }
+
+    .ingredients-grid-chips {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-sticky-action-bar {
+        display: flex;
+    }
+
+    .dish-detail-main {
+        padding-bottom: 90px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dish-quick-specs {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .nutrition-grid-four {
+        grid-template-columns: 1fr;
+    }
+}

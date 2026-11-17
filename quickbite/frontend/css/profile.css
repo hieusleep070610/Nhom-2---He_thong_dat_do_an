@@ -1,0 +1,250 @@
+
+.profile-main {
+    min-height: calc(100vh - 130px);
+    padding-top: 28px;
+    padding-bottom: 40px;
+}
+
+/* Tiêu đề */
+
+.profile-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.profile-heading h1 {
+    font-size: 27px;
+    font-weight: 700;
+    color: #1e2936;
+    margin: 0;
+}
+
+.profile-heading p {
+    color: #8d949d;
+    font-size: 13px;
+    margin: 5px 0 0;
+}
+
+/* Nút đăng xuất */
+
+.profile-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 17px;
+    border: 1px solid #fee2e2;
+    border-radius: 10px;
+    background: #fff;
+    color: #dc2626;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.profile-logout:hover {
+    background: #fee2e2;
+}
+
+/* Thông báo */
+
+.profile-message {
+    padding: 18px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    background: #fff;
+    color: #64748b;
+    border: 1px solid #eef1f3;
+    font-size: 14px;
+}
+
+.profile-error {
+    color: #dc2626;
+    background: #fff5f5;
+    border-color: #fecaca;
+}
+
+/* Bốn thẻ thông tin */
+
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.profile-info-card {
+    min-width: 0;
+    min-height: 76px;
+    padding: 14px 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #e9edf0;
+    border-radius: 12px;
+}
+
+.profile-info-card > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.profile-info-card small {
+    font-size: 11px;
+    color: #8d949d;
+}
+
+.profile-info-card strong {
+    font-size: 14px;
+    color: #263244;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.profile-accent {
+    width: 3px;
+    height: 16px;
+    flex-shrink: 0;
+    border-radius: 5px;
+}
+
+.accent-orange {
+    background: #ff7626;
+}
+
+.accent-green {
+    background: #16a34a;
+}
+
+.accent-blue {
+    background: #2563eb;
+}
+
+.accent-red {
+    background: #ef4444;
+}
+
+/* Danh sách món ăn */
+
+.profile-list-card {
+    background: #fff;
+    border: 1px solid #e9edf0;
+    border-radius: 15px;
+    padding: 20px;
+    min-height: 268px;
+}
+
+.profile-list-card h2 {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #263244;
+}
+
+.profile-food-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.profile-food-item {
+    min-height: 46px;
+    padding: 0 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #e9edf0;
+    border-radius: 9px;
+    background: #f8f9fa;
+    transition: 0.2s;
+}
+
+.profile-food-item:hover {
+    border-color: #ffb27e;
+    background: #fffaf7;
+}
+
+.profile-food-item span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #263244;
+}
+
+.profile-food-item a {
+    color: #7c8795;
+    font-size: 11px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.profile-food-item a:hover {
+    color: #ff7626;
+}
+
+/* Header */
+
+.profile-header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.profile-footer {
+    padding: 18px;
+    text-align: center;
+    color: #8d949d;
+    font-size: 12px;
+    border-top: 1px solid #eef1f3;
+    background: #fff;
+}
+
+/* Responsive */
+
+@media (max-width: 980px) {
+    .profile-info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .profile-main {
+        padding: 20px 16px;
+    }
+
+    .profile-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profile-heading h1 {
+        font-size: 23px;
+    }
+
+    .profile-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-list-card {
+        padding: 15px;
+    }
+
+    .profile-food-item {
+        padding: 10px;
+    }
+
+    .profile-header-user {
+        font-size: 11px;
+    }
+}

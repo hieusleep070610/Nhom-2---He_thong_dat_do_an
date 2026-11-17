@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hệ Thống Đặt Đồ Ăn - Nhóm 2
 
 Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & Backend API.
@@ -230,3 +231,33 @@ git push -u origin feature/tf1a785-ngan
 ## 📤 7. Hướng Dẫn Đẩy Nhánh Cho Các Task Khác
 * **Task FE TF1A6E9**: Nhánh `feature/tf1a6e9-ngan` | PR: `TF1A6E9: [FE] Trang xem thực đơn theo ngày nối API`
 * **Task BE TF1A638**: Nhánh `feature/tf1a638-ngan` | PR: `TF1A638: API xem thực đơn theo ngày kèm số suất còn lại`
+=======
+# Base code dự án thực tập: HN-KS25-CNTT1
+
+Khung dự án chung cho các nhóm (04/11 – 25/11/2026). Gồm 2 phần đã nối sẵn với nhau:
+
+| Thư mục | Công nghệ | Hướng dẫn |
+|---|---|---|
+| [`backend/`](backend/README.md) | Python FastAPI + MySQL (SQLAlchemy) | `backend/README.md` |
+| [`frontend/`](frontend/README.md) | HTML · CSS · JavaScript thuần + axios | `frontend/README.md` |
+
+```
+Trình duyệt (frontend) --axios JSON--> FastAPI (backend :8000/api) --SQLAlchemy--> MySQL (:3306)
+```
+
+## Chạy nhanh
+
+1. **MySQL Workbench:** File → Open SQL Script → chọn `backend/sql/init.sql` → bấm ⚡ Execute.
+2. **Backend** (terminal trong thư mục `backend/`):
+   ```bash
+   copy .env.example .env               # Mac/Linux: cp .env.example .env
+   # mở .env, điền DB_PASSWORD = mật khẩu root MySQL của bạn
+   python -m venv .venv
+   .venv\Scripts\activate               # Mac/Linux: source .venv/bin/activate
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload        # http://127.0.0.1:8000/docs
+   ```
+3. **Frontend:** VS Code → chuột phải `frontend/index.html` → *Open with Live Server*.
+
+Trang chủ frontend hiện **✅ Backend OK · MySQL: connected** là đã thông cả 3 tầng. Sau đó mỗi nhóm đổi ví dụ `items` thành các chức năng của đề tài mình (xem mục *Thêm chức năng* / *Thêm trang mới* trong từng README).
+>>>>>>> 1ea2de4dfae4af7d9001e23d12b95fc024f66b08
