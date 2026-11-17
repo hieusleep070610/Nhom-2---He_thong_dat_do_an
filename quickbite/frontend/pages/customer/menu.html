@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thực đơn hôm nay | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm món ăn, nhà hàng..." aria-label="Tìm món ăn, nhà hàng">
+      </label>
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../../index.html">Trang chủ</a>
+        <a class="is-active" href="menu.html">Thực đơn</a>
+        <a href="orders.html">Đơn hàng</a>
+      </nav>
+      <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </a>
+      <div class="fd-user">
+        <span>Xin chào, Vương</span>
+        <span class="fd-avatar" aria-hidden="true">V</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="fd-main">
+    <h1>Thực đơn hôm nay</h1>
+    <p class="fd-crumb">Trang chủ / Thực đơn</p>
+    <div class="menu-layout">
+      <aside class="menu-filter">
+        <h2>Bộ lọc</h2>
+        <h3>Danh mục</h3>
+        <div id="menu-categories">
+          <label><input type="radio" name="category" value="all" checked> Tất cả món ăn</label>
+          <label><input type="radio" name="category" value="Món nước"> Món nước</label>
+          <label><input type="radio" name="category" value="Cơm"> Cơm</label>
+          <label><input type="radio" name="category" value="Healthy"> Healthy</label>
+          <label><input type="radio" name="category" value="Tráng miệng"> Tráng miệng</label>
+          <label><input type="radio" name="category" value="Đồ uống"> Đồ uống</label>
+        </div>
+        <h3>Khoảng giá</h3>
+        <p class="menu-price" id="menu-price-label">20.000đ — 100.000đ</p>
+        <input id="menu-price" type="range" min="20000" max="100000" step="1000" value="100000">
+        <h3>Đánh giá</h3>
+        <label class="menu-check"><input id="menu-rating" type="checkbox"> Từ 4.5 trở lên</label>
+        <button class="menu-clear" id="menu-clear" type="button">Xóa bộ lọc</button>
+      </aside>
+      <section>
+        <div class="menu-tools">
+          <label class="menu-find">
+            <input id="menu-search" type="search" placeholder="Tìm món bạn yêu thích..." aria-label="Tìm món bạn yêu thích">
+          </label>
+          <label class="menu-sort">Sắp xếp:
+            <select id="menu-sort">
+              <option value="popular">Phổ biến nhất</option>
+              <option value="price-asc">Giá thấp đến cao</option>
+              <option value="price-desc">Giá cao đến thấp</option>
+            </select>
+          </label>
+        </div>
+        <p class="menu-count" id="menu-count">Hiển thị 0 món ăn</p>
+        <div class="menu-grid" id="menu-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/pages/customer/cart-store.js"></script>
+  <script src="../../js/pages/customer/menu.js"></script>
+</body>
+</html>

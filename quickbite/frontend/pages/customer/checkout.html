@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thanh toán | foodie</title>
-  <link rel="icon" href="../assets/images/logo.png">
+  <link rel="icon" href="../../assets/images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../../css/common/style.css">
 </head>
 <body class="foodie-body">
   <header class="fd-header">
     <div class="fd-header-inner">
-      <a class="fd-logo" href="../index.html">
+      <a class="fd-logo" href="../../index.html">
         <span class="fd-logo-name">foodie</span>
         <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
       </a>
@@ -24,12 +24,12 @@
       </label>
 
       <nav class="fd-nav" aria-label="Chính">
-        <a class="is-active" href="../index.html">Trang chủ</a>
-        <a href="order.html">Thực đơn</a>
-        <a href="checkout.html">Đơn hàng</a>
+        <a href="../../index.html">Trang chủ</a>
+        <a href="menu.html">Thực đơn</a>
+        <a href="orders.html">Đơn hàng</a>
       </nav>
 
-      <a class="fd-cart" href="checkout.html" aria-label="Giỏ hàng">
+      <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       </a>
 
@@ -155,7 +155,8 @@
     </div>
   </main>
 
-  <script src="../js/utils.js"></script>
-  <script src="../js/pages/checkout.js"></script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/pages/customer/cart-store.js"></script>
+  <script src="../../js/pages/customer/checkout.js"></script>
 </body>
 </html>

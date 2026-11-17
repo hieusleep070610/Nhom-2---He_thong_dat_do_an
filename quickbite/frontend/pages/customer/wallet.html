@@ -3,61 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ví Điện Tử & Thanh Toán | FoodPay</title>
-  <link rel="icon" href="../assets/images/logo.png">
-  <link rel="stylesheet" href="../css/style.css">
+  <title>Ví Foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
 </head>
-<body data-root="../">
-  <header id="app-header"></header>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
+      </label>
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../../index.html">Trang chủ</a>
+        <a href="menu.html">Thực đơn</a>
+        <a href="orders.html">Đơn hàng</a>
+      </nav>
+    </div>
+  </header>
 
-  <main class="container">
-    <section class="card">
-      <h2>Ví Điện Tử & Thanh Toán FoodPay</h2>
-      
-      <div class="card" style="padding: 10px 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; border-left: 4px solid #ffc107;">
-          <span style="font-weight: 600; color: #333;">Trạng thái kết nối Cơ sở dữ liệu:</span>
-          <span id="db-status-badge" style="padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; background: #fff3cd; color: #856404;">
-              Đang kiểm tra kết nối...
-          </span>
-      </div>
+  <main class="fd-main">
+    <h1>Ví Foodie</h1>
+    <p class="ck-lead">Quản lý và theo dõi hoạt động Foodie</p>
+    <p id="db-status-badge" class="ck-hint">Đang kiểm tra kết nối...</p>
 
-      <p>Kiểm tra số dư và thực hiện thanh toán an toàn</p>
-
-      <div style="margin-bottom: 20px;">
-        <label for="input-wallet-id" style="font-weight: bold; display: block; margin-bottom: 5px;">Mã ví (Wallet ID):</label>
-        <div style="display: flex; gap: 10px;">
-          <input type="number" id="input-wallet-id" placeholder="Nhập ID ví (vd: 1)" class="form-control" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-          <button id="btn-fetch-wallet" class="btn" onclick="fetchWalletInfo()">Tải Thông Tin</button>
+    <section class="metric-grid">
+      <article class="metric-card">
+        <i></i>
+        <div>
+          <small>Số dư khả dụng</small>
+          <strong id="lbl-balance">--</strong>
         </div>
-        <small id="wallet-error-message" style="color: red; display: block; margin-top: 4px;"></small>
-      </div>
-
-      <div id="wallet-info-box" style="background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none;">
-        <p><strong>Chủ ví (User ID):</strong> <span id="lbl-user-id">--</span></p>
-        <p><strong>Số dư hiện tại:</strong> <span id="lbl-balance" style="color: green; font-weight: bold; font-size: 1.2em;">--</span></p>
-        <p><strong>Trạng thái:</strong> <span id="lbl-status">--</span></p>
-      </div>
-
-      <div style="border-top: 1px solid #eee; padding-top: 15px;">
-        <h3>Thanh Toán Đơn Hàng</h3>
-        <div style="margin-bottom: 15px;">
-          <label for="input-pay-amount" style="font-weight: bold; display: block; margin-bottom: 5px;">Số tiền thanh toán (₫):</label>
-          <input type="number" id="input-pay-amount" placeholder="Nhập số tiền cần thanh toán" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-          <small id="pay-error-message" style="color: red; display: block; margin-top: 4px;"></small>
+      </article>
+      <article class="metric-card green">
+        <i></i>
+        <div>
+          <small>Đã nạp tháng này</small>
+          <strong>--</strong>
         </div>
-        <button id="btn-pay" class="btn" style="background-color: #d9534f; color: white; width: 100%; padding: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;" onclick="payOrder()">Thanh Toán Ngay</button>
+      </article>
+      <article class="metric-card blue">
+        <i></i>
+        <div>
+          <small>Đã chi tháng này</small>
+          <strong>--</strong>
+        </div>
+      </article>
+      <article class="metric-card red">
+        <i></i>
+        <div>
+          <small>Trạng thái ví</small>
+          <strong id="lbl-status">--</strong>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Danh sách và thông tin chi tiết</h2>
+      <p>Chủ ví: <span id="lbl-user-id">--</span></p>
+      <div id="wallet-info-box" hidden></div>
+      <div class="wallet-tools">
+        <input id="input-wallet-id" type="number" placeholder="Mã ví" aria-label="Mã ví">
+        <input id="input-pay-amount" type="number" placeholder="Số tiền thanh toán" aria-label="Số tiền thanh toán">
+        <button id="btn-fetch-wallet" type="button" onclick="fetchWalletInfo()">Tải ví</button>
       </div>
+      <small id="wallet-error-message" class="text-error"></small>
+      <small id="pay-error-message" class="text-error"></small>
+      <button id="btn-pay" class="admin-btn" type="button" onclick="payOrder()">Thanh toán</button>
+
+      <a class="data-row" href="dish.html"><span>Bún bò Huế</span><span>Xem chi tiết →</span></a>
+      <a class="data-row" href="dish.html"><span>Cơm gà xối mỡ</span><span>Xem chi tiết →</span></a>
+      <a class="data-row" href="dish.html"><span>Salad cá hồi</span><span>Xem chi tiết →</span></a>
+      <a class="data-row" href="dish.html"><span>Mì Ý bò bằm</span><span>Xem chi tiết →</span></a>
+      <a class="data-row" href="dish.html"><span>Trà đào cam sả</span><span>Xem chi tiết →</span></a>
     </section>
   </main>
 
-  <footer id="app-footer"></footer>
-
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
-  <script src="../js/config.js"></script>
-  <script src="../js/api.js"></script>
-  <script src="../js/utils.js"></script>
-  <script src="../js/layout.js"></script>
-
-  <script src="../js/pages/wallet.js"></script>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/pages/customer/wallet.js"></script>
 </body>
 </html>

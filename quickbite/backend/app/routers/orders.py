@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.database.db import get_db
 from app.models.order import Order
@@ -13,6 +13,25 @@ router = APIRouter(
     tags=["Orders"],
     prefix="/orders"
 )
+
+
+@router.get("")
+def list_orders(db: Session = Depends(get_db)):
+    rows = (
+        db.query(Order)
+        .options(selectinload(Order.items))
+        .order_by(Order.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": row.id,
+            "code": row.code,
+            "status": row.status,
+            "title": row.items[0].item_name if row.items else row.code,
+        }
+        for row in rows
+    ]
 
 
 # API cập nhật trạng thái đơn hàng

@@ -1,7 +1,7 @@
 
 // Cấu hình
 const API_URL = "http://127.0.0.1:8000/api";
-const LOGIN_URL = "../index.html";
+const LOGIN_URL = "login.html";
 
 const TOKEN_KEY = "access_token";
 const USER_KEY = "user";
@@ -60,6 +60,8 @@ function logout(message = "Bạn đã đăng xuất!") {
     // Xóa dữ liệu đăng nhập
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
 
     // Thông báo
     sessionStorage.setItem("logout_message", message);
@@ -75,7 +77,7 @@ function logout(message = "Bạn đã đăng xuất!") {
 
 function checkTokenExpiration() {
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
 
     if (!token) {
         logout("Vui lòng đăng nhập để tiếp tục!");
@@ -183,7 +185,7 @@ async function fetchProfile() {
         return;
     }
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
 
     try {
 
@@ -224,7 +226,8 @@ async function fetchProfile() {
         }
 
         // Lưu thông tin người dùng
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        const store = localStorage.getItem(TOKEN_KEY) ? localStorage : sessionStorage;
+        store.setItem(USER_KEY, JSON.stringify(user));
 
         // Hiển thị thông tin
         renderProfile(user);

@@ -1,6 +1,7 @@
 from app.models.ingredient import Ingredient, DishIngredient
-from app.models.menu import Dish, DailyMenu
-from app.models.order import Order, OrderItem
+from app.models.food import Dish, DailyMenu
+from app.models.order import Order
+from app.models.order_item import OrderItem
 from app.models.order_status_history import OrderStatusHistory
 from app.models.pickup_slot import PickupSlot, SlotDailyQuota
 from app.models.user import User
