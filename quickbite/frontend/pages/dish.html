@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bún bò Huế đặc biệt | foodie</title>
+  <link rel="icon" href="../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm món ăn, nhà hàng..." aria-label="Tìm món ăn, nhà hàng">
+      </label>
+
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../index.html">Trang chủ</a>
+        <a class="is-active" href="order.html">Thực đơn</a>
+        <a href="order.html">Đơn hàng</a>
+      </nav>
+
+      <a class="fd-cart" href="order.html" aria-label="Giỏ hàng">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </a>
+
+      <div class="fd-user">
+        <span>Xin chào, Vương</span>
+        <span class="fd-avatar" aria-hidden="true">V</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="fd-main">
+    <p class="fd-crumb">Trang chủ / Thực đơn / Bún bò Huế</p>
+
+    <div class="fd-detail">
+      <section class="fd-gallery" aria-label="Ảnh món">
+        <div class="fd-hero">
+          <img id="dish-hero" alt="Bún bò Huế đặc biệt">
+        </div>
+        <div class="fd-thumbs" id="dish-thumbs"></div>
+      </section>
+
+      <section class="fd-info">
+        <h1>Bún bò Huế đặc biệt</h1>
+        <p class="fd-rating"><span class="fd-star">★ 4.9</span> (128 đánh giá) <span class="fd-dot">•</span> <span class="fd-sold">Đã bán 1.2k+</span></p>
+        <p class="fd-desc">Nước dùng hầm từ xương trong nhiều giờ, kết hợp sả và mắm ruốc tạo nên hương vị đậm đà đặc trưng.</p>
+        <p class="fd-price" id="dish-price">55.000đ</p>
+
+        <h2>Kích cỡ</h2>
+        <div class="fd-sizes" id="dish-sizes">
+          <button type="button" class="is-selected" data-size="Thường">Thường</button>
+          <button type="button" data-size="Lớn">Lớn</button>
+          <button type="button" data-size="Đặc biệt">Đặc biệt</button>
+        </div>
+
+        <h2>Thêm topping</h2>
+        <div class="fd-toppings" id="dish-toppings"></div>
+
+        <div class="fd-buy">
+          <div>
+            <h2>Số lượng</h2>
+            <div class="fd-qty">
+              <button type="button" id="qty-minus" aria-label="Giảm">−</button>
+              <span id="qty-value">1</span>
+              <button type="button" id="qty-plus" aria-label="Tăng">+</button>
+            </div>
+          </div>
+          <button type="button" class="fd-add" id="btn-add">Thêm vào giỏ hàng · 55.000đ</button>
+        </div>
+
+        <p class="fd-ship">Miễn phí giao hàng cho đơn từ 150.000đ</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/pages/dish.js"></script>
+</body>
+</html>
