@@ -92,22 +92,32 @@ document.getElementById("order-filters").addEventListener("click", (event) => {
 searchEl.addEventListener("input", render);
 
 async function loadOrders() {
-  const localOrders = readLocalOrders();
-  let remote = [];
-  try {
-    const data = await api.get("/orders");
-    if (Array.isArray(data)) remote = data;
-  } catch (error) {
-    remote = [];
-  }
-  const seen = new Set();
-  orders = [...localOrders, ...remote].filter((order) => {
-    const key = `${order.id}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return order.title;
-  });
-  render();
+    const localOrders = readLocalOrders();
+    let remote = [];
+    try {
+        const data = await api.get("/orders");
+        if (Array.isArray(data)) remote = data;
+    } catch (error) {
+        console.error("Không thể tải danh sách đơn hàng từ server:", error);
+        remote = [];
+    }
+    
+    const seen = new Set();
+    orders = [...localOrders, ...remote].filter((order) => {
+        if (!order || (!order.id && order.id !== 0)) return false;
+        
+        const key = `${order.id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        
+        if (!order.title) {
+            order.title = order.code || `Đơn hàng #${order.id}`;
+        }
+        
+        return true;
+    });
+    
+    render();
 }
 
 loadOrders();

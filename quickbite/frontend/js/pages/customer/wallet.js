@@ -24,7 +24,7 @@ async function fetchWalletInfo() {
         walletIdInput.style.borderColor = "#28a745";
         document.getElementById("lbl-user-id").textContent = wallet.user_id;
         document.getElementById("lbl-balance").textContent = formatMoney(wallet.balance);
-        document.getElementById("lbl-status").textContent = wallet.status === 'active' ? 'Hoạt động (Active)' : 'Đã khóa';
+        document.getElementById("lbl-status").textContent = (wallet.status?.toLowerCase() === 'active') ? 'Hoạt động' : 'Đã khóa';
         infoBox.style.display = "block";
 
     } catch (err) {
