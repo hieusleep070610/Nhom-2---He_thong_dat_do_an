@@ -2,7 +2,7 @@
 
 Khung frontend chung cho các nhóm thực tập lớp **HN-KS25-CNTT1**. Không dùng framework, không cần cài đặt hay build gì. Đã có sẵn:
 
-- Layout chung (header + menu + footer) cho mọi trang
+- Layout header chung, điều hướng theo vai trò, hộp thông báo và CSS dùng chung
 - Module gọi API `js/api/api.js` dùng **axios**: cấu hình `baseURL` một lần, gom xử lý lỗi một chỗ bằng interceptor
 - Trang chủ kiểm tra kết nối **Frontend → Backend → MySQL**
 - Trang **Items**: ví dụ CRUD đầy đủ (thêm / sửa / xoá / tìm kiếm) gọi sang backend FastAPI
@@ -76,15 +76,14 @@ Trình duyệt (FE: 127.0.0.1:5500) --axios--> Backend FastAPI (127.0.0.1:8000/a
 1. Tạo HTML trong `pages/customer/`, `pages/admin/` hoặc `pages/kitchen/`.
 2. Tạo script cùng vai trò trong `js/pages/customer/`, `js/pages/admin/` hoặc `js/pages/kitchen/`.
 3. Trong HTML, đường dẫn tính lùi hai cấp: `../../css/common/style.css`, `../../js/config/config.js`, `../../js/api/api.js`.
-4. Thêm link vào menu trong `js/layout.js`:
-   ```js
-   { href: "pages/customer/products.html", label: "Sản phẩm" },
-   ```
+4. Nạp `js/layout.js` sau các tiện ích chung và trước script riêng của trang. Với trang trong `pages/`, dùng đường dẫn `../../js/layout.js`; trang ở thư mục gốc dùng `js/layout.js`.
+5. Thêm đường dẫn vào `ROLE_NAVIGATION` trong `js/layout.js` theo vai trò (`customer`, `admin` hoặc `kitchen`).
 
 Lưu ý khi tạo trang:
 
 - Trang trong `pages/<vai-trò>/` để `<body data-root="../../">`; trang ở thư mục gốc để `data-root="./"`.
 - Giữ thứ tự thẻ `<script>`: axios (CDN) → `config/config.js` → `api/api.js` → `utils.js` → `layout.js` → script riêng của trang.
+- Header dùng vai trò lưu trong `user.role`, `user.role_name` hoặc `user.user_type`; nếu chưa có trường vai trò thì mặc định điều hướng khách hàng. Trang quản trị/bếp cũng được nhận diện theo thư mục URL. Backend hiện chưa trả trường vai trò, và hộp thông báo hiện hiển thị trạng thái rỗng cho đến khi có API thông báo.
 - Khi chèn dữ liệu người dùng nhập vào `innerHTML`, luôn bọc bằng `escapeHtml(...)` để chống chèn mã độc (XSS).
 
 ## 5. Lỗi hay gặp
