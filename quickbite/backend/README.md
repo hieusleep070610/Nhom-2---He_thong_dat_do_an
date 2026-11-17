@@ -145,7 +145,17 @@ Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi kh�
 7. `app/main.py`: thêm `app.include_router(products.router, prefix="/api")`.
 8. Chạy lại server, mở `/docs` sẽ thấy nhóm API **Products**.
 
-> Mẹo: nếu quên bước 1, server cũng tự tạo bảng còn thiếu theo model khi khởi động. Nhưng nó **không sửa** bảng đã có. Muốn thêm/sửa cột, hãy dùng `ALTER TABLE ...` trong Workbench rồi sửa model cho khớp.
+> Mẹo: server tự tạo bảng còn thiếu theo model khi khởi động. Nhưng nó **không sửa** bảng đã có. Muốn thêm/sửa cột, hãy dùng `ALTER TABLE ...` trong Workbench rồi sửa model cho khớp.
+
+## Dữ liệu demo Foodie
+
+Sau khi chọn đúng database trong MySQL Workbench và khởi động Backend ít nhất một lần để tạo các bảng, mở và chạy `sql/demo_data.sql`. Script thêm món ăn, thực đơn từ hôm nay đến 7 ngày tiếp theo, khung giờ, quota trong ngày và ba đơn mẫu (`pending`, `confirmed`, `cancelled`). Có thể chạy lại script; dữ liệu đã thêm sẽ không bị nhân đôi.
+
+Script không xóa dữ liệu hiện có. Trong Docker, chọn database `app_db`; với cấu hình local mặc định, chọn database `quickbite_db_demo` (hoặc database đang đặt trong `.env`). Sau khi chạy, thử:
+
+- `GET /api/menu/dishes`
+- `GET /api/menu/daily-menus/remaining?menu_date=YYYY-MM-DD` (dùng ngày hiện tại)
+- `GET /api/menu/pickup-slots?service_date=YYYY-MM-DD` (dùng ngày hiện tại)
 
 ## 10. Lỗi hay gặp
 

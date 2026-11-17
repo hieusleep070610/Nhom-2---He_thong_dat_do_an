@@ -15,7 +15,7 @@ function writeCart(items) {
 
 function cartItemKey(item) {
   const toppings = [...(item.toppings || [])].sort();
-  return [item.name, item.size || "", toppings.join(",")].join("|");
+  return [item.dish_id || "", item.name, item.size || "", toppings.join(",")].join("|");
 }
 
 function addToCart(item) {
@@ -27,6 +27,7 @@ function addToCart(item) {
   } else {
     cart.push({
       key,
+      dish_id: Number(item.dish_id) || null,
       name: item.name,
       size: item.size || "",
       toppings: item.toppings || [],
@@ -35,6 +36,7 @@ function addToCart(item) {
       tone: item.tone || "peach",
     });
   }
+  if (found && !found.dish_id && item.dish_id) found.dish_id = Number(item.dish_id);
   writeCart(cart);
   return cart;
 }

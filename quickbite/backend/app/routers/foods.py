@@ -1,16 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from datetime import date
-from typing import List
 
 from app.core.exceptions import NotFoundException
 from app.database.db import get_db
 from app.models.food import Dish, DailyMenu
-from app.schemas.menu import ServingCheckRequest
-from app.services.menu_availability_service import (
-    ensure_servings_available,
-    get_remaining_by_date,
-)
+from app.models.pickup_slot import PickupSlot, SlotDailyQuota
+from app.schemas.menu import RemainingMenuResponse, PickupSlotsResponse
+from app.services.menu_availability_service import get_remaining_by_date
 
 router = APIRouter(prefix="/menu", tags=["Menu Management"])
 
@@ -61,3 +58,44 @@ def assign_daily_menu(menu_date: date, dish_id: int, quantity: int, db: Session 
 @router.get("/daily-menus")
 def get_daily_menus(db: Session = Depends(get_db)):
     return db.query(DailyMenu).all()
+
+
+@router.get("/daily-menus/remaining", response_model=RemainingMenuResponse)
+def get_daily_menu_remaining(
+    menu_date: date,
+    dish_id: int | None = Query(default=None, gt=0),
+    db: Session = Depends(get_db),
+):
+    if dish_id is not None and not db.query(Dish.id).filter(Dish.id == dish_id).first():
+        raise NotFoundException(message=f"Không tìm thấy món ăn có ID {dish_id}.")
+    return {"menu_date": menu_date, "items": get_remaining_by_date(db, menu_date, dish_id)}
+
+
+@router.get("/pickup-slots", response_model=PickupSlotsResponse, tags=["Pickup Slots"])
+def get_pickup_slots(service_date: date, db: Session = Depends(get_db)):
+    """Danh sách slot ngày nhận. Chưa có quota riêng thì dùng max_servings của slot."""
+    rows = (
+        db.query(PickupSlot, SlotDailyQuota)
+        .outerjoin(
+            SlotDailyQuota,
+            (SlotDailyQuota.pickup_slot_id == PickupSlot.id)
+            & (SlotDailyQuota.service_date == service_date),
+        )
+        .order_by(PickupSlot.start_time, PickupSlot.id)
+        .all()
+    )
+    slots = []
+    for slot, quota in rows:
+        capacity = int(quota.max_servings if quota else slot.max_servings)
+        booked = int(quota.booked_servings if quota else 0)
+        remaining = max(0, capacity - booked)
+        slots.append({
+            "pickup_slot_id": slot.id,
+            "label": slot.label,
+            "start_time": slot.start_time,
+            "end_time": slot.end_time,
+            "remaining_servings": remaining,
+            "is_active": bool(slot.is_active),
+            "is_full": remaining == 0,
+        })
+    return {"service_date": service_date, "slots": slots}
