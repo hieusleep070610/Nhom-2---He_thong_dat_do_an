@@ -23,6 +23,13 @@ class NotFoundException(BaseAPIException):
     def __init__(self, message: str = "Không tìm thấy tài nguyên", details: dict = None):
         super().__init__(message=message, status_code=404, details=details)
 
+class ConflictException(BaseAPIException):
+    def __init__(self, message: str, code: str = "INVALID_ORDER_STATE", details: dict = None):
+        payload = {"code": code}
+        if details:
+            payload.update(details)
+        super().__init__(message=message, status_code=409, details=payload)
+
 
 # 2. Hàm Format Response Lỗi Thống Nhất
 def unified_error_response(status_code: int, message: str, details: any = None) -> JSONResponse:
@@ -69,9 +76,8 @@ def setup_exception_handlers(app):
     # Xử lý lỗi 500 (Catch-all cho các lỗi code/logic chưa được bắt)
     @app.exception_handler(Exception)
     def general_exception_handler(request: Request, exc: Exception):
-        print(f"Bugs: {exc}") 
+        print(f"Bugs: {exc}")
         return unified_error_response(
             status_code=500,
             message="Lỗi máy chủ nội bộ. Vui lòng thử lại sau.",
-            details=str(exc) 
         )
