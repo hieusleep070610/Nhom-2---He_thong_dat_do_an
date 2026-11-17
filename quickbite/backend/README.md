@@ -23,17 +23,17 @@ Kiểm tra Python: mở terminal gõ `python --version` (Mac: `python3 --version
 ```
 backend/
 ├── app/
-│   ├── main.py            # Điểm khởi động: tạo app, bật CORS, gắn các router
-│   ├── core/config.py     # Đọc cấu hình từ .env
-│   ├── db/session.py      # Kết nối MySQL, hàm get_db()
-│   ├── models/            # Model = bảng trong DB (item.py)
-│   ├── schemas/           # Schema = dữ liệu vào/ra của API (item.py)
-│   ├── crud/              # Hàm đọc/ghi DB (item.py)
-│   └── routers/           # Khai báo các API (health.py, items.py)
-├── sql/init.sql           # Tạo database + bảng + dữ liệu mẫu (chạy bằng Workbench)
-├── requirements.txt       # Danh sách thư viện Python
-├── .env.example           # Mẫu file cấu hình
-└── docker-compose.yml     # KHÔNG bắt buộc, xem mục 8
+│   ├── main.py
+│   ├── core/              # config, security, exceptions
+│   ├── database/db.py
+│   ├── models/            # food, order, order_item, ingredient, wallet...
+│   ├── schemas/           # user, order, wallet
+│   ├── routers/           # foods, orders, users, wallet, health
+│   └── services/          # logic nghiệp vụ, không đặt trong router
+├── tests/
+├── sql/
+├── requirements.txt
+└── .env.example
 ```
 
 Một request đi qua các lớp như sau:
@@ -128,7 +128,7 @@ Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi kh�
 
 ## 8. Frontend nối với backend thế nào?
 
-- Frontend gọi tới `http://127.0.0.1:8000/api/...` (cấu hình ở `frontend/js/config.js`).
+- Frontend gọi tới `http://127.0.0.1:8000/api/...` (cấu hình ở `frontend/js/config/config.js`).
 - Trình duyệt chặn web ở địa chỉ khác gọi API nếu backend không cho phép. Đó là **CORS**. Backend đã cho phép bằng `CORS_ORIGINS` trong `.env`:
   - `CORS_ORIGINS=*` cho phép mọi nơi (mặc định, tiện khi học)
   - Khi deploy thật, ghi rõ domain: `CORS_ORIGINS=https://nhom1.example.com`
@@ -157,7 +157,7 @@ Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi kh�
 | `ModuleNotFoundError: No module named 'fastapi'` | Chưa kích hoạt `.venv` hoặc chưa `pip install -r requirements.txt` |
 | `Error loading ASGI app. Could not import module "app.main"` | Đang đứng sai thư mục. Phải `cd` vào `backend/` rồi mới chạy uvicorn |
 | `'python' is not recognized...` / mở ra Microsoft Store | Cài lại Python và tick **Add python.exe to PATH** |
-| Cổng 8000 đã bị dùng | `uvicorn app.main:app --reload --port 8001`, nhớ sửa `frontend/js/config.js` theo |
+| Cổng 8000 đã bị dùng | `uvicorn app.main:app --reload --port 8001`, nhớ sửa `frontend/js/config/config.js` theo |
 | Tiếng Việt bị lỗi font trong DB | Database/bảng phải là `utf8mb4`. Tạo bằng `sql/init.sql` là đúng sẵn |
 
 ## 11. (Không bắt buộc) Chạy MySQL bằng Docker

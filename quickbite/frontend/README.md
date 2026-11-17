@@ -3,7 +3,7 @@
 Khung frontend chung cho các nhóm thực tập lớp **HN-KS25-CNTT1**. Không dùng framework, không cần cài đặt hay build gì. Đã có sẵn:
 
 - Layout chung (header + menu + footer) cho mọi trang
-- Module gọi API `js/api.js` dùng **axios**: cấu hình `baseURL` một lần, gom xử lý lỗi một chỗ bằng interceptor
+- Module gọi API `js/api/api.js` dùng **axios**: cấu hình `baseURL` một lần, gom xử lý lỗi một chỗ bằng interceptor
 - Trang chủ kiểm tra kết nối **Frontend → Backend → MySQL**
 - Trang **Items**: ví dụ CRUD đầy đủ (thêm / sửa / xoá / tìm kiếm) gọi sang backend FastAPI
 
@@ -11,20 +11,26 @@ Khung frontend chung cho các nhóm thực tập lớp **HN-KS25-CNTT1**. Không
 
 ```
 frontend/
-├── index.html             # Trang chủ (kiểm tra kết nối)
+├── index.html
 ├── pages/
-│   └── items.html         # Trang CRUD mẫu
+│   ├── customer/          # checkout, dish, profile, wallet
+│   ├── admin/             # ingredients
+│   └── kitchen/
 ├── css/
-│   └── style.css          # Style chung, đổi màu ở :root
+│   ├── common/style.css
+│   ├── customer/
+│   ├── admin/
+│   └── kitchen/
 ├── js/
-│   ├── config.js          # API_BASE_URL: địa chỉ backend
-│   ├── api.js             # axios instance + api.get / post / put / delete
-│   ├── utils.js           # escapeHtml, formatMoney, showToast...
-│   ├── layout.js          # Chèn header/menu/footer vào mọi trang
-│   └── pages/             # Mỗi trang 1 file JS riêng
-│       ├── home.js
-│       └── items.js
-└── assets/images/         # Ảnh, logo, icon
+│   ├── api/api.js
+│   ├── config/config.js
+│   ├── utils.js
+│   ├── layout.js
+│   └── pages/
+│       ├── customer/
+│       ├── admin/
+│       └── kitchen/
+└── assets/images/
 ```
 
 ## 2. Chạy frontend
@@ -44,12 +50,12 @@ Trình duyệt (FE: 127.0.0.1:5500) --axios--> Backend FastAPI (127.0.0.1:8000/a
 ```
 
 - **axios** được nạp từ CDN bằng thẻ `<script>` ở cuối mỗi trang HTML (cần có mạng). Không cần `npm install`.
-- Địa chỉ backend nằm ở **một chỗ duy nhất**: `js/config.js`
+- Địa chỉ backend nằm ở **một chỗ duy nhất**: `js/config/config.js`
   ```js
   API_BASE_URL: "http://127.0.0.1:8000/api",
   ```
   Backend đổi cổng, hoặc deploy lên server, thì chỉ sửa dòng này.
-- Mọi lời gọi API đều qua `js/api.js`. File này tạo sẵn 1 axios instance (`http`) có `baseURL`, và bọc thành các hàm trả về thẳng `response.data`:
+- Mọi lời gọi API đều qua `js/api/api.js`. File này tạo sẵn 1 axios instance (`http`) có `baseURL`, và bọc thành các hàm trả về thẳng `response.data`:
   ```js
   try {
     const items = await api.get("/items");               // GET  /api/items
@@ -62,30 +68,30 @@ Trình duyệt (FE: 127.0.0.1:5500) --axios--> Backend FastAPI (127.0.0.1:8000/a
     console.log(error.status);          // 404, 422, 500... hoặc 0 nếu không gọi được server
   }
   ```
-- Cần gửi token đăng nhập kèm mọi request? Trong `js/api.js` đã có sẵn đoạn interceptor mẫu (đang comment), chỉ cần bỏ comment.
+- Cần gửi token đăng nhập kèm mọi request? Trong `js/api/api.js` đã có sẵn đoạn interceptor mẫu (đang comment), chỉ cần bỏ comment.
 - Backend phải cho phép FE gọi (**CORS**). Base code backend đã bật sẵn (`CORS_ORIGINS=*` trong `backend/.env`).
 
 ## 4. Thêm trang mới (vd: trang Sản phẩm)
 
-1. Copy `pages/items.html` thành `pages/products.html`, sửa `<title>` và nội dung HTML.
-2. Copy `js/pages/items.js` thành `js/pages/products.js`, đổi `/items` thành `/products` (API của nhóm bạn).
-3. Ở cuối `pages/products.html`, đổi `../js/pages/items.js` thành `../js/pages/products.js`.
+1. Tạo HTML trong `pages/customer/`, `pages/admin/` hoặc `pages/kitchen/`.
+2. Tạo script cùng vai trò trong `js/pages/customer/`, `js/pages/admin/` hoặc `js/pages/kitchen/`.
+3. Trong HTML, đường dẫn tính lùi hai cấp: `../../css/common/style.css`, `../../js/config/config.js`, `../../js/api/api.js`.
 4. Thêm link vào menu trong `js/layout.js`:
    ```js
-   { href: "pages/products.html", label: "Sản phẩm" },
+   { href: "pages/customer/products.html", label: "Sản phẩm" },
    ```
 
 Lưu ý khi tạo trang:
 
-- Trang trong `pages/` để `<body data-root="../">`; trang ở thư mục gốc để `data-root="./"`.
-- Giữ thứ tự thẻ `<script>`: axios (CDN) → `config.js` → `api.js` → `utils.js` → `layout.js` → script riêng của trang.
+- Trang trong `pages/<vai-trò>/` để `<body data-root="../../">`; trang ở thư mục gốc để `data-root="./"`.
+- Giữ thứ tự thẻ `<script>`: axios (CDN) → `config/config.js` → `api/api.js` → `utils.js` → `layout.js` → script riêng của trang.
 - Khi chèn dữ liệu người dùng nhập vào `innerHTML`, luôn bọc bằng `escapeHtml(...)` để chống chèn mã độc (XSS).
 
 ## 5. Lỗi hay gặp
 
 | Hiện tượng | Cách sửa |
 |---|---|
-| "Không kết nối được backend..." | Backend chưa chạy, hoặc `API_BASE_URL` trong `js/config.js` sai cổng |
+| "Không kết nối được backend..." | Backend chưa chạy, hoặc `API_BASE_URL` trong `js/config/config.js` sai cổng |
 | "Backend chạy nhưng MySQL lỗi" | Xem mục *Lỗi hay gặp* trong `backend/README.md` |
 | Console báo `axios is not defined` | Máy không có mạng nên không tải được axios từ CDN, hoặc thẻ `<script>` axios bị đặt sau `api.js` |
 | Console (F12) báo `blocked by CORS policy` | Kiểm tra `CORS_ORIGINS` trong `backend/.env`, sửa xong nhớ chạy lại backend |

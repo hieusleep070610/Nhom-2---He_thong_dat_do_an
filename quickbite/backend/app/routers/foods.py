@@ -1,10 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from datetime import date
 from typing import List
 
+from app.core.exceptions import NotFoundException
 from app.database.db import get_db
 from app.models.food import Dish, DailyMenu
+from app.schemas.menu import ServingCheckRequest
+from app.services.menu_availability_service import (
+    ensure_servings_available,
+    get_remaining_by_date,
+)
 
 router = APIRouter(prefix="/menu", tags=["Menu Management"])
 
