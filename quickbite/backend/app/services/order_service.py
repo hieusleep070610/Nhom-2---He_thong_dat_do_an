@@ -2,7 +2,8 @@ from sqlalchemy.orm import Session
 
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
-from app.core.exceptions import BadRequestException, NotFoundException
+from app.core.exceptions import BadRequestException, ConflictException, NotFoundException
+from app.services.refund_service import refund_paid_order
 
 ORDER_STATUS_TRANSITIONS = {
     "pending": ["confirmed", "cancelled"],
@@ -12,6 +13,8 @@ ORDER_STATUS_TRANSITIONS = {
     "completed": [],
     "cancelled": [],
 }
+
+LOCKED_CANCEL_STATUSES = {"preparing", "ready", "completed"}
 
 
 def update_order_status(
@@ -39,17 +42,34 @@ def update_order_status(
                 message=f"Không tìm thấy đơn hàng có ID {order_id}"
             )
 
-        old_status = order.status.strip().lower()
+        old_status = (order.status or "").strip().lower()
+
+        if new_status == "cancelled" and old_status == "cancelled":
+            db.rollback()
+            return order
+
+        if new_status == "cancelled" and old_status in LOCKED_CANCEL_STATUSES:
+            raise ConflictException(
+                message=(
+                    "Đơn đã sang giai đoạn chế biến nên không thể tự hủy. "
+                    "Vui lòng liên hệ nhân viên."
+                ),
+                code="INVALID_ORDER_STATE",
+            )
 
         allowed_statuses = ORDER_STATUS_TRANSITIONS.get(old_status, [])
 
         if new_status not in allowed_statuses:
-            raise BadRequestException(
+            raise ConflictException(
                 message=(
                     f"Không thể chuyển trạng thái từ "
                     f"{old_status} sang {new_status}"
-                )
+                ),
+                code="INVALID_ORDER_STATE",
             )
+
+        if new_status == "cancelled":
+            refund_paid_order(db, order_id)
 
         order.status = new_status
 

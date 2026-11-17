@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 class WalletBase(BaseModel):
@@ -19,14 +21,18 @@ class WalletOut(WalletBase):
     id: int
     user_id: int
 
-class WalletResponse(WalletBase):
+class WalletResponse(BaseModel):
     id: int
     user_id: int
+    balance: Decimal
+    status: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
         
 class PaymentRequest(BaseModel):
     wallet_id: int
-    amount: int = Field(..., gt=0, description="Số tiền thanh toán phải lớn hơn 0")
+    amount: int | None = Field(
+        default=None,
+        description="Không được dùng để trừ tiền. Hệ thống lấy total_amount của đơn.",
+    )
     order_id: int
