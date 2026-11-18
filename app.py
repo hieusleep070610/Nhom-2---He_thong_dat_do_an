@@ -682,6 +682,8 @@ def get_static_file(rel_path):
     clean_path = rel_path.lstrip("/\\").replace("/", os.sep)
     if not clean_path or clean_path == ".":
         clean_path = "daily-menu.html"
+    elif clean_path in ("dish-detail", "detail", "dish"):
+        clean_path = "dish-detail.html"
     
     full_path = os.path.join(CURRENT_DIR, clean_path)
     if os.path.exists(full_path) and os.path.isfile(full_path):
@@ -711,6 +713,11 @@ if USE_FLASK:
     @app.route("/", methods=["GET"])
     def index():
         return send_from_directory(CURRENT_DIR, "daily-menu.html")
+
+    @app.route("/dish-detail", methods=["GET"])
+    @app.route("/dish-detail.html", methods=["GET"])
+    def dish_detail_page():
+        return send_from_directory(CURRENT_DIR, "dish-detail.html")
 
     @app.route("/<path:filename>", methods=["GET"])
     def static_files(filename):
@@ -874,6 +881,7 @@ def run_server(initial_port=5000):
             print(f"  👉 API xem thực đơn hôm nay       : http://{host}:{port}/api/menu")
             print(f"  👉 API xem theo ngày bất kỳ      : http://{host}:{port}/api/menu?date={today_str}")
             print(f"  👉 API chi tiết món ăn (TF1A785) : http://{host}:{port}/api/dishes/dish-1")
+            print(f"  👉 Trang chi tiết món (TF1A86F)  : http://{host}:{port}/dish-detail.html?id=dish-1")
             print("=" * 68)
 
             if USE_FLASK:

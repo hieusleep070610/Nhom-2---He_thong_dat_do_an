@@ -99,6 +99,46 @@ def run_tests():
     print(f"  ✅ Xử lý mã món không tồn tại đúng chuẩn HTTP 404: {not_found_res['error']}")
     print("  -> TEST 7 PASSED!\n")
 
+    # 8. Test giao diện Frontend Trang chi tiết món ăn (Task TF1A86F)
+    print("[TEST 8] Kiểm tra file và cấu trúc Trang chi tiết món ăn (Task TF1A86F):")
+    import os
+    from app import get_static_file, DISH_CATALOG
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    html_file = os.path.join(base_dir, "dish-detail.html")
+    css_file = os.path.join(base_dir, "css", "dish-detail.css")
+    js_file = os.path.join(base_dir, "js", "dish-detail.js")
+
+    assert os.path.exists(html_file), "Thất bại: Không tìm thấy file dish-detail.html"
+    assert os.path.exists(css_file), "Thất bại: Không tìm thấy file css/dish-detail.css"
+    assert os.path.exists(js_file), "Thất bại: Không tìm thấy file js/dish-detail.js"
+    print("  ✅ Các file Frontend cốt lõi của Task TF1A86F đều tồn tại.")
+
+    with open(html_file, "r", encoding="utf-8") as f:
+        html_content = f.read()
+
+    # Kiểm tra 5 yêu cầu bắt buộc của Task TF1A86F: ảnh, mô tả, giá, nguyên liệu, nút thêm vào đơn
+    assert "dishMainImg" in html_content, "Thất bại: Thiếu phần tử ảnh món ăn"
+    assert "dishFullDescription" in html_content, "Thất bại: Thiếu phần tử mô tả món ăn"
+    assert "dishPriceCurrent" in html_content, "Thất bại: Thiếu phần tử hiển thị giá món"
+    assert "ingredientsChipsGrid" in html_content or "tab-ingredients" in html_content, "Thất bại: Thiếu phần tử danh sách nguyên liệu"
+    assert "btnAddToCart" in html_content, "Thất bại: Thiếu nút 'Thêm vào đơn'"
+    assert "TF1A86F" in html_content, "Thất bại: Thiếu mã Task TF1A86F trên giao diện"
+    print("  ✅ Đã kiểm tra đầy đủ 5 yêu cầu cốt lõi của Task TF1A86F: Ảnh, Mô tả, Giá, Nguyên liệu, Nút thêm vào đơn.")
+    print("  -> TEST 8 PASSED!\n")
+
+    # 9. Test phục vụ trang chi tiết qua Server Static Handler
+    print("[TEST 9] Kiểm tra phục vụ file dish-detail.html qua web server:")
+    content, mime = get_static_file("dish-detail.html")
+    assert content is not None, "Thất bại: Server không đọc được dish-detail.html"
+    assert "text/html" in mime, f"Thất bại: MIME type không đúng: {mime}"
+    
+    # Kiểm tra route không đuôi .html
+    content_clean, mime_clean = get_static_file("dish-detail")
+    assert content_clean is not None, "Thất bại: Server không đọc được route /dish-detail"
+    print("  ✅ Server phục vụ chuẩn xác cả /dish-detail.html và route thân thiện /dish-detail")
+    print("  -> TEST 9 PASSED!\n")
+
     print("=" * 60)
     print("  🎉 TẤT CẢ CÁC BÀI TEST ĐỀU THÀNH CÔNG RỰC RỠ (100% PASS)!")
     print("=" * 60)

@@ -993,13 +993,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const addedQty = state.quantity;
+
         // Kiểm tra xem món đã có trong giỏ chưa
         const existingItem = state.cart.find(
             item => item.dishId === state.dishId && item.dateKey === state.dateKey
         );
 
         if (existingItem) {
-            existingItem.quantity += state.quantity;
+            existingItem.quantity += addedQty;
         } else {
             state.cart.push({
                 dishId: state.dishId,
@@ -1010,12 +1012,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     price: state.currentDish.price,
                     image: state.currentDish.image_url || state.currentDish.image
                 },
-                quantity: state.quantity
+                quantity: addedQty
             });
         }
 
         // Giảm số suất còn lại của phiên hiện tại
-        state.stock -= state.quantity;
+        state.stock -= addedQty;
         if (state.stock <= 0) {
             state.stock = 0;
             state.isOutOfStock = true;
@@ -1023,6 +1025,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btnAddToCartText.innerHTML = '<i class="fa-solid fa-ban"></i> Đã hết suất hôm nay';
             btnQuickOrder.disabled = true;
             dishOutOverlay.style.display = 'flex';
+
+            btnStickyAdd.disabled = true;
+            btnStickyAddText.innerHTML = '<i class="fa-solid fa-ban"></i> Hết suất';
         }
         updateStockCardUI();
         state.quantity = state.isOutOfStock ? 0 : 1;
@@ -1034,13 +1039,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Hiệu ứng phản hồi thành công trên nút
         btnAddToCartText.innerHTML = '<i class="fa-solid fa-check"></i> Đã thêm vào đơn!';
+        btnStickyAddText.innerHTML = '<i class="fa-solid fa-check"></i> Đã thêm!';
         setTimeout(() => {
             if (!state.isOutOfStock) {
                 btnAddToCartText.innerHTML = 'Thêm vào đơn';
+                btnStickyAddText.innerHTML = 'Thêm vào đơn';
             }
         }, 1800);
 
-        showToast(`Đã thêm ${state.quantity} suất "${state.currentDish.name}" vào đơn!`, 'success');
+        showToast(`Đã thêm ${addedQty} suất "${state.currentDish.name}" vào đơn!`, 'success');
     };
 
     btnAddToCart.addEventListener('click', handleAddToCart);
@@ -1169,10 +1176,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="cart-remove-item" data-index="${index}" title="Xóa món"><i class="fa-solid fa-trash-can"></i></button>
             `;
 
+            const syncRestoredStock = (qty) => {
+                if (item.dishId === state.dishId && item.dateKey === state.dateKey) {
+                    state.stock = Math.min(state.initialStock, state.stock + qty);
+                    if (state.stock > 0) {
+                        state.isOutOfStock = false;
+                        btnAddToCart.disabled = false;
+                        btnAddToCartText.innerHTML = 'Thêm vào đơn';
+                        btnQuickOrder.disabled = false;
+                        dishOutOverlay.style.display = 'none';
+
+                        btnStickyAdd.disabled = false;
+                        btnStickyAddText.innerHTML = 'Thêm vào đơn';
+                    }
+                    if (state.quantity === 0 && state.stock > 0) {
+                        state.quantity = 1;
+                    }
+                    updateStockCardUI();
+                    updateQuantityAndSubtotal();
+                }
+            };
+
             itemRow.querySelector('.btn-minus').addEventListener('click', () => {
                 if (item.quantity > 1) {
                     item.quantity -= 1;
+                    syncRestoredStock(1);
                 } else {
+                    syncRestoredStock(item.quantity);
                     state.cart.splice(index, 1);
                 }
                 saveCartToStorage();
@@ -1180,12 +1210,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             itemRow.querySelector('.btn-plus').addEventListener('click', () => {
-                item.quantity += 1;
+                if (item.dishId === state.dishId && item.dateKey === state.dateKey) {
+                    if (state.stock > 0) {
+                        state.stock -= 1;
+                        item.quantity += 1;
+                        if (state.stock === 0) {
+                            state.isOutOfStock = true;
+                            btnAddToCart.disabled = true;
+                            btnAddToCartText.innerHTML = '<i class="fa-solid fa-ban"></i> Đã hết suất hôm nay';
+                            btnQuickOrder.disabled = true;
+                            dishOutOverlay.style.display = 'flex';
+
+                            btnStickyAdd.disabled = true;
+                            btnStickyAddText.innerHTML = '<i class="fa-solid fa-ban"></i> Hết suất';
+                        }
+                        updateStockCardUI();
+                        updateQuantityAndSubtotal();
+                    } else {
+                        showToast(`Món này đã hết suất còn lại trong ngày!`, 'warning');
+                        return;
+                    }
+                } else {
+                    item.quantity += 1;
+                }
                 saveCartToStorage();
                 updateCartUI();
             });
 
             itemRow.querySelector('.cart-remove-item').addEventListener('click', () => {
+                syncRestoredStock(item.quantity);
                 state.cart.splice(index, 1);
                 saveCartToStorage();
                 updateCartUI();

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Hệ Thống Đặt Đồ Ăn - Nhóm 2
 
 Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & Backend API.
@@ -13,6 +12,7 @@ Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & 
 | **`TF1A638`** | Backend (BE) | Viết API trả thực đơn theo ngày kèm số suất còn lại của từng món | `feature/tf1a638-ngan` |
 | **`TF1A6E9`** | Frontend (FE) | Trang xem thực đơn theo ngày nối API (chọn ngày, trạng thái hết món, đang tải và rỗng) | `feature/tf1a6e9-ngan` |
 | **`TF1A785`** | Backend (BE) | Viết API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng) | `feature/tf1a785-ngan` |
+| **`TF1A86F`** | Frontend (FE) | Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn | `feature/tf1a86f-ngan` |
 
 ---
 
@@ -30,7 +30,8 @@ python app.py
 > - **Tự động chuyển cổng**: Nếu cổng `5000` bị ứng dụng khác chiếm dụng trên Windows, server sẽ tự động chuyển sang `5001`, `8000`, `8080` mà không bị crash.
 
 Sau khi chạy lệnh, bạn có thể mở các đường dẫn sau trên trình duyệt:
-- 🌐 **Giao diện Web đầy đủ**: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+- 🌐 **Giao diện Web Thực Đơn Ngày**: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+- 🍲 **Trang Chi Tiết Món Ăn (Task TF1A86F)**: [http://127.0.0.1:5000/dish-detail.html?id=dish-1](http://127.0.0.1:5000/dish-detail.html?id=dish-1)
 - 📡 **API thực đơn hôm nay**: [http://127.0.0.1:5000/api/menu](http://127.0.0.1:5000/api/menu)
 - 📡 **API thực đơn theo ngày bất kỳ**: [http://127.0.0.1:5000/api/menu?date=2026-11-20](http://127.0.0.1:5000/api/menu?date=2026-11-20)
 - 📡 **API chi tiết món ăn (Task TF1A785)**: [http://127.0.0.1:5000/api/dishes/dish-1](http://127.0.0.1:5000/api/dishes/dish-1)
@@ -228,36 +229,73 @@ git push -u origin feature/tf1a785-ngan
 
 ---
 
-## 📤 7. Hướng Dẫn Đẩy Nhánh Cho Các Task Khác
+---
+
+## 🍽️ 7. Tài Liệu Chi Tiết Chức Năng [FE] Trang Chi Tiết Món Ăn (Task TF1A86F)
+
+Chức năng Frontend **Trang chi tiết món ăn** (`dish-detail.html`, `css/dish-detail.css`, `js/dish-detail.js`) đáp ứng trọn vẹn 5 yêu cầu nghiệp vụ cốt lõi theo đề bài:
+
+### 1. Hình Ảnh Món Ăn Sắc Nét (Image Showcase)
+- **Hiển thị chất lượng cao**: Khung ảnh tỉ lệ vàng với hiệu ứng phóng to nhẹ (Hover Zoom) khi di chuột.
+- **Huy hiệu trực quan (Badges)**: Gắn nhãn danh mục món (`Món chính`, `Món nước`, `Món chay`, `Đồ uống`), khung giờ phục vụ (`Trưa & Tối`), và nhãn đặc biệt (`Bán chạy`, `Bếp trưởng đề xuất`, `Hot trend`).
+- **Lớp phủ hết món (Out of Stock Overlay)**: Tự động phủ màn tối kèm thông báo đỏ `ĐÃ HẾT SUẤT HÔM NAY` nếu số suất còn lại bằng 0.
+- **Thanh thông số nhanh (Quick Specs)**: Thời gian chế biến (`10 - 15 phút`), Lượng calo (`650 kcal`), Tiêu chuẩn an toàn (`VietGAP 100%`).
+
+### 2. Mô Tả Chi Tiết Món Ăn (Description)
+- Phần mô tả món ăn chi tiết, giới thiệu hương vị, cách chế biến và cảm nhận ẩm thực đặc trưng của món.
+- Tích hợp thêm các tab hướng dẫn thưởng thức và quy trình bảo quản giữ nhiệt an toàn bằng hộp bã mía sinh học thân thiện môi trường.
+
+### 3. Giá Cả & Tính Toán Tự Động (Price & Subtotal Calculation)
+- **Hiển thị giá chuẩn**: Định dạng tiền tệ Việt Nam (`52.000 ₫`).
+- **Khuyến mãi & Giá gốc**: Hiển thị giá gốc gạch ngang (`60.000 ₫`) kèm nhãn phần trăm giảm giá (`-13%`).
+- **Tạm tính động (Real-time Subtotal)**: Tự động nhân đơn giá với số lượng đang chọn trong bộ điều khiển số lượng.
+- **Ghi chú minh bạch**: Đã bao gồm thuế VAT và hộp đựng giữ nhiệt chuyên dụng.
+
+### 4. Danh Sách Nguyên Liệu Tự Nhiên (Ingredients - Task TF1A785 & TF1A86F)
+- **Dạng thẻ chip hiện đại**: Từng nguyên liệu được trình bày trực quan dạng thẻ chip với biểu tượng hạt mầm xanh (`fa-seedling`).
+- **Cam kết xuất xứ**: Banner cam kết 100% nguyên liệu sạch đạt chuẩn VietGAP nhập mới mỗi ngày.
+- **Tích hợp cảnh báo dị ứng**: Liệt kê các chất dị ứng chính (`Trứng`, `Đậu nành`, `Gluten`, `Hải sản`, `Lactose`) và lưu ý cảnh báo cho thực khách có cơ địa mẫn cảm.
+- **Bảng giá trị dinh dưỡng**: 4 chỉ số khoa học gồm Năng lượng (Calories), Đạm (Protein), Tinh bột (Carbohydrate), và Chất béo (Fat).
+
+### 5. Nút "Thêm Vào Đơn" & Điều Khiển Số Lượng (Add To Order)
+- **Bộ đếm số lượng (Quantity Stepper)**: Cho phép tăng/giảm số suất đặt với giới hạn chặn dưới (`min = 1`) và chặn trên (`max = stock` số suất còn lại trong ngày).
+- **Nút "Thêm vào đơn" (`#btnAddToCart`)**: 
+  - Thêm số lượng suất ăn đã chọn vào giỏ hàng chung (`foodiehub_cart`).
+  - Đồng bộ tự động qua `localStorage` với giỏ hàng của trang thực đơn theo ngày (`daily-menu.html`).
+  - Phản hồi thị giác tức thì: Nút đổi sang trạng thái `Đã thêm vào đơn!` kèm hiệu ứng thông báo Toast nổi.
+  - Vô hiệu hóa (`disabled`) khi món ăn hết suất trong ngày.
+- **Nút "Đặt món ngay" (`#btnQuickOrder`)**: Hỗ trợ cửa sổ Pop-up xác nhận nhanh thông tin giao hàng và gửi đơn về backend `POST /api/order`.
+- **Thanh hành động đáy trên di động (Mobile Sticky Action Bar)**: Khi cuộn trang trên điện thoại, thanh đặt món ghim cố định ở đáy màn hình giúp thao tác cực kỳ tiện lợi.
+
+---
+
+## 📤 8. Hướng Dẫn Đẩy Nhánh Lên GitHub (Nộp Task TF1A86F)
+
+Chạy lần lượt các lệnh sau trong PowerShell hoặc Git Bash:
+
+```powershell
+# 1. Tạo và chuyển sang nhánh mới cho task FE TF1A86F
+git checkout -b feature/tf1a86f-ngan
+
+# 2. Thêm file và commit đúng mã task TF1A86F
+git add .
+git commit -m "TF1A86F: [FE] Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn"
+
+# 3. Đẩy nhánh lên GitHub
+git push -u origin feature/tf1a86f-ngan
+```
+
+### 🔗 Minh Chứng Nộp Bài (Task TF1A86F):
+- **Link Nhánh GitHub**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a86f-ngan`
+- **Link Tạo / Nộp Pull Request**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/pull/new/feature/tf1a86f-ngan`
+  *(Tiêu đề PR: `TF1A86F: [FE] Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn`)*
+
+---
+
+## 📤 9. Danh Sách Các Nhánh & Pull Request Khác
+* **Task FE TF1A86F**: Nhánh `feature/tf1a86f-ngan` | PR: `TF1A86F: [FE] Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn`
+* **Task BE TF1A785**: Nhánh `feature/tf1a785-ngan` | PR: `TF1A785: [BE] API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng)`
 * **Task FE TF1A6E9**: Nhánh `feature/tf1a6e9-ngan` | PR: `TF1A6E9: [FE] Trang xem thực đơn theo ngày nối API`
 * **Task BE TF1A638**: Nhánh `feature/tf1a638-ngan` | PR: `TF1A638: API xem thực đơn theo ngày kèm số suất còn lại`
-=======
-# Base code dự án thực tập: HN-KS25-CNTT1
-
-Khung dự án chung cho các nhóm (04/11 – 25/11/2026). Gồm 2 phần đã nối sẵn với nhau:
-
-| Thư mục | Công nghệ | Hướng dẫn |
-|---|---|---|
-| [`backend/`](backend/README.md) | Python FastAPI + MySQL (SQLAlchemy) | `backend/README.md` |
-| [`frontend/`](frontend/README.md) | HTML · CSS · JavaScript thuần + axios | `frontend/README.md` |
-
-```
-Trình duyệt (frontend) --axios JSON--> FastAPI (backend :8000/api) --SQLAlchemy--> MySQL (:3306)
-```
-
-## Chạy nhanh
-
-1. **MySQL Workbench:** File → Open SQL Script → chọn `backend/sql/init.sql` → bấm ⚡ Execute.
-2. **Backend** (terminal trong thư mục `backend/`):
-   ```bash
-   copy .env.example .env               # Mac/Linux: cp .env.example .env
-   # mở .env, điền DB_PASSWORD = mật khẩu root MySQL của bạn
-   python -m venv .venv
-   .venv\Scripts\activate               # Mac/Linux: source .venv/bin/activate
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload        # http://127.0.0.1:8000/docs
-   ```
-3. **Frontend:** VS Code → chuột phải `frontend/index.html` → *Open with Live Server*.
-
-Trang chủ frontend hiện **✅ Backend OK · MySQL: connected** là đã thông cả 3 tầng. Sau đó mỗi nhóm đổi ví dụ `items` thành các chức năng của đề tài mình (xem mục *Thêm chức năng* / *Thêm trang mới* trong từng README).
->>>>>>> 1ea2de4dfae4af7d9001e23d12b95fc024f66b08

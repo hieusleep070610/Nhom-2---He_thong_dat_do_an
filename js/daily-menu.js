@@ -712,9 +712,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="price-original">${formatCurrency(dish.originalPrice)}</span>
                         <span class="card-price">${formatCurrency(dish.price)}</span>
                     </div>
-                    <button class="btn-add-dish" ${isOutOfStock ? 'disabled title="Món này đã hết suất trong ngày"' : 'title="Thêm vào giỏ món ăn"'} data-id="${dish.id}">
-                        ${isOutOfStock ? '<i class="fa-solid fa-ban"></i> Hết suất' : '<i class="fa-solid fa-plus"></i> Chọn món'}
-                    </button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <a href="dish-detail.html?id=${dish.id}&date=${formatDateKey(state.selectedDate)}" class="btn-detail-link" title="Xem chi tiết món ăn (Task TF1A86F)">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                        <button class="btn-add-dish" ${isOutOfStock ? 'disabled title="Món này đã hết suất trong ngày"' : 'title="Thêm vào giỏ món ăn"'} data-id="${dish.id}">
+                            ${isOutOfStock ? '<i class="fa-solid fa-ban"></i> Hết suất' : '<i class="fa-solid fa-plus"></i> Chọn món'}
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -821,6 +826,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateCartUI = () => {
+        try {
+            localStorage.setItem('foodiehub_cart', JSON.stringify(state.cart));
+        } catch (e) {}
+
         const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = state.cart.reduce((sum, item) => sum + (item.quantity * item.dishInfo.price), 0);
 
@@ -1023,6 +1032,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn btn-primary btn-block modal-add-btn" ${isOutOfStock ? 'disabled' : ''}>
                     ${isOutOfStock ? '<i class="fa-solid fa-ban"></i> Đã hết suất hôm nay' : '<i class="fa-solid fa-cart-plus"></i> Đặt món ngay (' + formatCurrency(detailData.price) + ')'}
                 </button>
+
+                <a href="dish-detail.html?id=${dish.id}&date=${formatDateKey(state.selectedDate)}" class="btn btn-secondary btn-block modal-detail-page-btn" style="margin-top: 10px; justify-content: center; text-align: center;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở trang chi tiết món ăn (Task TF1A86F)
+                </a>
             </div>
         `;
 
@@ -1216,6 +1229,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // KHỞI CHẠY LẦN ĐẦU
     // =========================================================================
+    try {
+        const saved = localStorage.getItem('foodiehub_cart');
+        if (saved) {
+            state.cart = JSON.parse(saved);
+        }
+    } catch (e) {}
+
     renderDateTabs();
     renderMenuGrid();
     updateCartUI();
