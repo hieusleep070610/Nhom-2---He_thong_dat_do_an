@@ -9,11 +9,7 @@ from app.services.order_service import update_order_status
 from app.core.exceptions import NotFoundException
 
 
-router = APIRouter(
-    tags=["Orders"],
-    prefix="/orders"
-)
-
+router = APIRouter(tags=["Orders"], prefix="/orders")
 
 @router.get("")
 def list_orders(db: Session = Depends(get_db)):
@@ -23,47 +19,39 @@ def list_orders(db: Session = Depends(get_db)):
         .order_by(Order.created_at.desc())
         .all()
     )
+    
     return [
         {
             "id": row.id,
             "code": row.code,
+            "customer_name": row.customer_name,
             "status": row.status,
-            "title": row.items[0].item_name if row.items else row.code,
+            "total_amount": float(row.total_amount),
+            # Lấy tên món từ mảng items
+            "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
         }
         for row in rows
     ]
 
-
-# API cập nhật trạng thái đơn hàng
 @router.patch("/{order_id}/status")
-def change_order_status(
-    order_id: int,
-    request: OrderStatusUpdate,
-    db: Session = Depends(get_db)
-):
-    order = update_order_status(
-        db=db,
-        order_id=order_id,
-        new_status=request.new_status
-    )
+def change_order_status(order_id: int, request: OrderStatusUpdate, db: Session = Depends(get_db)):
+    order = update_order_status(db=db, order_id=order_id, new_status=request.new_status)
 
     return {
         "status": "success",
         "message": "Cập nhật trạng thái đơn hàng thành công",
         "data": {
             "order_id": order.id,
-            "order_status": order.status
+            "order_status": order.order_status
         }
     }
 
 
-# API xem lịch sử trạng thái đơn hàng
 @router.get("/{order_id}/status-history")
 def get_order_status_history(
     order_id: int,
     db: Session = Depends(get_db)
 ):
-    # Kiểm tra đơn hàng có tồn tại không
     order = (
         db.query(Order)
         .filter(Order.id == order_id)
@@ -75,7 +63,6 @@ def get_order_status_history(
             message=f"Không tìm thấy đơn hàng có ID {order_id}"
         )
 
-    # Lấy lịch sử thay đổi trạng thái
     histories = (
         db.query(OrderStatusHistory)
         .filter(OrderStatusHistory.order_id == order_id)
