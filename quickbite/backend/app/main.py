@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
 from app.core.config import settings
-from app.core.exceptions import setup_exception_handlers
+from app.core.exceptions import setup_exception_handlers, unified_success_response
 from app.database.db import init_db
 from app.routers import auth, foods, health, orders, wallet
 
@@ -42,4 +42,7 @@ app.include_router(wallet.router_wallet, prefix="/api")
 
 @app.get("/")
 def root():
-    return {"message": f"{settings.APP_NAME} đang chạy. Xem tài liệu API tại /docs"}
+    return unified_success_response(
+        message=f"{settings.APP_NAME} đang chạy",
+        data={"documentation": "/docs"},
+    )

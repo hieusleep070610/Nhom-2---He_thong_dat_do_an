@@ -70,7 +70,9 @@ async function loadDateData() {
       fetch(`${CONFIG.API_BASE_URL}/menu/pickup-slots?service_date=${encodeURIComponent(pickupDate.value)}`),
     ]);
     if (!menuResponse.ok || !slotResponse.ok) throw new Error("Không lấy được dữ liệu ngày nhận từ máy chủ.");
-    const [menu, slotData] = await Promise.all([menuResponse.json(), slotResponse.json()]);
+    const [menuPayload, slotPayload] = await Promise.all([menuResponse.json(), slotResponse.json()]);
+    const menu = unwrapApiResponse(menuPayload);
+    const slotData = unwrapApiResponse(slotPayload);
     if (!menu || !Array.isArray(menu.items) || !slotData || !Array.isArray(slotData.slots)) {
       throw new Error("Dữ liệu ngày nhận không đúng định dạng.");
     }
@@ -116,7 +118,7 @@ confirmButton.addEventListener("click", async () => {
     await Promise.all(cart.map(async (item) => {
       const response = await fetch(`${CONFIG.API_BASE_URL}/menu/daily-menus/remaining?menu_date=${encodeURIComponent(pickupDate.value)}&dish_id=${Number(item.dish_id)}`);
       if (!response.ok) throw new Error(response.status === 404 ? `Không tìm thấy món ${item.name}.` : "Không kiểm tra được số lượng món.");
-      const data = await response.json();
+      const data = unwrapApiResponse(await response.json());
       const available = data.items?.find((row) => Number(row.dish_id) === Number(item.dish_id));
       if (!available || !available.is_available || Number(available.remaining_quantity) < Number(item.qty)) {
         throw new Error(`${item.name}: ${available?.is_available ? `chỉ còn ${available.remaining_quantity} suất` : "không bán trong ngày đã chọn"}.`);

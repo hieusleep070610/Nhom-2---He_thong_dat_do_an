@@ -7,6 +7,13 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+function unwrapApiResponse(payload) {
+  if (payload && payload.status === "success" && Object.prototype.hasOwnProperty.call(payload, "data")) {
+    return payload.data;
+  }
+  return payload;
+}
+
 // 45000 -> "45.000 ₫"
 function formatMoney(value) {
   return Number(value).toLocaleString("vi-VN") + " ₫";

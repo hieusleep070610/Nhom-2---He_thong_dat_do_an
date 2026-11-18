@@ -64,9 +64,20 @@ http.interceptors.response.use(
   },
 );
 
+function unwrapSuccessResponse(payload) {
+  if (!payload || payload.status !== "success" || !Object.prototype.hasOwnProperty.call(payload, "data")) {
+    return payload;
+  }
+  if (payload.data && typeof payload.data === "object" && !Array.isArray(payload.data)) {
+    return { ...payload.data, message: payload.message };
+  }
+  if (payload.data === null) return { message: payload.message };
+  return payload.data;
+}
+
 const api = {
-  get: (path, params) => http.get(path, { params }).then((res) => res.data),
-  post: (path, body) => http.post(path, body).then((res) => res.data),
-  put: (path, body) => http.put(path, body).then((res) => res.data),
-  delete: (path) => http.delete(path).then((res) => res.data),
+  get: (path, params) => http.get(path, { params }).then((res) => unwrapSuccessResponse(res.data)),
+  post: (path, body) => http.post(path, body).then((res) => unwrapSuccessResponse(res.data)),
+  put: (path, body) => http.put(path, body).then((res) => unwrapSuccessResponse(res.data)),
+  delete: (path) => http.delete(path).then((res) => unwrapSuccessResponse(res.data)),
 };

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from datetime import date
 
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import NotFoundException, unified_success_response
 from app.database.db import get_db
 from app.models.food import Dish, DailyMenu
 from app.models.pickup_slot import PickupSlot, SlotDailyQuota
@@ -13,7 +13,8 @@ router = APIRouter(prefix="/menu", tags=["Menu Management"])
 
 @router.get("/dishes", response_model=list)
 def get_dishes(db: Session = Depends(get_db)):
-    return db.query(Dish).filter(Dish.is_available.is_(True)).all()
+    dishes = db.query(Dish).filter(Dish.is_available.is_(True)).all()
+    return unified_success_response(message="Lấy danh sách món ăn thành công", data=dishes)
 
 @router.post("/dishes", status_code=status.HTTP_201_CREATED)
 def create_dish(name: str, price: float, description: str = None, db: Session = Depends(get_db)):
@@ -28,7 +29,11 @@ def create_dish(name: str, price: float, description: str = None, db: Session = 
     db.add(new_dish)
     db.commit()
     db.refresh(new_dish)
-    return {"message": "Thêm món ăn thành công", "dish": new_dish}
+    return unified_success_response(
+        status_code=201,
+        message="Thêm món ăn thành công",
+        data={"dish": new_dish},
+    )
 
 @router.delete("/dishes/{dish_id}")
 def delete_dish(dish_id: int, db: Session = Depends(get_db)):
@@ -38,7 +43,7 @@ def delete_dish(dish_id: int, db: Session = Depends(get_db)):
 
     dish.is_available = False
     db.commit()
-    return {"message": "Đã ngừng bán món ăn"}
+    return unified_success_response(message="Đã ngừng bán món ăn")
 
 @router.post("/daily-menus", status_code=status.HTTP_201_CREATED)
 def assign_daily_menu(menu_date: date, dish_id: int, quantity: int, db: Session = Depends(get_db)):
@@ -53,11 +58,16 @@ def assign_daily_menu(menu_date: date, dish_id: int, quantity: int, db: Session 
     db.add(assignment)
     db.commit()
     db.refresh(assignment)
-    return {"message": "Gán món vào thực đơn thành công", "data": assignment}
+    return unified_success_response(
+        status_code=201,
+        message="Gán món vào thực đơn thành công",
+        data={"assignment": assignment},
+    )
 
 @router.get("/daily-menus")
 def get_daily_menus(db: Session = Depends(get_db)):
-    return db.query(DailyMenu).all()
+    menus = db.query(DailyMenu).all()
+    return unified_success_response(message="Lấy thực đơn thành công", data=menus)
 
 
 @router.get("/daily-menus/remaining", response_model=RemainingMenuResponse)
@@ -68,7 +78,8 @@ def get_daily_menu_remaining(
 ):
     if dish_id is not None and not db.query(Dish.id).filter(Dish.id == dish_id).first():
         raise NotFoundException(message=f"Không tìm thấy món ăn có ID {dish_id}.")
-    return {"menu_date": menu_date, "items": get_remaining_by_date(db, menu_date, dish_id)}
+    data = {"menu_date": menu_date, "items": get_remaining_by_date(db, menu_date, dish_id)}
+    return unified_success_response(message="Lấy món còn lại thành công", data=data)
 
 
 @router.get("/pickup-slots", response_model=PickupSlotsResponse, tags=["Pickup Slots"])
@@ -98,4 +109,5 @@ def get_pickup_slots(service_date: date, db: Session = Depends(get_db)):
             "is_active": bool(slot.is_active),
             "is_full": remaining == 0,
         })
-    return {"service_date": service_date, "slots": slots}
+    data = {"service_date": service_date, "slots": slots}
+    return unified_success_response(message="Lấy danh sách slot nhận hàng thành công", data=data)

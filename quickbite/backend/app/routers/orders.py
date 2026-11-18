@@ -6,7 +6,7 @@ from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
 from app.schemas.order import OrderStatusUpdate
 from app.services.order_service import update_order_status
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import NotFoundException, unified_success_response
 
 
 router = APIRouter(
@@ -23,7 +23,7 @@ def list_orders(db: Session = Depends(get_db)):
         .order_by(Order.created_at.desc())
         .all()
     )
-    return [
+    data = [
         {
             "id": row.id,
             "code": row.code,
@@ -32,6 +32,7 @@ def list_orders(db: Session = Depends(get_db)):
         }
         for row in rows
     ]
+    return unified_success_response(message="Lấy danh sách đơn hàng thành công", data=data)
 
 
 # API cập nhật trạng thái đơn hàng
@@ -47,14 +48,13 @@ def change_order_status(
         new_status=request.new_status
     )
 
-    return {
-        "status": "success",
-        "message": "Cập nhật trạng thái đơn hàng thành công",
-        "data": {
+    return unified_success_response(
+        message="Cập nhật trạng thái đơn hàng thành công",
+        data={
             "order_id": order.id,
             "order_status": order.status
-        }
-    }
+        },
+    )
 
 
 # API xem lịch sử trạng thái đơn hàng
@@ -83,9 +83,9 @@ def get_order_status_history(
         .all()
     )
 
-    return {
-        "status": "success",
-        "data": [
+    return unified_success_response(
+        message="Lấy lịch sử trạng thái đơn hàng thành công",
+        data=[
             {
                 "history_id": item.history_id,
                 "order_id": item.order_id,
@@ -95,5 +95,5 @@ def get_order_status_history(
                 "changed_by": item.changed_by
             }
             for item in histories
-        ]
-    }
+        ],
+    )

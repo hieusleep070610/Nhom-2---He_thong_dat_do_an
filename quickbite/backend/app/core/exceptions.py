@@ -1,6 +1,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # 1. Định nghĩa các Custom Exceptions
@@ -31,7 +32,24 @@ class ConflictException(BaseAPIException):
         super().__init__(message=message, status_code=409, details=payload)
 
 
-# 2. Hàm Format Response Lỗi Thống Nhất
+# 2. Hàm Format Response Thống Nhất
+def unified_success_response(
+    status_code: int = 200,
+    message: str = "Thành công",
+    data: any = None,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "success",
+            "code": status_code,
+            "message": message,
+            "data": jsonable_encoder(data),
+        },
+    )
+
+
+# 3. Hàm Format Response Lỗi Thống Nhất
 def unified_error_response(status_code: int, message: str, details: any = None) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
@@ -43,7 +61,7 @@ def unified_error_response(status_code: int, message: str, details: any = None) 
         }
     )
 
-# 3. Đăng ký các Exception Handlers
+# 4. Đăng ký các Exception Handlers
 def setup_exception_handlers(app):
     
     # Xử lý các Custom Exception(400, 403, 404)

@@ -167,7 +167,7 @@ async function loadDish() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/menu/dishes`);
     if (!response.ok) throw new Error("API món ăn lỗi");
-    const rows = await response.json();
+    const rows = unwrapApiResponse(await response.json());
     const selected = Array.isArray(rows) ? rows.find((row) => Number(row.id) === id) : null;
     if (!selected) throw new Error("Không tìm thấy món");
     dish = { ...dish, id, name: selected.name };

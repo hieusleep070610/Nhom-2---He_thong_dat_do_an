@@ -91,7 +91,7 @@ async function loadDishes() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/menu/dishes`);
     if (!response.ok) throw new Error("Không tải được thực đơn");
-    const rows = await response.json();
+    const rows = unwrapApiResponse(await response.json());
     if (!Array.isArray(rows)) throw new Error("Dữ liệu thực đơn không hợp lệ");
     dishes = rows.map((dish, index) => ({
       id: Number(dish.id),

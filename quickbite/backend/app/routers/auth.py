@@ -6,6 +6,7 @@ from app.core.security import create_access_token, verify_access_token, verify_p
 from app.database.db import get_db
 from app.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
 from app.services import user_services
+from app.core.exceptions import unified_success_response
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 bearer = HTTPBearer(auto_error=False)
@@ -24,7 +25,11 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
     if phone and user_services.get_user_by_phone(db, phone):
         raise HTTPException(status_code=400, detail="Số điện thoại đã tồn tại")
     user = user_services.create_user(db, data)
-    return _token_for(user)
+    return unified_success_response(
+        status_code=201,
+        message="Đăng ký thành công",
+        data=_token_for(user),
+    )
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -35,7 +40,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
         user = user_services.get_user_by_phone(db, account)
     if user is None or not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Số điện thoại, email hoặc mật khẩu không đúng")
-    return _token_for(user)
+    return unified_success_response(message="Đăng nhập thành công", data=_token_for(user))
 
 
 def get_current_user(
@@ -54,4 +59,4 @@ def get_current_user(
 
 @router.get("/me", response_model=UserResponse)
 def me(user=Depends(get_current_user)):
-    return user
+    return unified_success_response(message="Lấy thông tin tài khoản thành công", data=user)
