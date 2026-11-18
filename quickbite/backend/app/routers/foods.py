@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import date, datetime
+from datetime import timezone, timedelta
 
 from app.core.exceptions import NotFoundException
 from app.database.db import get_db
@@ -85,17 +86,26 @@ def get_pickup_slots(service_date: date, db: Session = Depends(get_db)):
         .all()
     )
     slots = []
+    now = datetime.now(timezone(timedelta(hours=7)))
     for slot, quota in rows:
         capacity = int(quota.max_servings if quota else slot.max_servings)
         booked = int(quota.booked_servings if quota else 0)
         remaining = max(0, capacity - booked)
+        is_past = service_date < now.date() or (
+            service_date == now.date() and slot.start_time <= now.time().replace(tzinfo=None)
+        )
+        is_active = bool(slot.is_active)
         slots.append({
             "pickup_slot_id": slot.id,
             "label": slot.label,
             "start_time": slot.start_time,
             "end_time": slot.end_time,
+            "max_servings": capacity,
+            "booked_servings": booked,
             "remaining_servings": remaining,
-            "is_active": bool(slot.is_active),
+            "is_active": is_active,
             "is_full": remaining == 0,
+            "is_past": is_past,
+            "can_book": is_active and remaining > 0 and not is_past,
         })
     return {"service_date": service_date, "slots": slots}
