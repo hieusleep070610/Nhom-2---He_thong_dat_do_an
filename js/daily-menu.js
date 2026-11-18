@@ -596,10 +596,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (state.searchTerm.trim() !== '') {
             const term = state.searchTerm.toLowerCase().trim();
-            filteredDishes = filteredDishes.filter(dish => 
-                dish.name.toLowerCase().includes(term) ||
-                dish.description.toLowerCase().includes(term)
-            );
+            const removeAccentsVN = (str) => {
+                if (!str) return '';
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'd').toLowerCase();
+            };
+            const normTerm = removeAccentsVN(term);
+            filteredDishes = filteredDishes.filter(dish => {
+                const lowerName = dish.name.toLowerCase();
+                const normName = removeAccentsVN(dish.name);
+                const lowerDesc = (dish.description || '').toLowerCase();
+                return lowerName.includes(term) || normName.includes(normTerm) || lowerDesc.includes(term);
+            });
         }
 
         // =====================================================================

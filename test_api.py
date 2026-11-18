@@ -6,7 +6,7 @@ Chạy bằng lệnh: python test_api.py
 """
 
 import json
-from app import get_menu_by_date, order_dish, parse_date_str, get_dish_detail
+from app import get_menu_by_date, order_dish, parse_date_str, get_dish_detail, search_dishes
 
 def run_tests():
     print("=" * 60)
@@ -138,6 +138,106 @@ def run_tests():
     assert content_clean is not None, "Thất bại: Server không đọc được route /dish-detail"
     print("  ✅ Server phục vụ chuẩn xác cả /dish-detail.html và route thân thiện /dish-detail")
     print("  -> TEST 9 PASSED!\n")
+
+    # =========================================================================
+    # TASK TF1A8D7: [BE] API TÌM KIẾM MÓN ĂN THEO TÊN, PHÂN TRANG & TỪ KHÓA RỖNG
+    # =========================================================================
+    print("=" * 60)
+    print("  🔍 KIỂM THỬ API TÌM KIẾM MÓN ĂN THEO TÊN (TASK: TF1A8D7)")
+    print("=" * 60)
+
+    # 10. Test tìm kiếm theo tên có dấu
+    print("\n[TEST 10] Tìm kiếm món ăn theo tên tiếng Việt có dấu (keyword='Cơm'):")
+    res10, status10 = search_dishes(keyword="Cơm", page=1, limit=10)
+    assert status10 == 200, f"Thất bại: Status code phải là 200, nhận được {status10}"
+    assert res10["success"] is True, "Thất bại: success phải là True"
+    assert res10["task_id"] == "TF1A8D7", f"Thất bại: task_id phải là TF1A8D7, nhận {res10.get('task_id')}"
+    assert res10["total_items"] >= 4, f"Thất bại: Phải tìm thấy ít nhất 4 món 'Cơm', nhận {res10['total_items']}"
+    assert all("cơm" in d["name"].lower() for d in res10["data"]), "Thất bại: Kết quả tìm kiếm phải chứa từ 'cơm'"
+    print(f"  ✅ Tìm thấy {res10['total_items']} món có tên chứa 'Cơm'.")
+    for d in res10["data"]:
+        print(f"     - {d['name']} ({d['price_formatted']})")
+    print("  -> TEST 10 PASSED!\n")
+
+    # 11. Test tìm kiếm theo tên không dấu (Fuzzy/Unaccent Matching)
+    print("[TEST 11] Tìm kiếm món ăn theo tên tiếng Việt không dấu (keyword='pho bo', 'ga'):")
+    res11_pho, status11_pho = search_dishes(keyword="pho bo")
+    assert status11_pho == 200, "Thất bại: Status code 200"
+    assert res11_pho["total_items"] >= 1, "Thất bại: Phải tìm thấy món Phở Bò"
+    assert any("Phở Bò" in d["name"] for d in res11_pho["data"]), "Thất bại: Thiếu món Phở Bò Tái Lăn"
+    print(f"  ✅ Tìm 'pho bo' -> Khớp: '{res11_pho['data'][0]['name']}'")
+
+    res11_ga, status11_ga = search_dishes(keyword="ga")
+    assert any("Gà" in d["name"] for d in res11_ga["data"]), "Thất bại: Thiếu món Cơm Gà"
+    print(f"  ✅ Tìm 'ga' -> Khớp món gà thành công.")
+    print("  -> TEST 11 PASSED!\n")
+
+    # 12. Test xử lý từ khóa rỗng (Empty Keyword Handling)
+    print("[TEST 12] Xử lý từ khóa rỗng (rỗng, dấu cách, None):")
+    # 12a. Keyword rỗng chuỗi ""
+    res12_empty, status12_empty = search_dishes(keyword="", page=1, limit=12)
+    assert status12_empty == 200, "Thất bại: Status code 200"
+    assert res12_empty["is_empty_keyword"] is True, "Thất bại: is_empty_keyword phải là True"
+    assert res12_empty["total_items"] == 12, f"Thất bại: Khi từ khóa rỗng phải trả về 12 món, nhận {res12_empty['total_items']}"
+    print(f"  ✅ Từ khóa rỗng ('') -> Trả về toàn bộ {res12_empty['total_items']} món ăn.")
+
+    # 12b. Keyword chỉ chứa khoảng trắng "   "
+    res12_spaces, _ = search_dishes(keyword="    ")
+    assert res12_spaces["is_empty_keyword"] is True, "Thất bại: Chuỗi khoảng trắng phải được xem là từ khóa rỗng"
+    print("  ✅ Từ khóa chỉ có khoảng trắng ('   ') -> Xử lý chuẩn xác như từ khóa rỗng.")
+
+    # 12c. Keyword là None
+    res12_none, _ = search_dishes(keyword=None)
+    assert res12_none["is_empty_keyword"] is True, "Thất bại: Keyword None phải được xử lý là rỗng"
+    print("  ✅ Từ khóa là None -> Tự động nhận diện là từ khóa rỗng.")
+
+    # 12d. Chế độ strict_empty=True (nếu client yêu cầu bắt buộc có từ khóa)
+    res12_strict, status12_strict = search_dishes(keyword="", strict_empty=True)
+    assert status12_strict == 400, "Thất bại: strict_empty=True với từ khóa rỗng phải trả về HTTP 400"
+    assert res12_strict["code"] == "EMPTY_KEYWORD", "Thất bại: Mã lỗi phải là EMPTY_KEYWORD"
+    print(f"  ✅ Chế độ strict_empty=True: Bắt lỗi hợp lệ HTTP 400 ({res12_strict['error']})")
+    print("  -> TEST 12 PASSED!\n")
+
+    # 13. Test cơ chế phân trang (Pagination)
+    print("[TEST 13] Kiểm tra tính năng phân trang (page=1..3, limit=4):")
+    res13_p1, _ = search_dishes(keyword="", page=1, limit=4)
+    assert len(res13_p1["data"]) == 4, f"Thất bại: Trang 1 phải có 4 món, nhận {len(res13_p1['data'])}"
+    assert res13_p1["page"] == 1, "Thất bại: Trang hiện tại phải là 1"
+    assert res13_p1["total_pages"] == 3, f"Thất bại: Tổng số trang phải là 3 (12 món / 4), nhận {res13_p1['total_pages']}"
+    assert res13_p1["has_next"] is True, "Thất bại: Trang 1 phải có has_next=True"
+    assert res13_p1["has_prev"] is False, "Thất bại: Trang 1 phải có has_prev=False"
+    print(f"  ✅ Trang 1: 4 món, total_pages={res13_p1['total_pages']}, has_next={res13_p1['has_next']}, has_prev={res13_p1['has_prev']}")
+
+    res13_p2, _ = search_dishes(keyword="", page=2, limit=4)
+    assert len(res13_p2["data"]) == 4, "Thất bại: Trang 2 phải có 4 món"
+    assert res13_p2["data"][0]["id"] != res13_p1["data"][0]["id"], "Thất bại: Món trang 2 phải khác trang 1"
+    assert res13_p2["has_next"] is True, "Thất bại: Trang 2 phải có has_next=True"
+    assert res13_p2["has_prev"] is True, "Thất bại: Trang 2 phải có has_prev=True"
+    print(f"  ✅ Trang 2: 4 món tiếp theo, has_next={res13_p2['has_next']}, has_prev={res13_p2['has_prev']}")
+
+    res13_p3, _ = search_dishes(keyword="", page=3, limit=4)
+    assert len(res13_p3["data"]) == 4, "Thất bại: Trang 3 phải có 4 món cuối"
+    assert res13_p3["has_next"] is False, "Thất bại: Trang cuối phải có has_next=False"
+    assert res13_p3["has_prev"] is True, "Thất bại: Trang cuối phải có has_prev=True"
+    print(f"  ✅ Trang 3 (cuối): 4 món cuối, has_next={res13_p3['has_next']}, has_prev={res13_p3['has_prev']}")
+
+    # Trang vượt quá giới hạn
+    res13_out, _ = search_dishes(keyword="", page=99, limit=4)
+    assert len(res13_out["data"]) == 0, "Thất bại: Trang vượt quá phải trả về danh sách rỗng"
+    assert res13_out["has_next"] is False, "Thất bại: has_next phải là False"
+    print("  ✅ Trang vượt quá giới hạn (page=99) -> Trả về data=[] và thông báo hợp lệ.")
+    print("  -> TEST 13 PASSED!\n")
+
+    # 14. Test từ khóa không tồn tại
+    print("[TEST 14] Tìm kiếm từ khóa không tồn tại trong thực đơn:")
+    res14, status14 = search_dishes(keyword="MonAnKhongTonTai999")
+    assert status14 == 200, "Thất bại: Status code phải là 200"
+    assert res14["total_items"] == 0, "Thất bại: total_items phải bằng 0"
+    assert res14["total_pages"] == 0, "Thất bại: total_pages phải bằng 0"
+    assert len(res14["data"]) == 0, "Thất bại: data phải rỗng"
+    assert "Không tìm thấy món ăn" in res14["message"], "Thất bại: Thiếu thông báo không tìm thấy"
+    print(f"  ✅ Phản hồi chuẩn: {res14['message']}")
+    print("  -> TEST 14 PASSED!\n")
 
     print("=" * 60)
     print("  🎉 TẤT CẢ CÁC BÀI TEST ĐỀU THÀNH CÔNG RỰC RỠ (100% PASS)!")

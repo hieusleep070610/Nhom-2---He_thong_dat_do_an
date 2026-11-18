@@ -13,6 +13,7 @@ Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & 
 | **`TF1A6E9`** | Frontend (FE) | Trang xem thực đơn theo ngày nối API (chọn ngày, trạng thái hết món, đang tải và rỗng) | `feature/tf1a6e9-ngan` |
 | **`TF1A785`** | Backend (BE) | Viết API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng) | `feature/tf1a785-ngan` |
 | **`TF1A86F`** | Frontend (FE) | Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn | `feature/tf1a86f-ngan` |
+| **`TF1A8D7`** | Backend (BE) | Viết API tìm món theo tên, có phân trang và xử lý từ khóa rỗng | `feature/tf1a8d7-ngan` |
 
 ---
 
@@ -32,6 +33,7 @@ python app.py
 Sau khi chạy lệnh, bạn có thể mở các đường dẫn sau trên trình duyệt:
 - 🌐 **Giao diện Web Thực Đơn Ngày**: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 - 🍲 **Trang Chi Tiết Món Ăn (Task TF1A86F)**: [http://127.0.0.1:5000/dish-detail.html?id=dish-1](http://127.0.0.1:5000/dish-detail.html?id=dish-1)
+- 🔍 **API tìm kiếm món ăn (Task TF1A8D7)**: [http://127.0.0.1:5000/api/dishes/search?q=cơm&page=1&limit=4](http://127.0.0.1:5000/api/dishes/search?q=cơm&page=1&limit=4)
 - 📡 **API thực đơn hôm nay**: [http://127.0.0.1:5000/api/menu](http://127.0.0.1:5000/api/menu)
 - 📡 **API thực đơn theo ngày bất kỳ**: [http://127.0.0.1:5000/api/menu?date=2026-11-20](http://127.0.0.1:5000/api/menu?date=2026-11-20)
 - 📡 **API chi tiết món ăn (Task TF1A785)**: [http://127.0.0.1:5000/api/dishes/dish-1](http://127.0.0.1:5000/api/dishes/dish-1)
@@ -295,7 +297,128 @@ git push -u origin feature/tf1a86f-ngan
 ---
 
 ## 📤 9. Danh Sách Các Nhánh & Pull Request Khác
+* **Task BE TF1A8D7**: Nhánh `feature/tf1a8d7-ngan` | PR: `TF1A8D7: [BE] API tìm kiếm món ăn theo tên, có phân trang và xử lý từ khóa rỗng`
 * **Task FE TF1A86F**: Nhánh `feature/tf1a86f-ngan` | PR: `TF1A86F: [FE] Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn`
 * **Task BE TF1A785**: Nhánh `feature/tf1a785-ngan` | PR: `TF1A785: [BE] API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng)`
 * **Task FE TF1A6E9**: Nhánh `feature/tf1a6e9-ngan` | PR: `TF1A6E9: [FE] Trang xem thực đơn theo ngày nối API`
 * **Task BE TF1A638**: Nhánh `feature/tf1a638-ngan` | PR: `TF1A638: API xem thực đơn theo ngày kèm số suất còn lại`
+
+---
+
+## 🔍 10. Tài Liệu Chi Tiết API Tìm Kiếm Món Ăn (Task TF1A8D7)
+
+API Backend **Tìm kiếm món ăn theo tên** đáp ứng đầy đủ các yêu cầu nghiệp vụ:
+1. **Tìm kiếm món theo tên**: Tìm kiếm linh hoạt không phân biệt hoa thường (case-insensitive), hỗ trợ cả tiếng Việt có dấu (`cơm`, `phở`) và không dấu (`com`, `pho bo`, `ga`).
+2. **Phân trang (Pagination)**: Tham số `page` (trang hiện tại, mặc định 1) và `limit` (số món mỗi trang, mặc định 6). Trả về metadata đầy đủ gồm `page`, `limit`, `total_items`, `total_pages`, `has_next`, `has_prev`.
+3. **Xử lý từ khóa rỗng (Empty Keyword Handling)**: Khi từ khóa rỗng, chỉ gồm khoảng trắng hoặc không truyền, API tự động trả về toàn bộ danh sách món ăn được phân trang kèm cờ `is_empty_keyword: true` và thông điệp giải thích rõ ràng. Hỗ trợ thêm cờ `strict_empty=true` nếu cần bắt lỗi 400.
+
+### Endpoint: `GET /api/dishes/search` hoặc `GET /api/search`
+
+#### Query Parameters:
+| Tham số | Kiểu dữ liệu | Mặc định | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `q` / `keyword` / `name` | string | `""` | Từ khóa tìm kiếm theo tên món (có dấu hoặc không dấu) |
+| `page` | integer | `1` | Số thứ tự trang cần lấy (bắt đầu từ 1) |
+| `limit` / `page_size` | integer | `6` | Số lượng món ăn tối đa trên một trang (tối đa 50) |
+| `date` | string (YYYY-MM-DD) | `None` | (Tùy chọn) Ngày phục vụ để lấy số suất còn lại theo ngày |
+| `strict_empty` | boolean | `false` | Nếu `true`, trả về lỗi HTTP 400 khi từ khóa rỗng |
+
+#### Ví Dụ 1: Tìm kiếm theo tên có dấu
+- **Request**: `GET http://127.0.0.1:5000/api/dishes/search?q=Cơm&page=1&limit=4`
+- **Response**:
+```json
+{
+  "success": true,
+  "task_id": "TF1A8D7",
+  "keyword": "Cơm",
+  "is_empty_keyword": false,
+  "page": 1,
+  "limit": 4,
+  "total_items": 4,
+  "total_pages": 1,
+  "has_next": false,
+  "has_prev": false,
+  "pagination": {
+    "page": 1,
+    "limit": 4,
+    "total_items": 4,
+    "total_pages": 1,
+    "has_next": false,
+    "has_prev": false
+  },
+  "message": "Tìm thấy 4 món ăn phù hợp với từ khóa 'Cơm'.",
+  "data": [
+    {
+      "id": "dish-1",
+      "name": "Cơm Tấm Sườn Bì Chả Đặc Biệt",
+      "category": "mon-chinh",
+      "category_name": "Món chính",
+      "meal_time": "Trưa & Tối",
+      "price": 52000,
+      "price_formatted": "52.000 ₫",
+      "original_price": 60000,
+      "stock": 25,
+      "is_available": true,
+      "tag": "hot",
+      "tag_label": "Bán chạy",
+      "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+      "description": "Sườn cốt lết ướp mật ong nướng than hồng thơm lừng...",
+      "calories": "650 kcal",
+      "preparation_time": "10 - 15 phút"
+    }
+  ]
+}
+```
+
+#### Ví Dụ 2: Tìm kiếm theo tên không dấu (Fuzzy/Unaccent Matching)
+- **Request**: `GET http://127.0.0.1:5000/api/dishes/search?q=pho+bo`
+- **Response**: Tự động nhận diện và khớp chính xác món `"Phở Bò Tái Lăn Hà Nội"`.
+
+#### Ví Dụ 3: Xử lý từ khóa rỗng (Empty Keyword Handling)
+- **Request**: `GET http://127.0.0.1:5000/api/dishes/search?q=&page=1&limit=6`
+- **Response**:
+```json
+{
+  "success": true,
+  "task_id": "TF1A8D7",
+  "keyword": "",
+  "is_empty_keyword": true,
+  "page": 1,
+  "limit": 6,
+  "total_items": 12,
+  "total_pages": 2,
+  "has_next": true,
+  "has_prev": false,
+  "message": "Từ khóa tìm kiếm rỗng. Hệ thống trả về toàn bộ danh sách món ăn có phân trang.",
+  "data": [ ... 6 món đầu tiên ... ]
+}
+```
+
+#### Ví Dụ 4: Phân trang trang tiếp theo (Page 2)
+- **Request**: `GET http://127.0.0.1:5000/api/dishes/search?q=&page=2&limit=6`
+- **Response**: Trả về 6 món còn lại, `has_next: false`, `has_prev: true`.
+
+---
+
+## 📤 11. Hướng Dẫn Đẩy Nhánh Lên GitHub (Nộp Task TF1A8D7)
+
+Chạy các lệnh sau trong PowerShell hoặc Git Bash:
+
+```powershell
+# 1. Tạo và chuyển sang nhánh mới cho task BE TF1A8D7
+git checkout -b feature/tf1a8d7-ngan
+
+# 2. Thêm file và commit đúng mã task TF1A8D7
+git add .
+git commit -m "TF1A8D7: [BE] API tìm kiếm món ăn theo tên, có phân trang và xử lý từ khóa rỗng"
+
+# 3. Đẩy nhánh lên GitHub
+git push -u origin feature/tf1a8d7-ngan
+```
+
+### 🔗 Minh Chứng Nộp Bài (Task TF1A8D7):
+- **Link Nhánh GitHub**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1a8d7-ngan`
+- **Link Tạo / Nộp Pull Request**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/pull/new/feature/tf1a8d7-ngan`
+  *(Tiêu đề PR: `TF1A8D7: [BE] API tìm kiếm món ăn theo tên, có phân trang và xử lý từ khóa rỗng`)*

@@ -9,7 +9,9 @@ Mã Task: TF1A638
 import os
 import sys
 import json
+import math
 import mimetypes
+import unicodedata
 import urllib.parse
 from datetime import datetime, date
 
@@ -672,6 +674,156 @@ def get_dish_detail(dish_id: str):
         "data": data
     }, 200
 
+def remove_accents(input_str: str) -> str:
+    """Loại bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu (ví dụ: 'phở bò' -> 'pho bo')"""
+    if not input_str:
+        return ""
+    s = str(input_str).replace("đ", "d").replace("Đ", "d")
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    return s.lower().strip()
+
+def search_dishes(keyword: str = None, page: int = 1, limit: int = 6, date_str: str = None, strict_empty: bool = False):
+    """
+    [CORE API] Tìm kiếm món ăn theo tên, có phân trang và xử lý từ khóa rỗng.
+    Mã Task: TF1A8D7
+    
+    Tham số:
+      - keyword (str): Từ khóa tìm kiếm món theo tên (ví dụ: "cơm", "phở", "bò", "gà", "").
+      - page (int): Số thứ tự trang (bắt đầu từ 1, mặc định 1).
+      - limit (int): Số phần tử trên mỗi trang (mặc định 6, giới hạn tối đa 50).
+      - date_str (str): Ngày (YYYY-MM-DD) để lấy số suất tương ứng theo ngày nếu có.
+      - strict_empty (bool): Nếu True, khi từ khóa rỗng sẽ trả về lỗi HTTP 400. Mặc định False (trả về tất cả món kèm thông báo).
+    """
+    raw_keyword = keyword if keyword is not None else ""
+    clean_keyword = raw_keyword.strip()
+    is_empty_keyword = (len(clean_keyword) == 0)
+
+    # Xử lý chế độ strict khi từ khóa rỗng nếu client yêu cầu
+    if is_empty_keyword and strict_empty:
+        return {
+            "success": False,
+            "task_id": "TF1A8D7",
+            "error": "Từ khóa tìm kiếm không được để trống (strict_empty=True)",
+            "code": "EMPTY_KEYWORD"
+        }, 400
+
+    # Chuẩn hóa tham số phân trang page và limit
+    try:
+        page_num = int(page)
+    except (ValueError, TypeError):
+        page_num = 1
+    if page_num < 1:
+        page_num = 1
+
+    try:
+        limit_num = int(limit)
+    except (ValueError, TypeError):
+        limit_num = 6
+    if limit_num < 1:
+        limit_num = 6
+    elif limit_num > 50:
+        limit_num = 50
+
+    # Khởi tạo kho ngày nếu có date_str
+    day_stocks = None
+    if date_str:
+        try:
+            dt = parse_date_str(date_str)
+            d_key = dt.strftime("%Y-%m-%d")
+            initialize_daily_stock_if_needed(d_key, dt)
+            day_stocks = DAILY_STOCK_DB.get(d_key, {})
+        except Exception:
+            pass
+
+    # Xử lý tìm kiếm món theo tên và từ khóa rỗng
+    if is_empty_keyword:
+        matched_dishes = list(DISH_CATALOG)
+        message = "Từ khóa tìm kiếm rỗng. Hệ thống trả về toàn bộ danh sách món ăn có phân trang."
+    else:
+        norm_keyword = remove_accents(clean_keyword)
+        lower_keyword = clean_keyword.lower()
+        matched_dishes = []
+
+        for dish in DISH_CATALOG:
+            dish_name = dish.get("name", "")
+            norm_name = remove_accents(dish_name)
+            lower_name = dish_name.lower()
+
+            # 1. Khớp chuỗi con chính xác có dấu hoặc không dấu trong tên món
+            if lower_keyword in lower_name or norm_keyword in norm_name:
+                matched_dishes.append(dish)
+            # 2. Khớp tất cả các từ trong cụm từ khóa (ví dụ: "bò tái" khớp "Phở Bò Tái Lăn...")
+            elif len(norm_keyword.split()) > 1 and all(w in norm_name for w in norm_keyword.split()):
+                matched_dishes.append(dish)
+
+        if not matched_dishes:
+            message = f"Không tìm thấy món ăn nào có tên phù hợp với từ khóa '{clean_keyword}'."
+        else:
+            message = f"Tìm thấy {len(matched_dishes)} món ăn phù hợp với từ khóa '{clean_keyword}'."
+
+    # Thực hiện phân trang (Pagination)
+    total_items = len(matched_dishes)
+    total_pages = math.ceil(total_items / limit_num) if total_items > 0 else 0
+    start_idx = (page_num - 1) * limit_num
+    end_idx = start_idx + limit_num
+    paged_slice = matched_dishes[start_idx:end_idx]
+
+    has_next = (page_num < total_pages)
+    has_prev = (page_num > 1 and total_pages > 0)
+
+    if total_items > 0 and page_num > total_pages:
+        message = f"Trang {page_num} vượt quá tổng số {total_pages} trang hiện có."
+
+    # Định dạng dữ liệu trả về cho từng món
+    data_items = []
+    for dish in paged_slice:
+        dish_id = dish["id"]
+        stock = day_stocks.get(dish_id, dish["base_stock"]) if day_stocks else dish["base_stock"]
+        item = {
+            "id": dish["id"],
+            "name": dish["name"],
+            "category": dish["category"],
+            "category_name": dish["category_name"],
+            "meal_time": dish["meal_time"],
+            "price": dish["price"],
+            "price_formatted": f"{dish['price']:,} ₫".replace(",", "."),
+            "original_price": dish.get("original_price"),
+            "stock": stock,
+            "is_available": stock > 0,
+            "tag": dish.get("tag"),
+            "tag_label": dish.get("tag_label"),
+            "image_url": dish.get("image_url"),
+            "description": dish.get("description"),
+            "calories": dish.get("calories"),
+            "preparation_time": dish.get("preparation_time")
+        }
+        data_items.append(item)
+
+    result = {
+        "success": True,
+        "task_id": "TF1A8D7",
+        "keyword": clean_keyword,
+        "is_empty_keyword": is_empty_keyword,
+        "page": page_num,
+        "limit": limit_num,
+        "total_items": total_items,
+        "total_pages": total_pages,
+        "has_next": has_next,
+        "has_prev": has_prev,
+        "pagination": {
+            "page": page_num,
+            "limit": limit_num,
+            "total_items": total_items,
+            "total_pages": total_pages,
+            "has_next": has_next,
+            "has_prev": has_prev
+        },
+        "message": message,
+        "data": data_items
+    }
+    return result, 200
+
 # ==============================================================================
 # BỘ XỬ LÝ SERVER (HỖ TRỢ FLASK HOẶC STANDALONE HTTP KHÔNG CẦN CÀI THƯ VIỆN)
 # ==============================================================================
@@ -750,6 +902,25 @@ if USE_FLASK:
         res, status_code = get_dish_detail(dish_id)
         return jsonify(res), status_code
 
+    @app.route("/api/dishes/search", methods=["GET"])
+    @app.route("/api/search", methods=["GET"])
+    @app.route("/api/dish/search", methods=["GET"])
+    def api_search_dishes():
+        keyword = request.args.get("q") or request.args.get("keyword") or request.args.get("name")
+        page = request.args.get("page", 1)
+        limit = request.args.get("limit") or request.args.get("page_size", 6)
+        date_str = request.args.get("date")
+        strict_empty = request.args.get("strict_empty", "").lower() in ("1", "true", "yes")
+
+        res, status_code = search_dishes(
+            keyword=keyword,
+            page=page,
+            limit=limit,
+            date_str=date_str,
+            strict_empty=strict_empty
+        )
+        return jsonify(res), status_code
+
     @app.route("/api/order", methods=["POST"])
     def api_order():
         data = request.get_json() or {}
@@ -800,6 +971,31 @@ else:
                     self._send_json(200, res)
                 except ValueError as e:
                     self._send_json(400, {"success": False, "error": str(e)})
+                return
+
+            # API: Tìm kiếm món ăn theo tên (Task TF1A8D7: tìm theo tên, phân trang, xử lý từ khóa rỗng)
+            if path in ("/api/dishes/search", "/api/search", "/api/dish/search"):
+                keyword = None
+                if "q" in params:
+                    keyword = params["q"][0]
+                elif "keyword" in params:
+                    keyword = params["keyword"][0]
+                elif "name" in params:
+                    keyword = params["name"][0]
+
+                page = params.get("page", [1])[0]
+                limit = params.get("limit", params.get("page_size", [6]))[0]
+                date_str = params.get("date", [None])[0]
+                strict_empty = "strict_empty" in params and params["strict_empty"][0].lower() in ("1", "true", "yes")
+
+                res, status_code = search_dishes(
+                    keyword=keyword,
+                    page=page,
+                    limit=limit,
+                    date_str=date_str,
+                    strict_empty=strict_empty
+                )
+                self._send_json(status_code, res)
                 return
 
             # API: Chi tiết món ăn (Task TF1A785: ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng)
@@ -881,6 +1077,7 @@ def run_server(initial_port=5000):
             print(f"  👉 API xem thực đơn hôm nay       : http://{host}:{port}/api/menu")
             print(f"  👉 API xem theo ngày bất kỳ      : http://{host}:{port}/api/menu?date={today_str}")
             print(f"  👉 API chi tiết món ăn (TF1A785) : http://{host}:{port}/api/dishes/dish-1")
+            print(f"  👉 API tìm kiếm món ăn (TF1A8D7) : http://{host}:{port}/api/dishes/search?q=cơm&page=1&limit=4")
             print(f"  👉 Trang chi tiết món (TF1A86F)  : http://{host}:{port}/dish-detail.html?id=dish-1")
             print("=" * 68)
 
