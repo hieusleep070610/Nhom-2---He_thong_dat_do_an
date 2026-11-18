@@ -206,7 +206,16 @@ document.addEventListener('DOMContentLoaded', () => {
         dailyMenuCache: {}, // { dateKey: { dishes: [...], meta: {...} } }
         isBackendConnected: false,
         isLoading: false,
-        isDemoEmptyDate: false
+        isDemoEmptyDate: false,
+        // State cho Task TF1A94A: Tìm kiếm & Gợi ý
+        searchSuggestions: [],
+        focusedSuggestionIndex: -1,
+        isSearchMode: false,
+        searchKeyword: '',
+        searchPage: 1,
+        searchLimit: 6,
+        searchTotalPages: 0,
+        searchTotalItems: 0
     };
 
     // DOM Elements
@@ -235,13 +244,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnEmptyGoToday = document.getElementById('btnEmptyGoToday');
     const btnEmptyGoTomorrow = document.getElementById('btnEmptyGoTomorrow');
 
-    const emptySearchState = document.getElementById('emptySearchState');
-    const emptySearchDesc = document.getElementById('emptySearchDesc');
-    const resetFilterBtn = document.getElementById('resetFilterBtn');
-
-    // Search and Filters
+    // Task TF1A94A: Ô tìm kiếm, gợi ý khi gõ & trang kết quả
+    const searchBoxWrapper = document.getElementById('searchBoxWrapper');
     const searchInput = document.getElementById('searchInput');
     const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const searchSuggestionsDropdown = document.getElementById('searchSuggestionsDropdown');
+    const suggestionsList = document.getElementById('suggestionsList');
+    const suggestionsKeyword = document.getElementById('suggestionsKeyword');
+    const btnViewAllResults = document.getElementById('btnViewAllResults');
+
+    const searchResultsBanner = document.getElementById('searchResultsBanner');
+    const searchResultQueryText = document.getElementById('searchResultQueryText');
+    const searchResultCountText = document.getElementById('searchResultCountText');
+    const btnClearSearchMode = document.getElementById('btnClearSearchMode');
+
+    const emptySearchState = document.getElementById('emptySearchState');
+    const emptySearchHeading = document.getElementById('emptySearchHeading');
+    const emptySearchDesc = document.getElementById('emptySearchDesc');
+    const popularKeywordsList = document.getElementById('popularKeywordsList');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+
+    const searchPaginationBar = document.getElementById('searchPaginationBar');
+    const searchPaginationInfo = document.getElementById('searchPaginationInfo');
+    const btnSearchPrevPage = document.getElementById('btnSearchPrevPage');
+    const btnSearchNextPage = document.getElementById('btnSearchNextPage');
+
     const categoryFilters = document.getElementById('categoryFilters');
     const sortSelect = document.getElementById('sortSelect');
     
@@ -315,6 +342,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return d1.getFullYear() === d2.getFullYear() &&
                d1.getMonth() === d2.getMonth() &&
                d1.getDate() === d2.getDate();
+    };
+
+    const removeAccentsVN = (str) => {
+        if (!str) return '';
+        return String(str)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd')
+            .replace(/Đ/g, 'd')
+            .toLowerCase()
+            .trim();
+    };
+
+    const highlightKeyword = (text, keyword) => {
+        if (!keyword || !text) return text || '';
+        const cleanKwd = keyword.trim();
+        if (!cleanKwd) return text;
+
+        const words = cleanKwd.split(/\s+/).filter(w => w.length > 0);
+        if (words.length === 0) return text;
+
+        const pattern = words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+        const regex = new RegExp(`(${pattern})`, 'gi');
+        return String(text).replace(regex, '<span class="search-highlight">$1</span>');
     };
 
     // =========================================================================
@@ -607,24 +658,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lowerDesc = (dish.description || '').toLowerCase();
                 return lowerName.includes(term) || normName.includes(normTerm) || lowerDesc.includes(term);
             });
+
+            // Hiển thị thanh Search Results Banner (Task TF1A94A)
+            if (searchResultsBanner) {
+                searchResultsBanner.style.display = 'flex';
+                if (searchResultQueryText) searchResultQueryText.textContent = `"${state.searchTerm}"`;
+                if (searchResultCountText) searchResultCountText.innerHTML = `Tìm thấy <strong>${filteredDishes.length}</strong> món ăn phù hợp với từ khóa của bạn`;
+            }
+        } else {
+            if (searchResultsBanner) {
+                searchResultsBanner.style.display = 'none';
+            }
         }
 
         // =====================================================================
         // TRƯỜNG HỢP 2: TRẠNG THÁI RỖNG - KHÔNG TÌM THẤY KẾT QUẢ TÌM KIẾM / LỌC
         // =====================================================================
         if (filteredDishes.length === 0) {
-            console.log(`[TF1A6E9] Trạng thái rỗng: Không tìm thấy món ăn phù hợp với bộ lọc.`);
+            console.log(`[TF1A6E9 & TF1A94A] Trạng thái rỗng: Không tìm thấy món ăn phù hợp.`);
             menuGrid.style.display = 'none';
             emptyMenuState.style.display = 'none';
             emptySearchState.style.display = 'block';
 
             if (state.searchTerm.trim()) {
-                emptySearchDesc.textContent = `Không có món ăn nào khớp với từ khóa "${state.searchTerm}". Hãy thử từ khóa khác nhé!`;
+                if (emptySearchHeading) {
+                    emptySearchHeading.textContent = `Không tìm thấy món ăn phù hợp với "${state.searchTerm}"`;
+                }
+                emptySearchDesc.innerHTML = `Rất tiếc, hệ thống không tìm thấy món ăn nào khớp với từ khóa <strong>"${state.searchTerm}"</strong>. Hãy thử kiểm tra lại chính tả hoặc chọn các từ khóa món ăn phổ biến dưới đây:`;
             } else if (state.selectedCategory === 'out-of-stock-only') {
+                if (emptySearchHeading) emptySearchHeading.textContent = 'Tất cả các món đều còn suất';
                 emptySearchDesc.textContent = `Tuyệt vời! Ngày hôm nay hiện không có món nào bị hết suất. Tất cả các món đều sẵn sàng phục vụ!`;
             } else if (state.selectedCategory === 'available-only') {
+                if (emptySearchHeading) emptySearchHeading.textContent = 'Danh mục này đã hết suất';
                 emptySearchDesc.textContent = `Hiện các món trong danh mục này đã hết suất phục vụ cho ngày này.`;
             } else {
+                if (emptySearchHeading) emptySearchHeading.textContent = 'Chưa có món ăn trong danh mục';
                 emptySearchDesc.textContent = `Danh mục này hiện chưa có món ăn phù hợp cho ngày đã chọn.`;
             }
             return;
@@ -1168,22 +1236,426 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sortSelect.addEventListener('change', (e) => {
         state.sortBy = e.target.value;
-        renderMenuGrid();
+        if (state.isSearchMode) {
+            executeSearch(state.searchKeyword, state.searchPage);
+        } else {
+            renderMenuGrid();
+        }
     });
 
+    // =========================================================================
+    // TASK TF1A94A: Ô TÌM KIẾM MÓN ĂN VỚI GỢI Ý KHI GÕ, TRANG KẾT QUẢ & NOT FOUND
+    // =========================================================================
+    let searchDebounceTimer = null;
+
+    /**
+     * Gọi API tìm kiếm Backend (Task TF1A8D7) để lấy gợi ý món ăn khi gõ
+     */
+    const fetchSuggestions = async (query) => {
+        const cleanQuery = (query || '').trim();
+        if (!cleanQuery) return [];
+
+        const candidateUrls = [
+            `/api/dishes/search?q=${encodeURIComponent(cleanQuery)}&limit=5`,
+            `http://127.0.0.1:5000/api/dishes/search?q=${encodeURIComponent(cleanQuery)}&limit=5`,
+            `http://127.0.0.1:5001/api/dishes/search?q=${encodeURIComponent(cleanQuery)}&limit=5`,
+            `http://127.0.0.1:8000/api/dishes/search?q=${encodeURIComponent(cleanQuery)}&limit=5`
+        ];
+
+        for (const url of candidateUrls) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1200);
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && Array.isArray(data.data)) {
+                        return data.data;
+                    }
+                }
+            } catch (err) {
+                // Tiếp tục thử URL tiếp theo
+            }
+        }
+
+        // Dự phòng Offline Fallback nếu chưa kết nối Backend API
+        const normKwd = removeAccentsVN(cleanQuery);
+        const lowerKwd = cleanQuery.toLowerCase();
+        const matched = LOCAL_FALLBACK_REPOSITORY.filter(d => {
+            const lowerName = d.name.toLowerCase();
+            const normName = removeAccentsVN(d.name);
+            return lowerName.includes(lowerKwd) || normName.includes(normKwd);
+        });
+        return matched.slice(0, 5);
+    };
+
+    /**
+     * Render danh sách dropdown gợi ý món ăn khi gõ (Task TF1A94A)
+     */
+    const renderSuggestions = (items, query) => {
+        state.searchSuggestions = items || [];
+        state.focusedSuggestionIndex = -1;
+
+        if (!items || items.length === 0) {
+            suggestionsList.innerHTML = `
+                <div class="suggestion-no-result">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>Không tìm thấy gợi ý cho "<strong>${query}</strong>"</span>
+                    <small>Nhấn Enter hoặc nút bên dưới để xem trang thông báo</small>
+                </div>
+            `;
+        } else {
+            suggestionsList.innerHTML = items.map((dish, idx) => {
+                const highlightedName = highlightKeyword(dish.name, query);
+                const isOut = dish.stock === 0 || dish.is_available === false;
+                const isLow = !isOut && dish.stock <= 8;
+                const stockTagClass = isOut ? 'out' : (isLow ? 'low' : 'avail');
+                const stockTagLabel = isOut ? 'Hết suất' : (isLow ? `Còn ${dish.stock} suất!` : `Còn ${dish.stock} suất`);
+                
+                const catName = dish.category_name || dish.categoryName || (
+                    dish.category === 'mon-chinh' ? 'Món chính' :
+                    dish.category === 'mon-nuoc' ? 'Món nước' :
+                    dish.category === 'mon-chay' ? 'Món chay' : 'Tráng miệng & Đồ uống'
+                );
+
+                const priceDisplay = dish.price_formatted || formatCurrency(dish.price);
+                const imgUrl = dish.image_url || dish.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80';
+
+                return `
+                    <div class="suggestion-item" data-index="${idx}" data-id="${dish.id}">
+                        <img src="${imgUrl}" alt="${dish.name}" class="suggestion-thumb">
+                        <div class="suggestion-info">
+                            <span class="suggestion-name">${highlightedName}</span>
+                            <div class="suggestion-meta-row">
+                                <span class="suggestion-cat-tag">${catName}</span>
+                                <span class="suggestion-price">${priceDisplay}</span>
+                                <span class="suggestion-stock-tag ${stockTagClass}">${stockTagLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Sự kiện click vào từng món trong danh sách gợi ý
+            suggestionsList.querySelectorAll('.suggestion-item').forEach(itemEl => {
+                itemEl.addEventListener('click', () => {
+                    const idx = parseInt(itemEl.getAttribute('data-index'), 10);
+                    const selectedDish = state.searchSuggestions[idx];
+                    if (selectedDish) {
+                        hideSuggestions();
+                        searchInput.value = selectedDish.name;
+                        // Chuyển trực tiếp sang trang chi tiết món ăn (Task TF1A86F)
+                        window.location.href = `dish-detail.html?id=${selectedDish.id}&date=${formatDateKey(state.selectedDate)}`;
+                    }
+                });
+            });
+        }
+
+        // Cập nhật từ khóa ở nút footer dropdown
+        if (suggestionsKeyword) {
+            suggestionsKeyword.textContent = query;
+        }
+
+        searchSuggestionsDropdown.style.display = 'block';
+    };
+
+    /**
+     * Ẩn dropdown gợi ý
+     */
+    const hideSuggestions = () => {
+        searchSuggestionsDropdown.style.display = 'none';
+        state.focusedSuggestionIndex = -1;
+    };
+
+    /**
+     * Cập nhật highlight item đang được focus bằng bàn phím (Arrow Up/Down)
+     */
+    const updateFocusedSuggestion = () => {
+        const items = suggestionsList.querySelectorAll('.suggestion-item');
+        items.forEach((el, idx) => {
+            el.classList.toggle('active-focus', idx === state.focusedSuggestionIndex);
+            if (idx === state.focusedSuggestionIndex) {
+                el.scrollIntoView({ block: 'nearest' });
+            }
+        });
+    };
+
+    /**
+     * Thực hiện tìm kiếm món ăn và hiển thị Trang Kết Quả (Task TF1A94A & TF1A8D7)
+     */
+    const executeSearch = async (keyword, page = 1) => {
+        const cleanKwd = (keyword || '').trim();
+        state.searchKeyword = cleanKwd;
+        state.searchPage = page;
+        state.searchTerm = cleanKwd;
+        searchInput.value = cleanKwd;
+        clearSearchBtn.style.display = cleanKwd ? 'block' : 'none';
+        hideSuggestions();
+
+        if (!cleanKwd) {
+            // Thoát chế độ tìm kiếm, quay lại thực đơn bình thường
+            state.isSearchMode = false;
+            searchResultsBanner.style.display = 'none';
+            searchPaginationBar.style.display = 'none';
+            emptySearchState.style.display = 'none';
+            renderMenuGrid();
+            return;
+        }
+
+        state.isSearchMode = true;
+        setLoading(true, `kết quả tìm kiếm cho "${cleanKwd}"`);
+
+        // Gọi Backend API tìm kiếm (Task TF1A8D7)
+        let searchResult = null;
+        const candidateUrls = [
+            `/api/dishes/search?q=${encodeURIComponent(cleanKwd)}&page=${page}&limit=${state.searchLimit}&date=${formatDateKey(state.selectedDate)}`,
+            `http://127.0.0.1:5000/api/dishes/search?q=${encodeURIComponent(cleanKwd)}&page=${page}&limit=${state.searchLimit}&date=${formatDateKey(state.selectedDate)}`,
+            `http://127.0.0.1:5001/api/dishes/search?q=${encodeURIComponent(cleanKwd)}&page=${page}&limit=${state.searchLimit}&date=${formatDateKey(state.selectedDate)}`,
+            `http://127.0.0.1:8000/api/dishes/search?q=${encodeURIComponent(cleanKwd)}&page=${page}&limit=${state.searchLimit}&date=${formatDateKey(state.selectedDate)}`
+        ];
+
+        for (const url of candidateUrls) {
+            try {
+                const res = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+                if (res.ok) {
+                    const resJson = await res.json();
+                    if (resJson.success) {
+                        searchResult = resJson;
+                        break;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // Offline Fallback nếu Backend chưa chạy
+        if (!searchResult) {
+            const normTerm = removeAccentsVN(cleanKwd);
+            const lowerTerm = cleanKwd.toLowerCase();
+            let allMatched = LOCAL_FALLBACK_REPOSITORY.filter(d => {
+                const lowerName = d.name.toLowerCase();
+                const normName = removeAccentsVN(d.name);
+                const lowerDesc = (d.description || '').toLowerCase();
+                return lowerName.includes(lowerTerm) || normName.includes(normTerm) || lowerDesc.includes(lowerTerm);
+            });
+
+            // Lọc theo danh mục nếu người dùng đang chọn danh mục cụ thể
+            if (state.selectedCategory !== 'all') {
+                allMatched = allMatched.filter(dish => {
+                    if (state.selectedCategory === 'available-only') return dish.stock > 0;
+                    if (state.selectedCategory === 'out-of-stock-only') return dish.stock === 0;
+                    return dish.category === state.selectedCategory;
+                });
+            }
+
+            // Sắp xếp
+            sortDishes(allMatched, state.sortBy);
+
+            const total = allMatched.length;
+            const totalPages = Math.ceil(total / state.searchLimit) || 0;
+            const startIdx = (page - 1) * state.searchLimit;
+            const pagedDishes = allMatched.slice(startIdx, startIdx + state.searchLimit).map(d => ({
+                id: d.id,
+                name: d.name,
+                category: d.category,
+                categoryName: d.category === 'mon-chinh' ? 'Món chính' : (d.category === 'mon-nuoc' ? 'Món nước' : (d.category === 'mon-chay' ? 'Món chay' : 'Tráng miệng')),
+                mealTime: d.mealTime || 'Trưa & Tối',
+                price: d.price,
+                originalPrice: d.originalPrice,
+                stock: d.stock,
+                initialStock: d.initialStock || 25,
+                isAvailable: d.stock > 0,
+                tag: d.tag,
+                tagLabel: d.tagLabel,
+                calories: d.calories || '550 kcal',
+                image: d.image,
+                description: d.description
+            }));
+
+            searchResult = {
+                success: true,
+                keyword: cleanKwd,
+                page: page,
+                limit: state.searchLimit,
+                total_items: total,
+                total_pages: totalPages,
+                has_next: page < totalPages,
+                has_prev: page > 1,
+                data: pagedDishes
+            };
+        }
+
+        setLoading(false);
+
+        // Hiển thị Banner Trang Kết Quả Tìm Kiếm (Task TF1A94A)
+        searchResultsBanner.style.display = 'flex';
+        searchResultQueryText.textContent = `"${cleanKwd}"`;
+        searchResultCountText.innerHTML = `Tìm thấy <strong>${searchResult.total_items}</strong> món ăn phù hợp với từ khóa của bạn`;
+
+        // Ẩn Empty Menu State
+        emptyMenuState.style.display = 'none';
+
+        if (searchResult.total_items === 0 || searchResult.data.length === 0) {
+            // =================================================================
+            // TRẠNG THÁI KHÔNG TÌM THẤY (NOT FOUND STATE - TASK TF1A94A)
+            // =================================================================
+            menuGrid.style.display = 'none';
+            searchPaginationBar.style.display = 'none';
+            emptySearchState.style.display = 'block';
+
+            emptySearchHeading.textContent = `Không tìm thấy món ăn phù hợp với "${cleanKwd}"`;
+            emptySearchDesc.innerHTML = `Rất tiếc, hệ thống không tìm thấy món ăn nào có tên khớp với từ khóa <strong>"${cleanKwd}"</strong>. Bạn hãy thử kiểm tra lại chính tả hoặc chọn các món ăn gợi ý phổ biến dưới đây nhé:`;
+        } else {
+            // HIỂN THỊ KẾT QUẢ TÌM KIẾM
+            emptySearchState.style.display = 'none';
+            menuGrid.style.display = 'grid';
+            menuGrid.innerHTML = '';
+
+            let dishesToRender = searchResult.data.map(d => ({
+                id: d.id,
+                name: d.name,
+                category: d.category,
+                categoryName: d.category_name || d.categoryName || 'Món ăn',
+                mealTime: d.meal_time || d.mealTime || 'Trưa & Tối',
+                price: d.price,
+                originalPrice: d.original_price || d.originalPrice || Math.round(d.price * 1.15),
+                stock: (typeof d.stock === 'number') ? d.stock : 10,
+                initialStock: d.initial_stock || d.initialStock || 25,
+                isAvailable: (typeof d.is_available === 'boolean') ? d.is_available : (d.stock > 0),
+                tag: d.tag,
+                tagLabel: d.tag_label || d.tagLabel,
+                calories: d.calories || '550 kcal',
+                image: d.image_url || d.image,
+                description: d.description || ''
+            }));
+
+            // Lọc theo danh mục nếu người dùng đang kích hoạt nút danh mục
+            if (state.selectedCategory !== 'all') {
+                dishesToRender = dishesToRender.filter(dish => {
+                    if (state.selectedCategory === 'available-only') return dish.stock > 0;
+                    if (state.selectedCategory === 'out-of-stock-only') return dish.stock === 0;
+                    return dish.category === state.selectedCategory;
+                });
+            }
+
+            // Sắp xếp
+            sortDishes(dishesToRender, state.sortBy);
+
+            dishesToRender.forEach(dish => {
+                const card = createFoodCardElement(dish);
+                menuGrid.appendChild(card);
+            });
+
+            // HIỂN THỊ THANH PHÂN TRANG (PAGINATION)
+            if (searchResult.total_pages > 1) {
+                searchPaginationBar.style.display = 'flex';
+                searchPaginationInfo.textContent = `Trang ${searchResult.page} / ${searchResult.total_pages} (Tổng ${searchResult.total_items} món)`;
+                btnSearchPrevPage.disabled = !searchResult.has_prev;
+                btnSearchNextPage.disabled = !searchResult.has_next;
+            } else {
+                searchPaginationBar.style.display = 'none';
+            }
+        }
+    };
+
+    // =========================================================================
+    // LẮNG NGHE SỰ KIỆN TÌM KIẾM & DROPDOWN GỢI Ý (TASK TF1A94A)
+    // =========================================================================
+
+    // Khi người dùng gõ vào ô tìm kiếm -> hiển thị dropdown gợi ý có debounce
     searchInput.addEventListener('input', (e) => {
-        state.searchTerm = e.target.value;
-        clearSearchBtn.style.display = state.searchTerm ? 'block' : 'none';
-        renderMenuGrid();
+        const val = e.target.value;
+        clearSearchBtn.style.display = val ? 'block' : 'none';
+
+        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+
+        if (!val.trim()) {
+            hideSuggestions();
+            if (state.isSearchMode) {
+                executeSearch('');
+            }
+            return;
+        }
+
+        searchDebounceTimer = setTimeout(async () => {
+            const suggestions = await fetchSuggestions(val);
+            renderSuggestions(suggestions, val.trim());
+        }, 180);
     });
 
+    // Điều hướng gợi ý bằng bàn phím (Arrow Up, Arrow Down, Enter, Escape)
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+            if (searchSuggestionsDropdown.style.display !== 'none' && state.searchSuggestions.length > 0) {
+                e.preventDefault();
+                state.focusedSuggestionIndex = (state.focusedSuggestionIndex + 1) % state.searchSuggestions.length;
+                updateFocusedSuggestion();
+            }
+        } else if (e.key === 'ArrowUp') {
+            if (searchSuggestionsDropdown.style.display !== 'none' && state.searchSuggestions.length > 0) {
+                e.preventDefault();
+                state.focusedSuggestionIndex = (state.focusedSuggestionIndex - 1 + state.searchSuggestions.length) % state.searchSuggestions.length;
+                updateFocusedSuggestion();
+            }
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (state.focusedSuggestionIndex >= 0 && state.searchSuggestions[state.focusedSuggestionIndex]) {
+                const dish = state.searchSuggestions[state.focusedSuggestionIndex];
+                hideSuggestions();
+                window.location.href = `dish-detail.html?id=${dish.id}&date=${formatDateKey(state.selectedDate)}`;
+            } else {
+                hideSuggestions();
+                executeSearch(searchInput.value.trim(), 1);
+            }
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    // Hiện lại gợi ý khi click/focus vào input nếu đang có text
+    searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim() && state.searchSuggestions.length > 0) {
+            searchSuggestionsDropdown.style.display = 'block';
+        }
+    });
+
+    // Ẩn gợi ý khi click ra ngoài ô tìm kiếm
+    document.addEventListener('click', (e) => {
+        if (searchBoxWrapper && !searchBoxWrapper.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    // Nút xóa từ khóa tìm kiếm (X)
     clearSearchBtn.addEventListener('click', () => {
         searchInput.value = '';
         state.searchTerm = '';
         clearSearchBtn.style.display = 'none';
-        renderMenuGrid();
+        hideSuggestions();
+        executeSearch('');
     });
 
+    // Nút xem tất cả kết quả ở footer gợi ý
+    if (btnViewAllResults) {
+        btnViewAllResults.addEventListener('click', () => {
+            executeSearch(searchInput.value.trim(), 1);
+        });
+    }
+
+    // Nút "Quay lại toàn bộ thực đơn" trên banner kết quả tìm kiếm
+    if (btnClearSearchMode) {
+        btnClearSearchMode.addEventListener('click', () => {
+            searchInput.value = '';
+            executeSearch('');
+            showToast('Đã quay lại toàn bộ thực đơn theo ngày', 'success');
+        });
+    }
+
+    // Nút đặt lại bộ lọc / xem tất cả món ăn trong Empty Search State
     resetFilterBtn.addEventListener('click', () => {
         searchInput.value = '';
         state.searchTerm = '';
@@ -1192,8 +1664,39 @@ document.addEventListener('DOMContentLoaded', () => {
         categoryFilters.querySelectorAll('.cat-pill').forEach(btn => {
             btn.classList.toggle('active', btn.getAttribute('data-category') === 'all');
         });
-        renderMenuGrid();
+        hideSuggestions();
+        executeSearch('');
     });
+
+    // Gắn sự kiện cho các chip từ khóa gợi ý phổ biến (Task TF1A94A - Not Found State)
+    if (popularKeywordsList) {
+        popularKeywordsList.querySelectorAll('.quick-keyword-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const kwd = chip.getAttribute('data-keyword');
+                searchInput.value = kwd;
+                executeSearch(kwd, 1);
+                showToast(`Đang tìm kiếm món "${kwd}"...`, 'success');
+            });
+        });
+    }
+
+    // Nút chuyển trang trước (Pagination - Prev Page)
+    if (btnSearchPrevPage) {
+        btnSearchPrevPage.addEventListener('click', () => {
+            if (state.searchPage > 1) {
+                executeSearch(state.searchKeyword, state.searchPage - 1);
+                window.scrollTo({ top: searchResultsBanner.offsetTop - 80, behavior: 'smooth' });
+            }
+        });
+    }
+
+    // Nút chuyển trang sau (Pagination - Next Page)
+    if (btnSearchNextPage) {
+        btnSearchNextPage.addEventListener('click', () => {
+            executeSearch(state.searchKeyword, state.searchPage + 1);
+            window.scrollTo({ top: searchResultsBanner.offsetTop - 80, behavior: 'smooth' });
+        });
+    }
 
     cartBtn.addEventListener('click', () => {
         cartDrawer.classList.add('active');
@@ -1244,6 +1747,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
 
     renderDateTabs();
-    renderMenuGrid();
     updateCartUI();
+
+    // Hỗ trợ tham số URL tìm kiếm (Task TF1A94A: ?q=cơm hoặc ?search=phở)
+    const urlParams = new URLSearchParams(window.location.search);
+    const qParam = urlParams.get('q') || urlParams.get('search');
+    if (qParam) {
+        const pageParam = parseInt(urlParams.get('page') || '1', 10);
+        executeSearch(qParam, pageParam);
+    } else {
+        renderMenuGrid();
+    }
 });

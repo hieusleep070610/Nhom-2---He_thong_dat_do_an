@@ -22,13 +22,30 @@
                 <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
                 <span class="logo-text">Foodie<span>Hub</span></span>
                 <span class="badge-team">Nhóm 2</span>
-                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A6E9, TF1A86F & TF1A8D7</strong></span>
+                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A6E9, TF1A86F, TF1A8D7 & TF1A94A</strong></span>
             </a>
 
-            <div class="search-box">
+            <div class="search-box" id="searchBoxWrapper">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn hôm nay (API TF1A8D7)...">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm món ăn (gõ để nhận gợi ý)..." autocomplete="off" aria-label="Tìm kiếm món ăn">
                 <button class="clear-search-btn" id="clearSearchBtn" title="Xóa tìm kiếm"><i class="fa-solid fa-xmark"></i></button>
+
+                <!-- DROPDOWN GỢI Ý KHI GÕ (TASK TF1A94A) -->
+                <div class="search-suggestions-dropdown" id="searchSuggestionsDropdown" style="display: none;">
+                    <div class="suggestions-header">
+                        <span><i class="fa-solid fa-lightbulb text-primary"></i> Gợi ý món ăn phù hợp</span>
+                        <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> TF1A94A</span>
+                    </div>
+                    <div class="suggestions-list" id="suggestionsList">
+                        <!-- Danh sách gợi ý render động bằng JS -->
+                    </div>
+                    <div class="suggestions-footer" id="suggestionsFooter">
+                        <button type="button" class="btn-view-all-results" id="btnViewAllResults">
+                            <span>Xem tất cả kết quả cho "<strong id="suggestionsKeyword"></strong>"</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="nav-actions">
@@ -161,7 +178,30 @@
             </div>
         </section>
 
-        <!-- DANH SÁCH THẺ MÓN ĂN & CÁC TRẠNG THÁI (ĐANG TẢI, HẾT MÓN, RỖNG) - TASK TF1A6E9 -->
+        <!-- THANH TIÊU ĐỀ TRANG KẾT QUẢ TÌM KIẾM (TASK TF1A94A) -->
+        <section class="search-results-banner" id="searchResultsBanner" style="display: none;">
+            <div class="search-banner-left">
+                <div class="search-banner-badge">
+                    <span class="badge-task-fe"><i class="fa-solid fa-code-branch"></i> Task: <strong>TF1A94A</strong></span>
+                    <span class="search-live-tag"><i class="fa-solid fa-magnifying-glass"></i> Trang Kết Quả Tìm Kiếm</span>
+                </div>
+                <h2 class="search-results-heading">
+                    Kết quả tìm kiếm cho: <span class="search-query-highlight" id="searchResultQueryText">"Cơm"</span>
+                </h2>
+                <p class="search-results-count" id="searchResultCountText">
+                    Tìm thấy <strong>0</strong> món ăn phù hợp với từ khóa của bạn
+                </p>
+            </div>
+            <div class="search-banner-actions">
+                <button type="button" class="btn-clear-search-mode" id="btnClearSearchMode" title="Quay lại thực đơn hàng ngày">
+                    <i class="fa-solid fa-arrow-left"></i> <span>Quay lại toàn bộ thực đơn</span>
+                </button>
+            </div>
+        </section>
+
+        
+
+        <!-- DANH SÁCH THẺ MÓN ĂN & CÁC TRẠNG THÁI (ĐANG TẢI, HẾT MÓN, RỖNG) - TASK TF1A6E9 & TF1A94A -->
         <section class="menu-grid-section">
             
             <!-- 1. TRẠNG THÁI ĐANG TẢI (LOADING STATE) -->
@@ -199,12 +239,38 @@
                 </div>
             </div>
 
-            <!-- 4. TRẠNG THÁI RỖNG: TÌM KIẾM HOẶC LỌC DANH MỤC KHÔNG CÓ KẾT QUẢ (EMPTY SEARCH/FILTER STATE) -->
+            <!-- 4. TRẠNG THÁI RỖNG: TÌM KIẾM KHÔNG CÓ KẾT QUẢ (TASK TF1A94A - NOT FOUND STATE) -->
             <div class="empty-state empty-search-state" id="emptySearchState" style="display: none;">
-                <div class="empty-icon"><i class="fa-solid fa-utensils-slash"></i></div>
-                <h3>Không tìm thấy món ăn phù hợp</h3>
-                <p id="emptySearchDesc">Hãy thử tìm từ khóa khác hoặc chuyển sang danh mục hoặc ngày khác nhé!</p>
-                <button class="btn btn-primary" id="resetFilterBtn"><i class="fa-solid fa-rotate-left"></i> Xem tất cả món của ngày này</button>
+                <div class="empty-icon empty-search-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                <div class="empty-badge-row">
+                    <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A94A</strong></span>
+                </div>
+                <h3 id="emptySearchHeading">Không tìm thấy món ăn phù hợp</h3>
+                <p id="emptySearchDesc">Rất tiếc, chúng tôi không tìm thấy món ăn nào phù hợp với từ khóa của bạn.</p>
+                
+                <div class="popular-suggestions-box">
+                    <span class="suggestions-lead-label"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Gợi ý từ khóa tìm kiếm phổ biến:</span>
+                    <div class="popular-keywords-list" id="popularKeywordsList">
+                        <button type="button" class="quick-keyword-chip" data-keyword="Cơm tấm"><i class="fa-solid fa-magnifying-glass"></i> Cơm tấm</button>
+                        <button type="button" class="quick-keyword-chip" data-keyword="Phở bò"><i class="fa-solid fa-magnifying-glass"></i> Phở bò</button>
+                        <button type="button" class="quick-keyword-chip" data-keyword="Cơm gà"><i class="fa-solid fa-magnifying-glass"></i> Cơm gà</button>
+                        <button type="button" class="quick-keyword-chip" data-keyword="Bún chả"><i class="fa-solid fa-magnifying-glass"></i> Bún chả</button>
+                        <button type="button" class="quick-keyword-chip" data-keyword="Salad chay"><i class="fa-solid fa-magnifying-glass"></i> Salad chay</button>
+                        <button type="button" class="quick-keyword-chip" data-keyword="Bún bò Huế"><i class="fa-solid fa-magnifying-glass"></i> Bún bò Huế</button>
+                        <button type="button" class="quick-keyword-chip" data-keyword="Trà sữa"><i class="fa-solid fa-magnifying-glass"></i> Trà sữa</button>
+                    </div>
+                </div>
+
+                <div class="empty-actions">
+                    <button class="btn btn-primary" id="resetFilterBtn"><i class="fa-solid fa-rotate-left"></i> Xem tất cả món ăn trong thực đơn</button>
+                </div>
+            </div>
+
+            <!-- 5. PHÂN TRANG KẾT QUẢ TÌM KIẾM (TASK TF1A8D7 & TF1A94A) -->
+            <div class="search-pagination-bar" id="searchPaginationBar" style="display: none;">
+                <button type="button" class="btn-page-nav" id="btnSearchPrevPage" disabled><i class="fa-solid fa-chevron-left"></i> Trang trước</button>
+                <div class="pagination-page-info" id="searchPaginationInfo">Trang 1 / 1</div>
+                <button type="button" class="btn-page-nav" id="btnSearchNextPage" disabled>Trang sau <i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </section>
 
@@ -259,8 +325,8 @@
                 </div>
                 <p class="footer-desc">Hệ thống đặt đồ ăn theo ngày tiện lợi, đảm bảo an toàn vệ sinh thực phẩm, phục vụ cơm trưa và bữa tối văn phòng, sinh viên.</p>
                 <div class="team-meta">
-                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A6E9</strong></span>
-                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Trang xem thực đơn nối API)</span>
+                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Tasks: <strong>TF1A6E9 & TF1A94A</strong></span>
+                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Ô tìm kiếm món ăn & gợi ý khi gõ)</span>
                 </div>
             </div>
             <div class="footer-col">
@@ -284,7 +350,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container footer-bottom-content">
-                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Trang xem thực đơn theo ngày nối API (Mã task: TF1A6E9).</p>
+                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Thực đơn theo ngày (TF1A6E9), Chi tiết món ăn (TF1A86F), API tìm kiếm (TF1A8D7) & Ô tìm kiếm món ăn với gợi ý khi gõ (Mã task: TF1A94A).</p>
                 <p class="git-link-meta">
                     <i class="fa-brands fa-github"></i> <a href="https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an" target="_blank">Nhom-2---He_thong_dat_do_an</a>
                 </p>
