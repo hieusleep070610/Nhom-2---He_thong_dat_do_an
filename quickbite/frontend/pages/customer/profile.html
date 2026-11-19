@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Thông tin tài khoản | Foodie</title>
+
+    <link rel="icon" href="../../assets/images/logo.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="../../css/common/style.css">
+    <link rel="stylesheet" href="../../css/customer/profile.css">
+</head>
+
+<body class="foodie-body">
+
+    <!-- HEADER -->
+    <header class="fd-header">
+        <div class="fd-header-inner">
+
+            <a class="fd-logo" href="../../index.html">
+                <span class="fd-logo-name">foodie</span>
+                <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+            </a>
+
+            <label class="fd-search">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"
+                            fill="none" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M16 16.5 20 20.5"
+                          fill="none" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+
+                <input type="search"
+                       placeholder="Tìm kiếm..."
+                       aria-label="Tìm kiếm">
+            </label>
+
+            <nav class="fd-nav" aria-label="Điều hướng">
+                <a href="../../index.html">Trang chủ</a>
+                <a href="menu.html">Thực đơn</a>
+                <a href="orders.html">Đơn hàng</a>
+            </nav>
+
+            <div class="profile-header-user">
+                <span id="header-username">Xin chào!</span>
+
+                <span class="fd-avatar" id="header-avatar">U</span>
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- MAIN -->
+    <main class="fd-main profile-main">
+
+        <div class="profile-heading">
+            <div>
+                <h1>Thông tin tài khoản</h1>
+                <p>Quản lý và theo dõi hoạt động Foodie</p>
+            </div>
+
+            <button type="button"
+                    id="btn-logout"
+                    class="profile-logout">
+                <span>↪</span> Đăng xuất
+            </button>
+        </div>
+
+
+        <!-- Trạng thái tải dữ liệu -->
+        <div id="profile-loading" class="profile-message">
+            Đang tải thông tin tài khoản...
+        </div>
+
+        <div id="profile-error"
+             class="profile-message profile-error"
+             hidden>
+        </div>
+
+
+        <!-- THÔNG TIN CÁ NHÂN -->
+        <section id="profile-content" hidden>
+
+            <div class="profile-info-grid">
+
+                <article class="profile-info-card">
+                    <span class="profile-accent accent-orange"></span>
+
+                    <div>
+                        <small>Họ và tên</small>
+                        <strong id="profile-name">--</strong>
+                    </div>
+                </article>
+
+                <article class="profile-info-card">
+                    <span class="profile-accent accent-green"></span>
+
+                    <div>
+                        <small>Email</small>
+                        <strong id="profile-email">--</strong>
+                    </div>
+                </article>
+
+                <article class="profile-info-card">
+                    <span class="profile-accent accent-blue"></span>
+
+                    <div>
+                        <small>Số điện thoại</small>
+                        <strong id="profile-phone">--</strong>
+                    </div>
+                </article>
+
+                <article class="profile-info-card">
+                    <span class="profile-accent accent-red"></span>
+
+                    <div>
+                        <small>Địa chỉ</small>
+                        <strong id="profile-address">--</strong>
+                    </div>
+                </article>
+
+            </div>
+
+
+            <!-- DANH SÁCH MÓN ĂN -->
+            <section class="profile-list-card">
+
+                <h2>Danh sách và thông tin chi tiết</h2>
+
+                <div class="profile-food-list">
+
+                    <article class="profile-food-item">
+                        <span>Bún bò Huế</span>
+                        <a href="dish.html">Xem chi tiết →</a>
+                    </article>
+
+                    <article class="profile-food-item">
+                        <span>Cơm gà xối mỡ</span>
+                        <a href="dish.html">Xem chi tiết →</a>
+                    </article>
+
+                    <article class="profile-food-item">
+                        <span>Salad cá hồi</span>
+                        <a href="dish.html">Xem chi tiết →</a>
+                    </article>
+
+                    <article class="profile-food-item">
+                        <span>Mì Ý bò bằm</span>
+                        <a href="dish.html">Xem chi tiết →</a>
+                    </article>
+
+                    <article class="profile-food-item">
+                        <span>Trà đào cam sả</span>
+                        <a href="dish.html">Xem chi tiết →</a>
+                    </article>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="profile-footer">
+        © 2026 Foodie - Ăn ngon mỗi ngày
+    </footer>
+
+
+    <!-- JS -->
+    <script src="../../js/layout.js"></script>
+    <script src="../../js/pages/customer/profile.js"></script>
+
+</body>
+</html>

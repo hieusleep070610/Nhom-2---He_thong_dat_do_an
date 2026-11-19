@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/order_detail.css">
+    <title></title>
+</head>
+
+<body>
+    <main class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-top">
+                <div class="brand">
+                    <span class="brand-logo">Quickbite</span>
+                    <span class="brand-title">QUẢN TRỊ HỆ THỐNG</span>
+                </div>
+                <div class="nav-menu">
+                    <a href="#" class="nav-item"><span class="nav-num">01</span> Tổng quan</a>
+                    <a href="#" class="nav-item"><span class="nav-num">02</span> Món ăn</a>
+                    <a href="#" class="nav-item"><span class="nav-num">03</span> Danh mục</a>
+                    <a href="#" class="nav-item"><span class="nav-num">04</span> Nguyên liệu</a>
+                    <a href="#" class="nav-item"><span class="nav-num">05</span> Công thức món</a>
+                    <a href="#" class="nav-item active"><span class="nav-num">06</span> Đơn hàng</a>
+                    <a href="#" class="nav-item"><span class="nav-num">07</span> Thanh toán</a>
+                    <a href="#" class="nav-item"><span class="nav-num">08</span> Người dùng</a>
+                </div>
+            </div>
+            <div class="sidebar-bottom">
+                <div class="branch-info">
+                    <span class="branch-label">CHI NHÁNH</span>
+                    <strong class="branch-name">Foodie · Quận 1</strong>
+                    <p class="branch-address">12 Nguyễn Huệ, TP. HCM</p>
+                </div>
+                <div class="security-note">Phiên quản trị được bảo mật</div>
+            </div>
+        </div>
+        <div class="content">
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span class="crumb-root">Foodie</span>
+                    <span class="crumb-sep">/</span>
+                    <span class="crumb-current">Quản trị vận hành</span>
+                </div>
+                <div class="user-meta">
+                    <span>14/11/2026</span>
+                    <span class="dot">·</span>
+                    <span>Nguyễn Minh Anh / Quản trị viên</span>
+                </div>
+            </header>
+            <div class="main-context">
+                <section class="page-header">
+                    <div>
+                        <h2 class="page-title">Quản lí đơn hàng</h2>
+                        <p class="page-description">Theo dõi đơn hàng và trạng thái thanh toán độc lập</p>
+                    </div>
+                    <button class="btn-primary">Xuất danh sách</button>
+                </section>
+                <section class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Đơn hôm nay</span>
+                        <strong class="stat-value">128</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Chờ xác nhận</span>
+                        <strong class="stat-value">18</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Đang chuẩn bị</span>
+                        <strong class="stat-value">32</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Đang giao</span>
+                        <strong class="stat-value">21</strong>
+                    </div>
+                </section>
+                <section class="filter-section">
+                    <div class="filer-control">
+                        <input type="text" class="search-input" placeholder="Mã đơn, tên khách hoặc số điện thoại…">
+                        <section class="filter-select">
+                            <option>Trạng thái đơn: Tất cả</option>
+                        </section>
+                        <section class="filter-select">
+                            <option>Thanh toán: Tất cả</option>
+                        </section>
+                        <button class="btn-outline">Tìm kiếm</button>
+                        <button class="btn-outline">Làm mới</button>
+                    </div>
+                    <div class="update-timestamp">Cập nhật 10:32 · 14/11/2026</div>
+                </section>
+                <section class="table-card">
+                    <div class="table-responsive">
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Món đã đặt</th>
+                                    <th>Tổng tiền</th>
+                                    <th>PTTT</th>
+                                    <th>Thanh toán</th>
+                                    <th>Đơn hàng</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="row-selected">
+                                    <td>
+                                        <div class="cell-primary">#FD-128</div>
+                                        <div class="cell-sub">10:32</div>
+                                    </td>
+                                    <td>Nguyễn Thùy Linh</td>
+                                    <td>
+                                        <div class="cell-primary">Bún bò, cơm gà</div>
+                                        <div class="cell-sub">2 món · 11:00</div>
+                                    </td>
+                                    <td class="font-medium">134.000đ</td>
+                                    <td>COD</td>
+                                    <td><span class="status status-warning">Chưa thanh toán</span></td>
+                                    <td><span class="status status-neutral">Đã xác nhận</span></td>
+                                    <td class="actions-cell">
+                                        <a href="#">Chi tiết</a> · <a href="#">Cập nhật</a> · <a href="#">Hủy</a>
+                                    </td>
+                                </tr>
+                                <tr class="row-selected">
+                                    <td>
+                                        <div class="cell-primary">#FD-127</div>
+                                        <div class="cell-sub">10:28</div>
+                                    </td>
+                                    <td>Trần Quốc Minh</td>
+                                    <td>
+                                        <div class="cell-primary">Salad, mì Ý</div>
+                                        <div class="cell-sub">2 món · 11:30</div>
+                                    </td>
+                                    <td class="font-medium">169.000đ</td>
+                                    <td>Ngân hàng</td>
+                                    <td><span class="status status-warning">Chờ xác minh</span></td>
+                                    <td><span class="status status-neutral">Chờ xác nhận</span></td>
+                                    <td class="actions-cell">
+                                        <a href="#">Chi tiết</a> · <a href="#">Cập nhật</a> · <a href="#">Hủy</a>
+                                    </td>
+                                </tr>
+                                <tr class="row-selected">
+                                    <td>
+                                        <div class="cell-primary">#FD-126</div>
+                                        <div class="cell-sub">10:21</div>
+                                    </td>
+                                    <td>Lê Thu Phương</td>
+                                    <td>
+                                        <div class="cell-primary">Salad cá hồi</div>
+                                        <div class="cell-sub">1 món · 10:30</div>
+                                    </td>
+                                    <td class="font-medium">104.000đ</td>
+                                    <td>Vi foodie</td>
+                                    <td><span class="status status-warning">Đã thanh toán</span></td>
+                                    <td><span class="status status-neutral">Đang chuẩn bị</span></td>
+                                    <td class="actions-cell">
+                                        <a href="#">Chi tiết</a> · <a href="#">Cập nhật</a> · <a href="#">Hủy</a>
+                                    </td>
+                                </tr>
+                                <tr class="row-selected">
+                                    <td>
+                                        <div class="cell-primary">#FD-125</div>
+                                        <div class="cell-sub">10:10</div>
+                                    </td>
+                                    <td>Phạm Hoàng Nam</td>
+                                    <td>
+                                        <div class="cell-primary">Bún bò Huế</div>
+                                        <div class="cell-sub">1 món · 10:30</div>
+                                    </td>
+                                    <td class="font-medium">85.000đ</td>
+                                    <td>COD</td>
+                                    <td><span class="status status-warning">Đã thanh toán</span></td>
+                                    <td><span class="status status-neutral">Hoàn tất</span></td>
+                                    <td class="actions-cell">
+                                        <a href="#">Chi tiết</a> · <a href="#">Cập nhật</a> · <a href="#">Hủy</a>
+                                    </td>
+                                </tr>
+                                <tr class="row-selected">
+                                    <td>
+                                        <div class="cell-primary">#FD-124</div>
+                                        <div class="cell-sub">10:02</div>
+                                    </td>
+                                    <td>Võ Ngọc Anh</td>
+                                    <td>
+                                        <div class="cell-primary">2 phần cơm gà + 1 trà đào</div>
+                                        <div class="cell-sub"></div>
+                                    </td>
+                                    <td class="font-medium">148.000đ</td>
+                                    <td>Ngân hàng</td>
+                                    <td><span class="status status-warning">Chờ hoàn tiền</span></td>
+                                    <td><span class="status status-neutral">Đã hủy</span></td>
+                                    <td class="actions-cell">
+                                        <a href="#">Chi tiết</a> · <a href="#">Cập nhật</a> · <a href="#">Hủy</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-bar">
+                        <span class="pagination-info">Hiển thị 1-5 / 128 đơn hàng</span>
+                        <div class="pagination-controls">
+                            <button class="btn btn-outline btn-sm">Trước</button>
+                            <span class="page-indicator">1 / 26</span>
+                            <button class="btn btn-outline btn-sm">Sau</button>
+                        </div>
+                    </div>
+                </section>
+                <section class="selected-order-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Đang chọn #FD-128 · Nhận món 14/11/2026 · 11:00</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="panel-col">
+                            <p>Đơn hàng: <strong>Đã xác nhận</strong> &nbsp;|&nbsp; Thanh toán: <strong>Chưa thanh
+                                    toán</strong></p>
+                            <p>COD được xác nhận mà không cần đánh dấu đã trả tiền.</p>
+                        </div>
+                        <div class="panel-col text-muted">
+                            <p>Chỉ hoàn nguyên liệu nếu hủy trước khi bắt đầu chế biến.</p>
+                            <p>Hủy sau khi bắt đầu: không hoàn kho, lưu lý do hao hụt.</p>
+                        </div>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-outline">Chi tiết / cập nhật</button>
+                        <button class="btn btn-outline">Hủy đơn</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng ký | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <main class="auth-screen">
+    <section class="auth-brand">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <h2>Ngon lành từng bữa, vui khỏe mỗi ngày</h2>
+    </section>
+    <section class="auth-card-wrap">
+      <form class="auth-card" id="register-form">
+        <h1>Tạo tài khoản</h1>
+        <p class="auth-error" id="register-error" hidden></p>
+        <label class="auth-field">
+          <span>Họ và tên</span>
+          <span class="box"><input id="register-name" type="text" autocomplete="name" placeholder="Nguyễn Văn A" required></span>
+        </label>
+        <label class="auth-field">
+          <span>Email</span>
+          <span class="box"><input id="register-email" type="email" autocomplete="email" placeholder="ban@email.com" required></span>
+        </label>
+        <label class="auth-field">
+          <span>Số điện thoại</span>
+          <span class="box"><input id="register-phone" type="tel" autocomplete="tel" placeholder="09xx xxx xxx" required></span>
+        </label>
+        <label class="auth-field">
+          <span>Mật khẩu</span>
+          <span class="box">
+            <input id="register-password" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required>
+            <button class="auth-eye" type="button" data-toggle-password="register-password">Hiện</button>
+          </span>
+        </label>
+        <label class="auth-field">
+          <span>Nhập lại mật khẩu</span>
+          <span class="box">
+            <input id="register-confirm" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" required>
+            <button class="auth-eye" type="button" data-toggle-password="register-confirm">Hiện</button>
+          </span>
+        </label>
+        <button class="auth-submit" type="submit">Đăng ký</button>
+        <p class="auth-switch">Đã có tài khoản? <a href="login.html">Đăng nhập</a></p>
+        <p class="auth-note">Bằng việc đăng ký, bạn đồng ý với điều khoản sử dụng của Foodie.</p>
+      </form>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/pages/customer/auth.js"></script>
+</body>
+</html>

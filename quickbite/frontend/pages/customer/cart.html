@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giỏ hàng | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm món ăn, nhà hàng..." aria-label="Tìm món ăn, nhà hàng">
+      </label>
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../../index.html">Trang chủ</a>
+        <a href="menu.html">Thực đơn</a>
+        <a href="orders.html">Đơn hàng</a>
+      </nav>
+      <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </a>
+      <div class="fd-user">
+        <span>Xin chào, Vương</span>
+        <span class="fd-avatar" aria-hidden="true">V</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="fd-main">
+    <h1>Giỏ hàng của bạn</h1>
+    <p class="cart-kicker" id="cart-count">Bạn đang có 0 món trong giỏ hàng</p>
+    <div class="cart-layout">
+      <section>
+        <div class="cart-table-head">
+          <span>SẢN PHẨM</span>
+          <span>SỐ LƯỢNG</span>
+          <span>THÀNH TIỀN</span>
+        </div>
+        <div class="cart-card" id="cart-lines"></div>
+        <a class="cart-back" href="menu.html">← Tiếp tục mua sắm</a>
+      </section>
+      <aside class="cart-summary">
+        <h2>Tóm tắt đơn hàng</h2>
+        <p class="cart-row"><span>Tạm tính</span><span id="cart-subtotal">0đ</span></p>
+        <p class="cart-row"><span>Phí giao hàng</span><span id="cart-ship">0đ</span></p>
+        <p class="cart-row"><span>Giảm giá</span><span class="cart-off" id="cart-off">- 0đ</span></p>
+        <p class="cart-row total"><span>Tổng cộng</span><strong id="cart-total">0đ</strong></p>
+        <button class="cart-pay" id="cart-checkout" type="button">Tiến hành thanh toán</button>
+        <p class="cart-secure">Thanh toán an toàn và bảo mật</p>
+        <p class="cart-eta">Dự kiến giao hàng: 25–35 phút</p>
+      </aside>
+    </div>
+    <p class="cart-note">Nhập mã giảm giá ở bước thanh toán để nhận ưu đãi</p>
+  </main>
+
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/customer/cart-store.js"></script>
+  <script src="../../js/pages/customer/cart.js"></script>
+</body>
+</html>

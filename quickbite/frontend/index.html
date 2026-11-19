@@ -3,42 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang chủ | KS25 Base</title>
+  <title>Trang chủ | foodie</title>
   <link rel="icon" href="assets/images/logo.png">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common/style.css">
 </head>
-<body data-root="./">
-  <header id="app-header"></header>
+<body class="foodie-body" data-root="./">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm món ăn, nhà hàng..." aria-label="Tìm món ăn, nhà hàng">
+      </label>
+      <nav class="fd-nav" aria-label="Chính">
+        <a class="is-active" href="index.html">Trang chủ</a>
+        <a href="pages/customer/menu.html">Thực đơn</a>
+        <a href="pages/customer/orders.html">Đơn hàng</a>
+      </nav>
+      <a class="fd-cart" href="pages/customer/cart.html" aria-label="Giỏ hàng">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </a>
+      <a class="fd-user" id="home-account" href="pages/customer/login.html">
+        <span id="home-account-name">Đăng nhập</span>
+        <span class="fd-avatar" id="home-account-avatar" aria-hidden="true">?</span>
+      </a>
+    </div>
+  </header>
 
-  <main class="container">
-    <section class="card">
-      <h1>Base code Frontend (HTML · CSS · JS)</h1>
-      <p>Khung dự án cho các nhóm thực tập. Trang này kiểm tra kết nối <strong>Frontend → Backend → MySQL</strong>.</p>
-
-      <p>API đang dùng: <code id="api-url"></code> <span class="muted">(sửa trong <code>js/config.js</code>)</span></p>
-      <div id="health-status" class="status"></div>
-      <button id="btn-recheck" class="btn">Kiểm tra lại</button>
+  <main class="home-wrap">
+    <section class="home-hero">
+      <div>
+        <p class="home-kicker">MÓN NGON MỖI NGÀY</p>
+        <h1>Ngon lành từng bữa,<br>vui khỏe mỗi ngày</h1>
+        <p>Khám phá hàng trăm món ăn tươi ngon, giao nhanh đến tận nơi.</p>
+        <a class="home-cta" href="pages/customer/menu.html">Khám phá thực đơn</a>
+      </div>
+      <div class="home-art" aria-hidden="true">
+        <div class="plate"><span><i></i><i></i><i></i></span></div>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Bắt đầu từ đâu?</h2>
-      <ol>
-        <li>Xem trang <a href="pages/order.html">Đặt món</a>.</li>
-        <li>Xem trang <a href="pages/wallet.html">Đặt món</a>.</li>
-        <li>Đọc <code>js/api.js</code> để biết cách gọi API bằng axios.</li>
-        <li>Tạo trang mới: thêm file HTML trong <code>pages/</code>, script trong <code>js/pages/</code>, rồi thêm link vào <code>js/layout.js</code>.</li>
-      </ol>
+    <div class="home-head">
+      <h2>Danh mục nổi bật</h2>
+      <a href="pages/customer/menu.html">Xem tất cả →</a>
+    </div>
+    <section class="home-cats" aria-label="Danh mục">
+      <article class="cat-card"><span>🍜</span>Món nước</article>
+      <article class="cat-card"><span>🍚</span>Cơm</article>
+      <article class="cat-card"><span>🥗</span>Healthy</article>
+      <article class="cat-card"><span>🍰</span>Tráng miệng</article>
+      <article class="cat-card"><span>🥤</span>Đồ uống</article>
+    </section>
+
+    <div class="home-head">
+      <h2>Món được yêu thích</h2>
+    </div>
+    <section class="home-foods" aria-label="Món được yêu thích">
+      <a class="food-card" href="pages/customer/dish.html">
+        <div class="art art-peach"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
+        <h3>Bún bò Huế</h3>
+        <p>Đậm đà chuẩn vị cố đô</p>
+      </a>
+      <a class="food-card" href="pages/customer/dish.html">
+        <div class="art art-green"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
+        <h3>Cơm gà xối mỡ</h3>
+        <p>Da giòn, cơm mềm</p>
+      </a>
+      <a class="food-card" href="pages/customer/dish.html">
+        <div class="art art-mint"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
+        <h3>Salad cá hồi</h3>
+        <p>Tươi ngon, giàu dinh dưỡng</p>
+      </a>
+      <a class="food-card" href="pages/customer/dish.html">
+        <div class="art art-blue"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
+        <h3>Mì Ý bò bằm</h3>
+        <p>Sốt cà chua đặc biệt</p>
+      </a>
+    </section>
+
+    <section class="health-strip">
+      <div>
+        <strong>Kết nối hệ thống</strong>
+        <p>API: <code id="api-url"></code></p>
+        <div id="health-status" class="status"></div>
+      </div>
+      <button id="btn-recheck" class="home-cta" type="button">Kiểm tra lại</button>
     </section>
   </main>
 
-  <footer id="app-footer"></footer>
-
-  <!-- Thứ tự quan trọng: axios -> config -> api -> utils -> layout -> script riêng của trang -->
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
+  <script src="js/config/config.js"></script>
+  <script src="js/api/api.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/layout.js"></script>
-  <script src="js/pages/home.js"></script>
+  <script>
+    document.getElementById("api-url").textContent = CONFIG.API_BASE_URL;
+    async function checkHealth() {
+      const status = document.getElementById("health-status");
+      try {
+        const data = await api.get("/health");
+        status.textContent = data.database === "connected"
+          ? "Backend OK · MySQL: connected"
+          : "Backend chạy nhưng MySQL lỗi";
+        status.className = "status " + (data.database === "connected" ? "status-ok" : "status-error");
+      } catch (error) {
+        status.textContent = error.message || "Không kết nối được backend";
+        status.className = "status status-error";
+      }
+    }
+    document.getElementById("btn-recheck").addEventListener("click", checkHealth);
+    checkHealth();
+    const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        const name = user.full_name || "Tài khoản";
+        document.getElementById("home-account-name").textContent = "Xin chào, " + name;
+        document.getElementById("home-account-avatar").textContent = name.trim().charAt(0).toUpperCase();
+        document.getElementById("home-account").href = "pages/customer/profile.html";
+      } catch (error) { /* giữ nút đăng nhập */ }
+    }
+  </script>
 </body>
 </html>

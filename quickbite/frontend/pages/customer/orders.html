@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch sử đơn hàng | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" id="order-search" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
+      </label>
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../../index.html">Trang chủ</a>
+        <a href="menu.html">Thực đơn</a>
+        <a class="is-active" href="orders.html">Đơn hàng</a>
+      </nav>
+      <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </a>
+      <div class="fd-user">
+        <span>Xin chào, Vương</span>
+        <span class="fd-avatar" aria-hidden="true">V</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="fd-main">
+    <h1>Lịch sử đơn hàng</h1>
+    <p class="ck-lead">Quản lý và theo dõi hoạt động Foodie</p>
+
+    <section class="metric-grid" id="order-filters">
+      <button class="metric-card is-selected" type="button" data-filter="all">
+        <i></i>
+        <div><small>Tất cả đơn</small><strong id="count-all">0</strong></div>
+      </button>
+      <button class="metric-card green" type="button" data-filter="processing">
+        <i></i>
+        <div><small>Đang xử lý</small><strong id="count-processing">0</strong></div>
+      </button>
+      <button class="metric-card blue" type="button" data-filter="completed">
+        <i></i>
+        <div><small>Đã hoàn thành</small><strong id="count-completed">0</strong></div>
+      </button>
+      <button class="metric-card red" type="button" data-filter="cancelled">
+        <i></i>
+        <div><small>Đã hủy</small><strong id="count-cancelled">0</strong></div>
+      </button>
+    </section>
+
+    <section class="panel">
+      <h2>Danh sách và thông tin chi tiết</h2>
+      <div id="order-list"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/customer/orders.js"></script>
+</body>
+</html>
