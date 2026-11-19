@@ -38,7 +38,7 @@ app.include_router(health.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(foods.router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
-app.include_router(wallet.router_wallet, prefix="/api")
+app.include_router(wallet.router_wallet, prefix="/api", tags=["Wallet"])
 
 @app.get("/")
 def root():
