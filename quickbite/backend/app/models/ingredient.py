@@ -8,6 +8,7 @@ class Ingredient(Base):
     Ingredient_Name = Column(String(100), nullable=False, unique=True)
     Unit = Column(String(20), nullable=False)
     min_stock = Column(Numeric(15, 3), nullable=False, default=0)
+    stock_quantity = Column(Numeric(15, 3), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
 
 class DishIngredient(Base):

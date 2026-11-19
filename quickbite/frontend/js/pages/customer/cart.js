@@ -1,5 +1,3 @@
-const SHIP_FEE = 15000;
-const FREE_SHIP_FROM = 150000;
 
 const linesEl = document.getElementById("cart-lines");
 const countEl = document.getElementById("cart-count");
@@ -53,7 +51,7 @@ function renderCart() {
   }
 
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
-  const ship = subtotal > 0 && subtotal < FREE_SHIP_FROM ? SHIP_FEE : 0;
+  const ship = 0;
   document.getElementById("cart-subtotal").textContent = dong(subtotal);
   document.getElementById("cart-ship").textContent = dong(ship);
   document.getElementById("cart-off").textContent = "- 0đ";
@@ -72,7 +70,7 @@ linesEl.addEventListener("click", (event) => {
     item.qty = Math.max(1, Number(item.qty) - 1);
   } else if (button.dataset.inc != null) {
     const item = cart[Number(button.dataset.inc)];
-    item.qty = Math.min(99, Number(item.qty) + 1);
+    item.qty = Math.min(10, Number(item.qty) + 1);
   } else {
     return;
   }

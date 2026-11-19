@@ -45,7 +45,7 @@ def get_remaining_by_date(
     if selected:
         query = query.filter(DailyMenu.dish_id.in_(selected))
     if lock:
-        query = query.with_for_update()
+        query = query.order_by(DailyMenu.dish_id, DailyMenu.id).with_for_update()
 
     planned: dict[int, dict] = {}
     for menu, dish in query.all():
