@@ -53,19 +53,9 @@
 
       <section class="fd-info">
         <h1>Bún bò Huế đặc biệt</h1>
-        <p class="fd-rating"><span class="fd-star">★ 4.9</span> (128 đánh giá) <span class="fd-dot">•</span> <span class="fd-sold">Đã bán 1.2k+</span></p>
-        <p class="fd-desc">Nước dùng hầm từ xương trong nhiều giờ, kết hợp sả và mắm ruốc tạo nên hương vị đậm đà đặc trưng.</p>
+        <p class="fd-desc" id="dish-description">Đang tải thông tin món ăn…</p>
         <p class="fd-price" id="dish-price">55.000đ</p>
-
-        <h2>Kích cỡ</h2>
-        <div class="fd-sizes" id="dish-sizes">
-          <button type="button" class="is-selected" data-size="Thường">Thường</button>
-          <button type="button" data-size="Lớn">Lớn</button>
-          <button type="button" data-size="Đặc biệt">Đặc biệt</button>
-        </div>
-
-        <h2>Thêm topping</h2>
-        <div class="fd-toppings" id="dish-toppings"></div>
+        <p class="ck-hint">Giá và thành phần được lấy theo món trong thực đơn.</p>
 
         <div class="fd-buy">
           <div>
@@ -79,13 +69,16 @@
           <button type="button" class="fd-add" id="btn-add">Thêm vào giỏ hàng · 55.000đ</button>
         </div>
 
-        <p class="fd-ship">Miễn phí giao hàng cho đơn từ 150.000đ</p>
+        <p class="fd-ship">Nhận món tại khung giờ bạn chọn khi thanh toán.</p>
       </section>
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../../js/utils.js"></script>
   <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/layout.js"></script>
   <script src="../../js/pages/customer/cart-store.js"></script>
   <script src="../../js/pages/customer/dish.js"></script>
 </body>

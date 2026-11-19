@@ -23,7 +23,7 @@ function addToCart(item) {
   const key = cartItemKey(item);
   const found = cart.find((row) => row.key === key);
   if (found) {
-    found.qty = Math.min(99, Number(found.qty) + Number(item.qty));
+    found.qty = Math.min(10, Number(found.qty) + Number(item.qty));
   } else {
     cart.push({
       key,
@@ -32,7 +32,7 @@ function addToCart(item) {
       size: item.size || "",
       toppings: item.toppings || [],
       unitPrice: Number(item.unitPrice) || 0,
-      qty: Math.min(99, Number(item.qty) || 1),
+      qty: Math.min(10, Number(item.qty) || 1),
       tone: item.tone || "peach",
     });
   }

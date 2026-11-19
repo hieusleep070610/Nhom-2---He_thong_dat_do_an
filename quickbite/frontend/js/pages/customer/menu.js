@@ -12,22 +12,14 @@ function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
-function selectedCategory() {
-  return document.querySelector("input[name='category']:checked").value;
-}
-
 function visibleDishes() {
   const keyword = document.getElementById("menu-search").value.trim().toLowerCase();
-  const category = selectedCategory();
   const maxPrice = Number(priceInput.value);
-  const rated = document.getElementById("menu-rating").checked;
   const sort = document.getElementById("menu-sort").value;
   const rows = dishes.filter((dish) => {
-    const matchesCategory = category === "all" || dish.category === category;
     const matchesPrice = dish.price >= 20000 && dish.price <= maxPrice;
-    const matchesRating = !rated || dish.rating >= 4.5;
     const matchesSearch = !keyword || dish.name.toLowerCase().includes(keyword) || dish.desc.toLowerCase().includes(keyword);
-    return matchesCategory && matchesPrice && matchesRating && matchesSearch;
+    return matchesPrice && matchesSearch;
   });
   if (sort === "price-asc") rows.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") rows.sort((a, b) => b.price - a.price);
@@ -72,16 +64,12 @@ function render() {
   });
 }
 
-document.getElementById("menu-categories").addEventListener("change", render);
 priceInput.addEventListener("input", render);
-document.getElementById("menu-rating").addEventListener("change", render);
 document.getElementById("menu-search").addEventListener("input", render);
 document.getElementById("menu-sort").addEventListener("change", render);
 
 document.getElementById("menu-clear").addEventListener("click", () => {
-  document.querySelector("input[name='category'][value='all']").checked = true;
   priceInput.value = "100000";
-  document.getElementById("menu-rating").checked = false;
   document.getElementById("menu-search").value = "";
   document.getElementById("menu-sort").value = "popular";
   render();
@@ -98,9 +86,7 @@ async function loadDishes() {
       name: dish.name,
       desc: dish.description || "Món trong thực đơn hôm nay",
       price: Number(dish.price) || 0,
-      category: "Món nước",
       tone: TONES[index % TONES.length],
-      rating: 4.8,
     })).filter((dish) => Number.isInteger(dish.id) && dish.id > 0);
   } catch (error) {
     loadError = true;

@@ -43,20 +43,10 @@
     <div class="menu-layout">
       <aside class="menu-filter">
         <h2>Bộ lọc</h2>
-        <h3>Danh mục</h3>
-        <div id="menu-categories">
-          <label><input type="radio" name="category" value="all" checked> Tất cả món ăn</label>
-          <label><input type="radio" name="category" value="Món nước"> Món nước</label>
-          <label><input type="radio" name="category" value="Cơm"> Cơm</label>
-          <label><input type="radio" name="category" value="Healthy"> Healthy</label>
-          <label><input type="radio" name="category" value="Tráng miệng"> Tráng miệng</label>
-          <label><input type="radio" name="category" value="Đồ uống"> Đồ uống</label>
-        </div>
+        <p>Danh mục sẽ hiển thị khi thực đơn có dữ liệu phân loại.</p>
         <h3>Khoảng giá</h3>
         <p class="menu-price" id="menu-price-label">20.000đ — 100.000đ</p>
         <input id="menu-price" type="range" min="20000" max="100000" step="1000" value="100000">
-        <h3>Đánh giá</h3>
-        <label class="menu-check"><input id="menu-rating" type="checkbox"> Từ 4.5 trở lên</label>
         <button class="menu-clear" id="menu-clear" type="button">Xóa bộ lọc</button>
       </aside>
       <section>
@@ -66,7 +56,7 @@
           </label>
           <label class="menu-sort">Sắp xếp:
             <select id="menu-sort">
-              <option value="popular">Phổ biến nhất</option>
+              <option value="popular">Mặc định</option>
               <option value="price-asc">Giá thấp đến cao</option>
               <option value="price-desc">Giá cao đến thấp</option>
             </select>
@@ -79,6 +69,7 @@
   </main>
 
   <script src="../../js/utils.js"></script>
+  <script src="../../js/layout.js"></script>
   <script src="../../js/config/config.js"></script>
   <script src="../../js/pages/customer/cart-store.js"></script>
   <script src="../../js/pages/customer/menu.js"></script>

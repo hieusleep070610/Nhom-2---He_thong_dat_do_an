@@ -2,6 +2,7 @@ from app.models.ingredient import Ingredient, DishIngredient
 from app.models.food import Dish, DailyMenu
 from app.models.order import Order
 from app.models.order_item import OrderItem
+from app.models.order_item_ingredient_snapshot import OrderItemIngredientSnapshot
 from app.models.order_status_history import OrderStatusHistory
 from app.models.pickup_slot import PickupSlot, SlotDailyQuota
 from app.models.user import User
@@ -14,6 +15,7 @@ __all__ = [
     "DailyMenu",
     "Order",
     "OrderItem",
+    "OrderItemIngredientSnapshot",
     "OrderStatusHistory",
     "PickupSlot",
     "SlotDailyQuota",

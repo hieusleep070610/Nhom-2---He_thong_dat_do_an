@@ -5,6 +5,7 @@ from app.models.order_status_history import OrderStatusHistory
 from app.core.exceptions import BadRequestException, ConflictException, NotFoundException
 from app.services.refund_service import refund_paid_order
 from app.services.pickup_slot_quota_service import release_order_slot_servings
+from app.services.ingredient_stock_service import restore_order_ingredient_stock
 
 ORDER_STATUS_TRANSITIONS = {
     "pending": ["confirmed", "cancelled"],
@@ -70,8 +71,9 @@ def update_order_status(
             )
 
         if new_status == "cancelled":
-            refund_paid_order(db, order_id)
             release_order_slot_servings(db, order)
+            restore_order_ingredient_stock(db, order_id)
+            refund_paid_order(db, order_id)
 
         order.status = new_status
 

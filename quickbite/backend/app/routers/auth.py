@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import create_access_token, verify_access_token, verify_password
 from app.database.db import get_db
 from app.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
@@ -49,6 +50,12 @@ def get_current_user(
     user = user_services.get_user_by_id(db, int(user_id)) if user_id else None
     if user is None:
         raise HTTPException(status_code=401, detail="Phiên đăng nhập không hợp lệ")
+    return user
+
+
+def get_current_admin(user=Depends(get_current_user)):
+    if user.user_id not in settings.admin_user_ids:
+        raise HTTPException(status_code=403, detail="Bạn không có quyền quản trị.")
     return user
 
 

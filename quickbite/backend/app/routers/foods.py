@@ -1,5 +1,6 @@
 import math
 import unicodedata
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from datetime import date, datetime
@@ -11,6 +12,7 @@ from app.models.food import Dish, DailyMenu
 from app.models.pickup_slot import PickupSlot, SlotDailyQuota
 from app.schemas.menu import RemainingMenuResponse, PickupSlotsResponse
 from app.services.menu_availability_service import get_remaining_by_date
+from app.routers.auth import get_current_admin
 
 router = APIRouter(prefix="/menu", tags=["Menu Management"])
 search_router = APIRouter(tags=["Dish Search"])
@@ -99,7 +101,13 @@ def get_dishes(db: Session = Depends(get_db)):
     return db.query(Dish).filter(Dish.is_available.is_(True)).all()
 
 @router.post("/dishes", status_code=status.HTTP_201_CREATED)
-def create_dish(name: str, price: float, description: str = None, db: Session = Depends(get_db)):
+def create_dish(
+    name: str,
+    price: Decimal,
+    description: str = None,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
     if price <= 0:
         raise HTTPException(status_code=422, detail="Giá món phải lớn hơn 0.")
 
@@ -114,7 +122,7 @@ def create_dish(name: str, price: float, description: str = None, db: Session = 
     return {"message": "Thêm món ăn thành công", "dish": new_dish}
 
 @router.delete("/dishes/{dish_id}")
-def delete_dish(dish_id: int, db: Session = Depends(get_db)):
+def delete_dish(dish_id: int, _admin=Depends(get_current_admin), db: Session = Depends(get_db)):
     dish = db.query(Dish).filter(Dish.id == dish_id).first()
     if not dish:
         raise HTTPException(status_code=404, detail="Không tìm thấy món ăn!")
@@ -124,7 +132,13 @@ def delete_dish(dish_id: int, db: Session = Depends(get_db)):
     return {"message": "Đã ngừng bán món ăn"}
 
 @router.post("/daily-menus", status_code=status.HTTP_201_CREATED)
-def assign_daily_menu(menu_date: date, dish_id: int, quantity: int, db: Session = Depends(get_db)):
+def assign_daily_menu(
+    menu_date: date,
+    dish_id: int,
+    quantity: int,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
     if quantity <= 0:
         raise HTTPException(status_code=422, detail="Số lượng định mức phải lớn hơn 0.")
 
