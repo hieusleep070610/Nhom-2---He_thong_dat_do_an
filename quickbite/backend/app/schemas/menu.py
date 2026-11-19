@@ -32,9 +32,13 @@ class PickupSlotAvailability(BaseModel):
     label: str
     start_time: time
     end_time: time
+    max_servings: int
+    booked_servings: int
     remaining_servings: int
     is_active: bool
     is_full: bool
+    is_past: bool
+    can_book: bool
 
 
 class PickupSlotsResponse(BaseModel):
