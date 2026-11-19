@@ -26,3 +26,7 @@ Trình duyệt (frontend) --axios JSON--> FastAPI (backend :8000/api) --SQLAlche
 3. **Frontend:** VS Code → chuột phải `frontend/index.html` → *Open with Live Server*.
 
 Trang chủ frontend hiện **✅ Backend OK · MySQL: connected** là đã thông cả 3 tầng. Sau đó mỗi nhóm đổi ví dụ `items` thành các chức năng của đề tài mình (xem mục *Thêm chức năng* / *Thêm trang mới* trong từng README).
+
+## API tìm kiếm món ăn (TF1A8D7)
+
+Backend cung cấp `GET /api/dishes/search` (bí danh `GET /api/search`) với các tham số `q`/`keyword`/`name`, `page`, `limit`/`page_size` và `strict_empty`. Tìm kiếm tên món không phân biệt dấu tiếng Việt; từ khóa rỗng trả về danh sách phân trang, còn `strict_empty=true` trả lỗi 400.

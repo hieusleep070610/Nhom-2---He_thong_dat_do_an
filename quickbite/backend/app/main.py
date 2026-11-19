@@ -37,6 +37,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(foods.router, prefix="/api")
+app.include_router(foods.search_router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
 app.include_router(wallet.router_wallet, prefix="/api", tags=["Wallet"])
 

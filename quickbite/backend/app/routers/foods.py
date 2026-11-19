@@ -1,3 +1,5 @@
+import math
+import unicodedata
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from datetime import date, datetime
@@ -11,6 +13,86 @@ from app.schemas.menu import RemainingMenuResponse, PickupSlotsResponse
 from app.services.menu_availability_service import get_remaining_by_date
 
 router = APIRouter(prefix="/menu", tags=["Menu Management"])
+search_router = APIRouter(tags=["Dish Search"])
+
+
+def _normalize_name(value: str) -> str:
+    value = value.replace("đ", "d").replace("Đ", "d")
+    value = unicodedata.normalize("NFD", value)
+    return "".join(char for char in value if unicodedata.category(char) != "Mn").casefold().strip()
+
+
+@search_router.get("/dishes/search")
+@search_router.get("/search", include_in_schema=False)
+def search_dishes(
+    q: str | None = None,
+    keyword: str | None = None,
+    name: str | None = None,
+    page: int = 1,
+    limit: int | None = None,
+    page_size: int | None = None,
+    strict_empty: bool = False,
+    db: Session = Depends(get_db),
+):
+    raw_keyword = q if q is not None else keyword if keyword is not None else name or ""
+    clean_keyword = raw_keyword.strip()
+    empty_keyword = not clean_keyword
+    if empty_keyword and strict_empty:
+        raise HTTPException(status_code=400, detail="Từ khóa tìm kiếm không được để trống.")
+
+    page_num = max(1, page)
+    limit_num = limit if limit is not None else page_size if page_size is not None else 6
+    limit_num = min(50, max(1, limit_num))
+
+    dishes = db.query(Dish).filter(Dish.is_available.is_(True)).order_by(Dish.id).all()
+    normalized_keyword = _normalize_name(clean_keyword)
+    words = normalized_keyword.split()
+    if words:
+        dishes = [
+            dish for dish in dishes
+            if normalized_keyword in _normalize_name(dish.name)
+            or all(word in _normalize_name(dish.name) for word in words)
+        ]
+
+    total_items = len(dishes)
+    total_pages = math.ceil(total_items / limit_num) if total_items else 0
+    start = (page_num - 1) * limit_num
+    page_items = dishes[start:start + limit_num]
+    if empty_keyword:
+        message = "Từ khóa tìm kiếm rỗng. Hệ thống trả về toàn bộ danh sách món ăn có phân trang."
+    elif total_items:
+        message = f"Tìm thấy {total_items} món ăn phù hợp với từ khóa '{clean_keyword}'."
+    else:
+        message = f"Không tìm thấy món ăn nào có tên phù hợp với từ khóa '{clean_keyword}'."
+
+    pagination = {
+        "page": page_num,
+        "limit": limit_num,
+        "total_items": total_items,
+        "total_pages": total_pages,
+        "has_next": page_num < total_pages,
+        "has_prev": page_num > 1 and total_pages > 0,
+    }
+    return {
+        "success": True,
+        "task_id": "TF1A8D7",
+        "keyword": clean_keyword,
+        "is_empty_keyword": empty_keyword,
+        **pagination,
+        "pagination": pagination,
+        "message": message,
+        "data": [
+            {
+                "id": dish.id,
+                "name": dish.name,
+                "price": dish.price,
+                "price_formatted": f"{dish.price:,.0f} ₫".replace(",", "."),
+                "description": dish.description,
+                "is_available": dish.is_available,
+            }
+            for dish in page_items
+        ],
+    }
 
 @router.get("/dishes", response_model=list)
 def get_dishes(db: Session = Depends(get_db)):
