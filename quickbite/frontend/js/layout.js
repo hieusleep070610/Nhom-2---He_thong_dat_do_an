@@ -1,17 +1,18 @@
-const ROLE_NAVIGATION = {
+const FALLBACK_ROLE_NAVIGATION = {
   customer: [
-    { href: "index.html", label: "Trang chủ" },
-    { href: "pages/customer/menu.html", label: "Thực đơn" },
-    { href: "pages/customer/orders.html", label: "Đơn hàng" },
-    { href: "pages/customer/wallet.html", label: "Ví" },
-  ],
-  admin: [
-    { href: "index.html", label: "Trang chủ" },
-    { href: "pages/admin/ingredients.html", label: "Nguyên liệu" },
+    { label: "Trang chủ", href: "index.html" },
+    { label: "Thực đơn", href: "pages/customer/menu.html" },
+    { label: "Đơn hàng", href: "pages/customer/orders.html" },
+    { label: "Ví", href: "pages/customer/wallet.html" },
   ],
   kitchen: [
-    { href: "index.html", label: "Trang chủ" },
-    { label: "Khu vực bếp (chưa có trang)", disabled: true },
+    { label: "Bếp", href: "pages/kitchen/index.html" },
+    { label: "Đơn hàng", href: "pages/customer/orders.html" },
+  ],
+  admin: [
+    { label: "Tổng quan", href: "pages/admin/index.html" },
+    { label: "Thực đơn", href: "pages/customer/menu.html" },
+    { label: "Đơn hàng", href: "pages/customer/orders.html" },
   ],
 };
 
@@ -37,7 +38,7 @@ function getLayoutRole(user) {
   if (path.includes("/pages/admin/")) return "admin";
   if (path.includes("/pages/kitchen/")) return "kitchen";
 
-  const role = String(user && (user.role || user.role_name || user.user_type) || "")
+  const role = String((user && (user.role || user.role_name || user.user_type)) || "")
     .trim()
     .toLowerCase();
   if (role === "admin" || role === "administrator") return "admin";
@@ -46,12 +47,15 @@ function getLayoutRole(user) {
 }
 
 function isActiveLink(href, currentPath) {
-  return currentPath.endsWith("/" + href) ||
-    (href === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/index.html")));
+  return (
+    currentPath.endsWith("/" + href) ||
+    (href === "index.html" && (currentPath.endsWith("/") || currentPath.endsWith("/index.html")))
+  );
 }
 
 function renderLayout() {
-  const root = document.body.dataset.root ||
+  const root =
+    document.body.dataset.root ||
     (window.location.pathname.includes("/pages/") ? "../../" : "./");
   const user = getStoredUser();
   const role = getLayoutRole(user);
@@ -66,24 +70,33 @@ function renderLayout() {
 
   document.body.dataset.layoutRole = role;
   const currentPath = window.location.pathname;
-  const navigation = ROLE_NAVIGATION[role].map((item) => {
-    if (item.disabled) {
-      return `<span class="fd-nav-disabled" aria-disabled="true">${item.label}</span>`;
-    }
 
-    const activeClass = isActiveLink(item.href, currentPath) ? " is-active" : "";
-    return `<a class="${activeClass.trim()}" href="${root}${item.href}">${item.label}</a>`;
-  }).join("");
+  const navSource =
+    (typeof ROLE_NAVIGATION !== "undefined" && ROLE_NAVIGATION) || FALLBACK_ROLE_NAVIGATION;
+  const roleItems = navSource[role] || FALLBACK_ROLE_NAVIGATION.customer;
+
+  const navigation = roleItems
+    .map((item) => {
+      if (item.disabled) {
+        return `<span class="fd-nav-disabled" aria-disabled="true">${item.label}</span>`;
+      }
+
+      const activeClass = isActiveLink(item.href, currentPath) ? " is-active" : "";
+      return `<a class="${activeClass.trim()}" href="${root}${item.href}">${item.label}</a>`;
+    })
+    .join("");
+
   const displayName = user && (user.full_name || user.username);
   const accountLabel = displayName ? `Xin chào, ${displayName}` : "Đăng nhập";
   const accountHref = displayName
     ? `${root}pages/customer/profile.html`
     : `${root}pages/customer/login.html`;
-  const cart = role === "customer"
-    ? `<a class="fd-cart" href="${root}pages/customer/cart.html" aria-label="Giỏ hàng">
+  const cart =
+    role === "customer"
+      ? `<a class="fd-cart" href="${root}pages/customer/cart.html" aria-label="Giỏ hàng">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       </a>`
-    : "";
+      : "";
 
   header.innerHTML = `
     <div class="fd-header-inner">
