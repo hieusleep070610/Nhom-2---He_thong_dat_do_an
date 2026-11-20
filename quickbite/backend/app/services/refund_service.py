@@ -3,6 +3,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ConflictException
+from app.models.order import Order
 from app.models.wallet import WalletModel, WalletTransactionModel
 
 
@@ -45,6 +46,9 @@ def refund_paid_order(db: Session, order_id: int) -> None:
 
     amount = abs(Decimal(payment.amount_money))
     wallet.balance = Decimal(wallet.balance) + amount
+    order = db.query(Order).filter(Order.id == order_id).with_for_update().first()
+    if order is not None:
+        order.payment_status = "refunded"
     db.add(
         WalletTransactionModel(
             wallet_id=wallet.id,

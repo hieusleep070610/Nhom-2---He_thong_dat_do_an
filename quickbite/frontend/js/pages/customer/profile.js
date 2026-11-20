@@ -1,6 +1,5 @@
 
 // Cấu hình
-const API_URL = "http://127.0.0.1:8000/api";
 const LOGIN_URL = "login.html";
 
 const TOKEN_KEY = "access_token";
@@ -185,32 +184,8 @@ async function fetchProfile() {
         return;
     }
 
-    const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-
     try {
-
-        const response = await fetch(`${API_URL}/auth/me`, {
-
-            method: "GET",
-
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
-
-        });
-
-        // Kiểm tra phiên đăng nhập
-        if (response.status === 401) {
-            logout("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error("Không thể lấy thông tin tài khoản!");
-        }
-
-        const result = await response.json();
+        const result = await api.get("/auth/me");
 
         // Hỗ trợ cả response JSON trực tiếp
         // và response có dạng { data: {...} }
@@ -233,6 +208,11 @@ async function fetchProfile() {
         renderProfile(user);
 
     } catch (error) {
+
+        if (error.status === 401) {
+            logout("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+            return;
+        }
 
         console.error("Profile error:", error);
 

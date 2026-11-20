@@ -1,28 +1,13 @@
-# Base code dự án thực tập: HN-KS25-CNTT1
+# QuickBite / Foodie
 
-Khung dự án chung cho các nhóm (04/11 – 25/11/2026). Gồm 2 phần đã nối sẵn với nhau:
+Ứng dụng đặt món gồm frontend HTML/CSS/JavaScript và backend FastAPI/MySQL.
 
-| Thư mục | Công nghệ | Hướng dẫn |
-|---|---|---|
-| [`backend/`](backend/README.md) | Python FastAPI + MySQL (SQLAlchemy) | `backend/README.md` |
-| [`frontend/`](frontend/README.md) | HTML · CSS · JavaScript thuần + axios | `frontend/README.md` |
+## Chạy dự án
 
-```
-Trình duyệt (frontend) --axios JSON--> FastAPI (backend :8000/api) --SQLAlchemy--> MySQL (:3306)
-```
+1. Xem [hướng dẫn backend](backend/README.md) để cấu hình môi trường, MySQL và API.
+2. Mở `frontend/index.html` qua VS Code Live Server hoặc HTTP server cục bộ. Địa chỉ backend được cấu hình tại `frontend/js/config/config.js`.
+3. Mở `http://127.0.0.1:8000/docs` để xem API và `/api/health` để kiểm tra kết nối database.
 
-## Chạy nhanh
+Luồng khách hàng đã nối với API cho đăng nhập, xem menu, đặt hàng bằng ví và xem lịch sử. Giao diện quản trị và bếp hiện chỉ là mẫu.
 
-1. **MySQL Workbench:** File → Open SQL Script → chọn `backend/sql/init.sql` → bấm ⚡ Execute.
-2. **Backend** (terminal trong thư mục `backend/`):
-   ```bash
-   copy .env.example .env               # Mac/Linux: cp .env.example .env
-   # mở .env, điền DB_PASSWORD = mật khẩu root MySQL của bạn
-   python -m venv .venv
-   .venv\Scripts\activate               # Mac/Linux: source .venv/bin/activate
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload        # http://127.0.0.1:8000/docs
-   ```
-3. **Frontend:** VS Code → chuột phải `frontend/index.html` → *Open with Live Server*.
-
-Trang chủ frontend hiện **✅ Backend OK · MySQL: connected** là đã thông cả 3 tầng. Sau đó mỗi nhóm đổi ví dụ `items` thành các chức năng của đề tài mình (xem mục *Thêm chức năng* / *Thêm trang mới* trong từng README).
+Xem [hướng dẫn frontend](frontend/README.md). Kiểm thử backend: cài `backend/requirements-dev.txt`, sau đó chạy `python -m pytest -q` trong thư mục `backend`.

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thực Đơn & Món Ăn - QuickBite</title>
+    <link rel="stylesheet" href="../../css/common/style.css">
+    <link rel="stylesheet" href="../../css/admin/menu.css">
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="admin-side">
+            <h2>QuickBite Admin</h2>
+            <p class="admin-side-subtitle">Quản trị hệ thống</p>
+            <nav class="admin-nav">
+                <a href="menu.html" class="nav-link active">Quản lý thực đơn</a>
+                <a href="ingredients.html" class="nav-link">Nguyên liệu & tồn kho</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <h1>Quản Lý Thực Đơn & Món Ăn</h1>
+
+            <section class="card">
+                <h2>Thêm Món Ăn Mới</h2>
+                <form id="addDishForm" class="card-form">
+                    <div class="form-group">
+                        <label for="dishName">Tên món ăn:</label>
+                        <input type="text" id="dishName" placeholder="Ví dụ: Cơm tấm sườn bì chả" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dishPrice">Giá tiền (VNĐ):</label>
+                        <input type="number" id="dishPrice" min="1000" step="1000" placeholder="Ví dụ: 45000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dishDesc">Mô tả:</label>
+                        <textarea id="dishDesc" rows="3" placeholder="Mô tả ngắn gọn về món ăn"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Thêm Món Ăn</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="editDishCard" class="card hidden">
+                <h2>Chỉnh Sửa Món Ăn</h2>
+                <form id="editDishForm" class="card-form">
+                    <input type="hidden" id="editDishId">
+                    <div class="form-group">
+                        <label for="editDishName">Tên món ăn:</label>
+                        <input type="text" id="editDishName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDishPrice">Giá tiền (VNĐ):</label>
+                        <input type="number" id="editDishPrice" min="1000" step="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDishDesc">Mô tả:</label>
+                        <textarea id="editDishDesc" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Lưu Cập Nhật</button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-secondary">Hủy</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Gán Món Vào Thực Đơn Theo Ngày</h2>
+                <form id="assignMenuForm" class="card-form">
+                    <div class="form-group">
+                        <label for="menuDate">Chọn Ngày Áp Dụng:</label>
+                        <input type="date" id="menuDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="selectDishId">Chọn Món Ăn:</label>
+                        <select id="selectDishId" required>
+                            <option value="">-- Chọn món ăn từ hệ thống --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="menuQuantity">Số lượng định mức (Quantity):</label>
+                        <input type="number" id="menuQuantity" min="1" placeholder="Ví dụ: 50" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Gán Vào Thực Đơn</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Danh Sách Món Ăn Đang Hoạt Động</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên món</th>
+                            <th>Giá (VNĐ)</th>
+                            <th>Mô tả</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dishTableBody">
+                        <tr>
+                            <td colspan="5">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../js/pages/admin/menu.js"></script>
+    <script src="../../js/layout.js"></script>
+</body>
+</html>

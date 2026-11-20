@@ -1,94 +1,45 @@
 const PROCESSING = new Set(["pending", "confirmed", "preparing", "ready"]);
 
 const listEl = document.getElementById("order-list");
-const searchEl =
-  document.getElementById("order-search") ||
-  document.querySelector('input[type="search"]');
-
-if (searchEl) {
-  searchEl.addEventListener("input", render);
-}
+const searchEl = document.getElementById("order-search");
 let orders = [];
 let filter = "all";
 
 function groupOf(status) {
   if (status === "completed") return "completed";
   if (status === "cancelled") return "cancelled";
-  if (PROCESSING.has(status)) return "processing";
-  return "processing";
-}
-
-function readLocalOrders() {
-  try {
-    const rows = JSON.parse(localStorage.getItem("foodie_orders") || "[]");
-    return Array.isArray(rows) ? rows : [];
-  } catch (error) {
-    return [];
-  }
+  return PROCESSING.has(status) ? "processing" : "processing";
 }
 
 function visibleOrders() {
-  const keyword = (searchEl ? searchEl.value : "").trim().toLowerCase();
+  const keyword = searchEl.value.trim().toLowerCase();
   return orders.filter((order) => {
-    const group = groupOf(order.status);
-    const matchesFilter = filter === "all" || group === filter;
-    if (!matchesFilter) return false;
-    if (!keyword) return true;
-
-    const inTitle = String(order.title || "").toLowerCase().includes(keyword);
-    const inItems = getOrderItems(order).some((it) =>
-      String(it.item_name || it.name || "").toLowerCase().includes(keyword)
-    );
-    return inTitle || inItems;
+    const matchesFilter = filter === "all" || groupOf(order.status) === filter;
+    const matchesSearch = !keyword || `${order.title} ${order.code}`.toLowerCase().includes(keyword);
+    return matchesFilter && matchesSearch;
   });
 }
 
-const DESIGN_ROWS = [
-  "Bún bò Huế",
-  "Cơm gà xối mỡ",
-  "Salad cá hồi",
-  "Mì Ý bò bằm",
-  "Trà đào cam sả",
-];
-
-function renderRows(titles) {
-  if (!titles.length) {
+function renderRows(rows) {
+  if (!rows.length) {
     listEl.innerHTML = '<p class="cart-empty">Chưa có đơn hàng trong mục này.</p>';
     return;
   }
-  listEl.innerHTML = titles.map((title) => `
+  listEl.innerHTML = rows.map((order) => `
     <div class="data-row">
-      <span>${escapeHtml(title)}</span>
-      <a href="dish.html">Xem chi tiết →</a>
+      <span><strong>${escapeHtml(order.title)}</strong><br><small>${escapeHtml(order.code)} · ${escapeHtml(order.pickup_date || "")}</small></span>
+      <span>${formatMoney(order.total_amount)} · ${escapeHtml(order.status)}</span>
     </div>`).join("");
 }
 
 function render() {
-  if (!orders.length) {
-    document.getElementById("count-all").textContent = "12";
-    document.getElementById("count-processing").textContent = "2";
-    document.getElementById("count-completed").textContent = "9";
-    document.getElementById("count-cancelled").textContent = "1";
-    renderRows(DESIGN_ROWS);
-    return;
-  }
-
   const counts = { all: orders.length, processing: 0, completed: 0, cancelled: 0 };
-  orders.forEach((order) => {
-    counts[groupOf(order.status)] += 1;
-  });
+  orders.forEach((order) => { counts[groupOf(order.status)] += 1; });
   document.getElementById("count-all").textContent = String(counts.all);
   document.getElementById("count-processing").textContent = String(counts.processing);
   document.getElementById("count-completed").textContent = String(counts.completed);
   document.getElementById("count-cancelled").textContent = String(counts.cancelled);
-  renderRows(visibleOrders().map((order) => order.title));
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  renderRows(visibleOrders());
 }
 
 document.getElementById("order-filters").addEventListener("click", (event) => {
@@ -104,32 +55,19 @@ document.getElementById("order-filters").addEventListener("click", (event) => {
 searchEl.addEventListener("input", render);
 
 async function loadOrders() {
-    const localOrders = readLocalOrders();
-    let remote = [];
-    try {
-        const data = await api.get("/orders");
-        if (Array.isArray(data)) remote = data;
-    } catch (error) {
-        console.error("Không thể tải danh sách đơn hàng từ server:", error);
-        remote = [];
-    }
-    
-    const seen = new Set();
-    orders = [...localOrders, ...remote].filter((order) => {
-        if (!order || (!order.id && order.id !== 0)) return false;
-        
-        const key = `${order.id}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        
-        if (!order.title) {
-            order.title = order.code || `Đơn hàng #${order.id}`;
-        }
-        
-        return true;
-    });
-    
+  try {
+    const data = await api.get("/orders/mine");
+    orders = Array.isArray(data) ? data : [];
     render();
+  } catch (error) {
+    orders = [];
+    render();
+    if (error.status === 401) {
+      listEl.innerHTML = '<p class="cart-empty">Hãy <a href="login.html">đăng nhập</a> để xem đơn hàng của bạn.</p>';
+    } else {
+      listEl.innerHTML = `<p class="cart-empty">${escapeHtml(error.message || "Không tải được đơn hàng.")}</p>`;
+    }
+  }
 }
 
 loadOrders();

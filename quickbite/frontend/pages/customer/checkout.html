@@ -27,8 +27,6 @@
         <a href="../../index.html">Trang chủ</a>
         <a href="menu.html">Thực đơn</a>
         <a href="orders.html">Đơn hàng</a>
-        <a class="is-active" href="checkout.html">Giỏ hàng</a>
-        <a href="wallet.html">Ví</a>
       </nav>
 
       <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
@@ -48,28 +46,25 @@
 
     <div class="ck-layout">
       <div class="ck-forms">
-        <section class="ck-card" aria-labelledby="receive-title" style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px;">
+        <section class="ck-card" aria-labelledby="receive-title">
           <h2 id="receive-title"><span>01</span> Thông tin nhận hàng</h2>
 
           <div class="ck-row">
-            <label for="receiver-name">
-              Họ và tên *
-              <input id="receiver-name" class="ck-input" type="text" value="Vương Nguyễn" autocomplete="name" required style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px;">
+            <label>
+              Họ và tên
+              <input class="ck-input" id="checkout-name" type="text" autocomplete="name" readonly>
             </label>
-            <label for="receiver-phone">
-              Số điện thoại *
-              <input id="receiver-phone" class="ck-input" type="tel" placeholder="0912 345 678" autocomplete="tel" required style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px;">
+            <label>
+              Số điện thoại
+              <input class="ck-input" id="checkout-phone" type="tel" autocomplete="tel" readonly>
             </label>
           </div>
 
-          <label for="receiver-address">
-            Địa chỉ giao hàng *
-            <input id="receiver-address" class="ck-input" type="text" placeholder="Số nhà, đường, phường/xã..." autocomplete="street-address" required style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px;">
-          </label>
+          <p class="ck-hint">Đơn hàng nhận tại khung giờ đã chọn, không cần địa chỉ giao hàng.</p>
 
-          <label for="order-note">
-            Ghi chú (tuỳ chọn)
-            <input id="order-note" class="ck-input" type="text" placeholder="Không hành, giao tại sảnh..." style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px;">
+          <label>
+            Ghi chú cho nhà hàng (không bắt buộc)
+            <input class="ck-input" id="checkout-note" type="text" placeholder="Ví dụ: Không hành...">
           </label>
         </section>
 
@@ -90,25 +85,25 @@
           <h2 id="pay-title"><span>03</span> Phương thức thanh toán</h2>
 
           <div class="ck-pays" id="pay-methods">
-            <label class="ck-pay is-selected">
-              <input type="radio" name="pay" value="cod" checked>
+            <label class="ck-pay">
+              <input type="radio" name="pay" value="cod" disabled>
               <span>
                 <strong>Thanh toán khi nhận hàng (COD)</strong>
-                <small>Tiền mặt khi nhận món</small>
+                <small>Chưa được hỗ trợ</small>
               </span>
             </label>
-            <label class="ck-pay">
-              <input type="radio" name="pay" value="wallet">
+            <label class="ck-pay is-selected">
+              <input type="radio" name="pay" value="wallet" checked>
               <span>
                 <strong>Ví điện tử Foodie</strong>
-                <small>Số dư khả dụng: 250.000đ</small>
+                <small id="checkout-wallet-balance">Đang kiểm tra ví…</small>
               </span>
             </label>
             <label class="ck-pay">
-              <input type="radio" name="pay" value="bank">
+              <input type="radio" name="pay" value="bank" disabled>
               <span>
                 <strong>Chuyển khoản ngân hàng</strong>
-                <small>Quét mã QR để thanh toán</small>
+                <small>Chưa được hỗ trợ</small>
               </span>
             </label>
           </div>
@@ -125,7 +120,7 @@
           <span id="checkout-subtotal">0đ</span>
         </div>
         <div class="ck-money">
-          <span>Phí giao hàng</span>
+          <span>Phí nhận món</span>
           <span id="checkout-shipping">0đ</span>
         </div>
         <div class="ck-money ck-pickup-line">
@@ -144,8 +139,11 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../../js/utils.js"></script>
   <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/layout.js"></script>
   <script src="../../js/pages/customer/cart-store.js"></script>
   <script src="../../js/pages/customer/checkout.js"></script>
 </body>

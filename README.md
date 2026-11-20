@@ -1,28 +1,19 @@
-# Base code dự án thực tập: HN-KS25-CNTT1
+# QuickBite / Foodie
 
-Khung dự án chung cho các nhóm (04/11 – 25/11/2026). Gồm 2 phần đã nối sẵn với nhau:
+Ứng dụng đặt món gồm frontend HTML/CSS/JavaScript và backend FastAPI/MySQL.
 
-| Thư mục | Công nghệ | Hướng dẫn |
-|---|---|---|
-| [`backend/`](backend/README.md) | Python FastAPI + MySQL (SQLAlchemy) | `backend/README.md` |
-| [`frontend/`](frontend/README.md) | HTML · CSS · JavaScript thuần + axios | `frontend/README.md` |
-
-```
-Trình duyệt (frontend) --axios JSON--> FastAPI (backend :8000/api) --SQLAlchemy--> MySQL (:3306)
+```text
+quickbite/
+├── backend/   # FastAPI, SQLAlchemy, MySQL và tests
+└── frontend/  # Trang khách hàng và các trang admin/bếp mẫu
 ```
 
-## Chạy nhanh
+## Chạy dự án
 
-1. **MySQL Workbench:** File → Open SQL Script → chọn `backend/sql/init.sql` → bấm ⚡ Execute.
-2. **Backend** (terminal trong thư mục `backend/`):
-   ```bash
-   copy .env.example .env               # Mac/Linux: cp .env.example .env
-   # mở .env, điền DB_PASSWORD = mật khẩu root MySQL của bạn
-   python -m venv .venv
-   .venv\Scripts\activate               # Mac/Linux: source .venv/bin/activate
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload        # http://127.0.0.1:8000/docs
-   ```
-3. **Frontend:** VS Code → chuột phải `frontend/index.html` → *Open with Live Server*.
+1. Làm theo [hướng dẫn backend](quickbite/backend/README.md) để cấu hình `.env`, chuẩn bị MySQL và chạy API.
+2. Mở `quickbite/frontend/index.html` qua VS Code Live Server hoặc một HTTP server cục bộ. Cấu hình API ở `quickbite/frontend/js/config/config.js`.
+3. Tài liệu API có tại `http://127.0.0.1:8000/docs`; trạng thái DB tại `http://127.0.0.1:8000/api/health`.
 
-Trang chủ frontend hiện **✅ Backend OK · MySQL: connected** là đã thông cả 3 tầng. Sau đó mỗi nhóm đổi ví dụ `items` thành các chức năng của đề tài mình (xem mục *Thêm chức năng* / *Thêm trang mới* trong từng README).
+Khách hàng có thể đăng nhập, xem món, quản lý giỏ, thanh toán bằng ví đã có số dư và xem lịch sử đơn. Trang admin/bếp hiện vẫn là giao diện mẫu, chưa có luồng quản lý trực tiếp.
+
+Xem thêm [hướng dẫn frontend](quickbite/frontend/README.md). Backend tests chạy bằng `python -m pytest -q` trong thư mục `quickbite/backend` sau khi cài `requirements-dev.txt`.
