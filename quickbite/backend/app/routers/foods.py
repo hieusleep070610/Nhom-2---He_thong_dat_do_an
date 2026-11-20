@@ -17,6 +17,7 @@ from app.schemas.menu import (
     DishPriceUpdateResponse,
     DishPriceHistoryResponse,
 )
+from app.schemas.dish import DishOut
 from app.services.menu_availability_service import get_remaining_by_date
 from app.routers.auth import get_current_admin
 
@@ -115,7 +116,7 @@ def search_dishes(
     }
 
 
-@router.get("/dishes", response_model=list)
+@router.get("/dishes", response_model=list[DishOut])
 def get_dishes(db: Session = Depends(get_db)):
     return db.query(Dish).filter(Dish.is_available.is_(True)).all()
 

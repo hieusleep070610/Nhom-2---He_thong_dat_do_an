@@ -1,8 +1,3 @@
--- Foodie demo data for MySQL 8.0.
--- Run after selecting your project database and creating the tables (start
--- the API once, or apply the project's schema). This script is safe to re-run.
-
--- Dishes shown by GET /api/menu/dishes.
 INSERT INTO dishes (name, price, description, is_available)
 VALUES
   ('Bún bò Huế', 55000, 'Nước dùng đậm đà, chuẩn vị cố đô.', TRUE),
@@ -16,9 +11,6 @@ ON DUPLICATE KEY UPDATE
   description = VALUES(description),
   is_available = VALUES(is_available);
 
--- Menu quantities for today and the next seven days.
--- daily_menus has no unique key on (menu_date, dish_id), so NOT EXISTS keeps
--- this seed idempotent without changing the application's schema.
 INSERT INTO daily_menus (menu_date, dish_id, quantity)
 SELECT dates.menu_date, d.id,
        CASE d.name
@@ -47,8 +39,6 @@ AND NOT EXISTS (
   WHERE existing.menu_date = dates.menu_date AND existing.dish_id = d.id
 );
 
--- Pickup slots. For dates without a SlotDailyQuota row the API uses each
--- slot's max_servings and treats booked_servings as zero.
 INSERT INTO pickup_slots (label, start_time, end_time, max_servings, is_active)
 VALUES
   ('10:30', '10:30:00', '11:00:00', 20, 1),
@@ -65,9 +55,6 @@ ON DUPLICATE KEY UPDATE
   max_servings = VALUES(max_servings),
   is_active = VALUES(is_active);
 
--- Create three orders for today: pending, confirmed and cancelled. The
--- cancelled sample is useful for verifying that cancelled orders don't use
--- up daily dish quantities. Phone values satisfy the model's MySQL CHECK.
 INSERT INTO orders
   (code, customer_name, customer_phone, note, pickup_date, pickup_slot_id,
    status, total_amount)
