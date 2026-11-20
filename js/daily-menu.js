@@ -59,18 +59,18 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'dish-4',
-            name: 'Bún Chả Nướng Than Hoa',
-            category: 'mon-nuoc',
-            mealTime: 'Bữa Trưa',
-            price: 50000,
-            originalPrice: 55000,
+            name: 'Canh Sườn Non Hầm Rau Củ Bắp Ngọt',
+            category: 'mon-canh',
+            mealTime: 'Trưa & Tối',
+            price: 45000,
+            originalPrice: 52000,
             stock: 2,
             initialStock: 18,
-            tag: 'hot',
-            tagLabel: 'Sắp hết',
-            calories: '510 kcal',
-            image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=600&q=80',
-            description: 'Chả viên và chả miếng nướng xém cạnh trên than hoa đượm khói, chấm nước mắm đu đủ cà rốt ấm nóng kèm đĩa bún tươi và rau ghém xanh mướt.'
+            tag: 'chef',
+            tagLabel: 'Thanh mát',
+            calories: '380 kcal',
+            image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
+            description: 'Sườn non heo tươi hầm mềm róc xương cùng bắp ngọt Mỹ, cà rốt, khoai tây và nấm hương trong nước dùng thanh trong ngọt tự nhiên.'
         },
         {
             id: 'dish-5',
@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'dish-6',
-            name: 'Salad Đậu Hũ Nấm Sốt Mè Rang (Chay)',
-            category: 'mon-chay',
+            name: 'Canh Rong Biển Đậu Hũ Non Hạt Sen (Chay)',
+            category: 'mon-canh',
             mealTime: 'Cả Ngày',
             price: 38000,
             originalPrice: 45000,
@@ -98,9 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
             initialStock: 20,
             tag: 'new',
             tagLabel: 'Thực dưỡng',
-            calories: '320 kcal',
-            image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80',
-            description: 'Đậu hũ non chiên giòn, nấm đùi gà áp chảo, xà lách romaine, cà chua bi organic rưới sốt mè rang béo thơm thanh mát.'
+            calories: '240 kcal',
+            image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
+            description: 'Rong biển nang Hàn Quốc thanh mát nấu cùng đậu hũ non mềm mịn, hạt sen tươi Huế bở bùi và nấm đùi gà áp chảo giải nhiệt cơ thể hiệu quả.'
         },
         {
             id: 'dish-7',
@@ -272,15 +272,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilters = document.getElementById('categoryFilters');
     const sortSelect = document.getElementById('sortSelect');
     
-    // Category Counts
+    // Category Counts & Filter Indicator (Task TF1B44A)
     const countAll = document.getElementById('countAll');
     const countMain = document.getElementById('countMain');
+    const countCanh = document.getElementById('countCanh');
     const countSoup = document.getElementById('countSoup');
     const countVeggie = document.getElementById('countVeggie');
     const countDrink = document.getElementById('countDrink');
     const countAvailableOnly = document.getElementById('countAvailableOnly');
     const countOutOnly = document.getElementById('countOutOnly');
     const statTotalDishes = document.getElementById('statTotalDishes');
+    
+    const activeFilterIndicator = document.getElementById('activeFilterIndicator');
+    const activeCategoryName = document.getElementById('activeCategoryName');
+    const activeCategoryCountBadge = document.getElementById('activeCategoryCountBadge');
+    const btnClearCategoryFilter = document.getElementById('btnClearCategoryFilter');
     
     // Modal
     const foodModal = document.getElementById('foodModal');
@@ -647,10 +653,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (state.searchTerm.trim() !== '') {
             const term = state.searchTerm.toLowerCase().trim();
-            const removeAccentsVN = (str) => {
-                if (!str) return '';
-                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'd').toLowerCase();
-            };
             const normTerm = removeAccentsVN(term);
             filteredDishes = filteredDishes.filter(dish => {
                 const lowerName = dish.name.toLowerCase();
@@ -680,6 +682,8 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyMenuState.style.display = 'none';
             emptySearchState.style.display = 'block';
 
+            if (activeFilterIndicator) activeFilterIndicator.style.display = 'none';
+
             if (state.searchTerm.trim()) {
                 if (emptySearchHeading) {
                     emptySearchHeading.textContent = `Không tìm thấy món ăn phù hợp với "${state.searchTerm}"`;
@@ -691,11 +695,46 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (state.selectedCategory === 'available-only') {
                 if (emptySearchHeading) emptySearchHeading.textContent = 'Danh mục này đã hết suất';
                 emptySearchDesc.textContent = `Hiện các món trong danh mục này đã hết suất phục vụ cho ngày này.`;
+            } else if (state.selectedCategory === 'mon-canh') {
+                if (emptySearchHeading) emptySearchHeading.textContent = 'Chưa có món canh cho ngày này';
+                emptySearchDesc.innerHTML = `Thực đơn ngày này hiện chưa có món canh phù hợp. Quý khách vui lòng chọn loại món khác (Món chính, Món nước,...) hoặc chọn ngày khác nhé!`;
             } else {
-                if (emptySearchHeading) emptySearchHeading.textContent = 'Chưa có món ăn trong danh mục';
-                emptySearchDesc.textContent = `Danh mục này hiện chưa có món ăn phù hợp cho ngày đã chọn.`;
+                const catMapText = {
+                    'mon-chinh': 'Món chính',
+                    'mon-canh': 'Canh / Súp',
+                    'mon-nuoc': 'Món nước / Bún Phở',
+                    'mon-chay': 'Món chay',
+                    'trang-mieng': 'Đồ uống & Tráng miệng'
+                };
+                const catName = catMapText[state.selectedCategory] || 'loại món này';
+                if (emptySearchHeading) emptySearchHeading.textContent = `Chưa có món thuộc loại "${catName}"`;
+                emptySearchDesc.textContent = `Thực đơn ngày này hiện chưa có món ăn thuộc loại ${catName}. Quý khách vui lòng chọn loại món khác hoặc bấm xem tất cả.`;
             }
             return;
+        }
+
+        // Cập nhật thanh trạng thái đang lọc theo loại món (Task TF1B44A)
+        if (activeFilterIndicator) {
+            const catMapLabel = {
+                'mon-chinh': 'Món chính',
+                'mon-canh': 'Canh',
+                'mon-nuoc': 'Món nước / Bún Phở',
+                'mon-chay': 'Món chay',
+                'trang-mieng': 'Đồ uống & Tráng miệng',
+                'available-only': 'Món còn suất',
+                'out-of-stock-only': 'Món đã hết suất'
+            };
+            if (state.selectedCategory !== 'all' && !state.isSearchMode) {
+                activeFilterIndicator.style.display = 'flex';
+                if (activeCategoryName) {
+                    activeCategoryName.textContent = catMapLabel[state.selectedCategory] || state.selectedCategory;
+                }
+                if (activeCategoryCountBadge) {
+                    activeCategoryCountBadge.textContent = `${filteredDishes.length} món`;
+                }
+            } else {
+                activeFilterIndicator.style.display = 'none';
+            }
         }
 
         // Sắp xếp món ăn
@@ -748,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const categoryMap = {
             'mon-chinh': 'Món chính',
+            'mon-canh': 'Canh / Súp',
             'mon-nuoc': 'Món nước',
             'mon-chay': 'Món chay',
             'trang-mieng': 'Tráng miệng / Đồ uống'
@@ -830,6 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCategoryCounts = (dishes) => {
         const total = dishes.length;
         const mainCount = dishes.filter(d => d.category === 'mon-chinh').length;
+        const canhCount = dishes.filter(d => d.category === 'mon-canh').length;
         const soupCount = dishes.filter(d => d.category === 'mon-nuoc').length;
         const veggieCount = dishes.filter(d => d.category === 'mon-chay').length;
         const drinkCount = dishes.filter(d => d.category === 'trang-mieng').length;
@@ -838,6 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (countAll) countAll.textContent = total;
         if (countMain) countMain.textContent = mainCount;
+        if (countCanh) countCanh.textContent = canhCount;
         if (countSoup) countSoup.textContent = soupCount;
         if (countVeggie) countVeggie.textContent = veggieCount;
         if (countDrink) countDrink.textContent = drinkCount;
@@ -1227,12 +1269,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const pill = e.target.closest('.cat-pill');
         if (!pill) return;
 
-        categoryFilters.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
+        categoryFilters.querySelectorAll('.cat-pill').forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
+        });
         pill.classList.add('active');
+        pill.setAttribute('aria-selected', 'true');
 
         state.selectedCategory = pill.getAttribute('data-category');
-        renderMenuGrid();
+        if (state.isSearchMode) {
+            executeSearch(state.searchKeyword, 1);
+        } else {
+            renderMenuGrid();
+        }
     });
+
+    // Nút xóa bộ lọc loại món (Task TF1B44A)
+    if (btnClearCategoryFilter) {
+        btnClearCategoryFilter.addEventListener('click', () => {
+            state.selectedCategory = 'all';
+            categoryFilters.querySelectorAll('.cat-pill').forEach(btn => {
+                const isAll = btn.getAttribute('data-category') === 'all';
+                btn.classList.toggle('active', isAll);
+                btn.setAttribute('aria-selected', isAll ? 'true' : 'false');
+            });
+            if (state.isSearchMode) {
+                executeSearch(state.searchKeyword, 1);
+            } else {
+                renderMenuGrid();
+            }
+            showToast('Đã hiển thị lại tất cả các loại món ăn', 'success');
+        });
+    }
 
     sortSelect.addEventListener('change', (e) => {
         state.sortBy = e.target.value;
@@ -1319,6 +1387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const catName = dish.category_name || dish.categoryName || (
                     dish.category === 'mon-chinh' ? 'Món chính' :
+                    dish.category === 'mon-canh' ? 'Canh / Súp' :
                     dish.category === 'mon-nuoc' ? 'Món nước' :
                     dish.category === 'mon-chay' ? 'Món chay' : 'Tráng miệng & Đồ uống'
                 );
@@ -1545,19 +1614,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sắp xếp
             sortDishes(dishesToRender, state.sortBy);
 
-            dishesToRender.forEach(dish => {
-                const card = createFoodCardElement(dish);
-                menuGrid.appendChild(card);
-            });
-
-            // HIỂN THỊ THANH PHÂN TRANG (PAGINATION)
-            if (searchResult.total_pages > 1) {
-                searchPaginationBar.style.display = 'flex';
-                searchPaginationInfo.textContent = `Trang ${searchResult.page} / ${searchResult.total_pages} (Tổng ${searchResult.total_items} món)`;
-                btnSearchPrevPage.disabled = !searchResult.has_prev;
-                btnSearchNextPage.disabled = !searchResult.has_next;
-            } else {
+            if (dishesToRender.length === 0) {
+                menuGrid.style.display = 'none';
                 searchPaginationBar.style.display = 'none';
+                emptySearchState.style.display = 'block';
+                emptySearchHeading.textContent = `Không có món phù hợp trong danh mục này`;
+                emptySearchDesc.innerHTML = `Không có món ăn nào thuộc danh mục đã chọn phù hợp với từ khóa <strong>"${cleanKwd}"</strong>. Bạn có thể chọn danh mục "Tất cả" để xem toàn bộ kết quả.`;
+            } else {
+                emptySearchState.style.display = 'none';
+                menuGrid.style.display = 'grid';
+                menuGrid.innerHTML = '';
+
+                dishesToRender.forEach(dish => {
+                    const card = createFoodCardElement(dish);
+                    menuGrid.appendChild(card);
+                });
+
+                // HIỂN THỊ THANH PHÂN TRANG (PAGINATION)
+                if (searchResult.total_pages > 1) {
+                    searchPaginationBar.style.display = 'flex';
+                    searchPaginationInfo.textContent = `Trang ${searchResult.page} / ${searchResult.total_pages} (Tổng ${searchResult.total_items} món)`;
+                    btnSearchPrevPage.disabled = !searchResult.has_prev;
+                    btnSearchNextPage.disabled = !searchResult.has_next;
+                } else {
+                    searchPaginationBar.style.display = 'none';
+                }
             }
         }
     };
@@ -1749,8 +1830,36 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDateTabs();
     updateCartUI();
 
+    // Hỗ trợ tham số URL lọc theo loại món (Task TF1B44A: ?category=mon-canh hoặc ?type=canh)
+    const categoryParam = urlParams.get('category') || urlParams.get('type');
+    if (categoryParam) {
+        const catMap = {
+            'canh': 'mon-canh',
+            'mon-canh': 'mon-canh',
+            'soup': 'mon-canh',
+            'chinh': 'mon-chinh',
+            'mon-chinh': 'mon-chinh',
+            'main': 'mon-chinh',
+            'nuoc': 'mon-nuoc',
+            'mon-nuoc': 'mon-nuoc',
+            'chay': 'mon-chay',
+            'mon-chay': 'mon-chay',
+            'trang-mieng': 'trang-mieng',
+            'dessert': 'trang-mieng',
+            'drink': 'trang-mieng',
+            'available': 'available-only',
+            'out': 'out-of-stock-only'
+        };
+        const targetCategory = catMap[categoryParam.toLowerCase()] || categoryParam;
+        state.selectedCategory = targetCategory;
+        categoryFilters.querySelectorAll('.cat-pill').forEach(btn => {
+            const isMatch = btn.getAttribute('data-category') === targetCategory;
+            btn.classList.toggle('active', isMatch);
+            btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+        });
+    }
+
     // Hỗ trợ tham số URL tìm kiếm (Task TF1A94A: ?q=cơm hoặc ?search=phở)
-    const urlParams = new URLSearchParams(window.location.search);
     const qParam = urlParams.get('q') || urlParams.get('search');
     if (qParam) {
         const pageParam = parseInt(urlParams.get('page') || '1', 10);

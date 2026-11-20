@@ -14,6 +14,8 @@ Dự án Hệ thống đặt đồ ăn theo ngày với đầy đủ Frontend & 
 | **`TF1A785`** | Backend (BE) | Viết API chi tiết món ăn (ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng) | `feature/tf1a785-ngan` |
 | **`TF1A86F`** | Frontend (FE) | Trang chi tiết món với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn | `feature/tf1a86f-ngan` |
 | **`TF1A8D7`** | Backend (BE) | Viết API tìm món theo tên, có phân trang và xử lý từ khóa rỗng | `feature/tf1a8d7-ngan` |
+| **`TF1A94A`** | Frontend (FE) | Thêm ô tìm kiếm với gợi ý khi gõ, trang kết quả và thông báo không tìm thấy | `feature/tf1a94a-ngan` |
+| **`TF1B44A`** | Frontend (FE) | Lọc món theo loại trên trang thực đơn (món chính, canh, tráng miệng...) | `feature/tf1b44a-ngan` |
 
 ---
 
@@ -422,3 +424,50 @@ git push -u origin feature/tf1a8d7-ngan
 - **Link Tạo / Nộp Pull Request**:  
   `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/pull/new/feature/tf1a8d7-ngan`
   *(Tiêu đề PR: `TF1A8D7: [BE] API tìm kiếm món ăn theo tên, có phân trang và xử lý từ khóa rỗng`)*
+
+---
+
+## 🥣 12. Tài Liệu Chi Tiết Chức Năng [FE] Lọc Món Theo Loại (Task TF1B44A)
+
+Chức năng **Lọc món theo loại trên trang thực đơn** (`daily-menu.html`, `js/daily-menu.js` & `css/daily-menu.css`) giải quyết trọn vẹn yêu cầu nghiệp vụ:
+
+### 1. Các Nút Lọc Theo Loại Món Đầy Đủ
+* 🍲 **Tất cả**: Xem toàn bộ các món ăn phục vụ trong ngày.
+* 🍗 **Món chính (`mon-chinh`)**: Cơm Tấm Sườn Bì Chả, Cơm Gà Xối Mỡ, Cơm Niêu Cá Bống Kho Tộ, Cơm Chiên Hải Sản Hoàng Kim.
+* 🥣 **Canh (`mon-canh`)** *(Yêu cầu trọng tâm)*: Canh Sườn Non Hầm Rau Củ Bắp Ngọt, Canh Rong Biển Đậu Hũ Non Hạt Sen (Chay).
+* 🍜 **Món nước / Bún Phở (`mon-nuoc`)**: Phở Bò Tái Lăn Hà Nội, Bún Bò Huế Chả Cua Thịt Bắp.
+* 🥗 **Món chay (`mon-chay`)**: Nấm Kho Tiêu Cơm Gạo Lứt (Chay).
+* 🍹 **Tráng miệng & Đồ uống (`trang-mieng`)**: Trà Đào Cam Sả Hạt Chia, Sữa Chua Trân Châu Hạ Long, Trà Sữa Trân Châu Hoàng Kim.
+* 🏷️ **Bộ lọc theo tình trạng số suất**: Còn món (`available-only`) và Hết món (`out-of-stock-only`).
+
+### 2. Huy Hiệu Số Đếm Thời Gian Thực (Live Badge Count)
+Mỗi nút loại món đều có số đếm động tương ứng (`countAll`, `countMain`, `countCanh`, `countSoup`, `countVeggie`, `countDrink`, `countAvailableOnly`, `countOutOnly`), tự động cập nhật ngay khi đổi ngày hoặc khi tải dữ liệu từ API.
+
+### 3. Thanh Trạng Thái Đang Lọc (Active Filter Indicator)
+Khi kích hoạt một loại món, giao diện hiển thị thanh banner thông báo trực quan:
+* Ví dụ: `"Đang lọc theo loại món: Canh (2 món)"` cùng badge mã task `TF1B44A`.
+* Kèm nút bấm nhanh `"Xem tất cả loại"` để người dùng quay lại toàn bộ thực đơn chỉ với 1 click.
+
+### 4. Đồng Bộ Với Tìm Kiếm, Sắp Xếp & Tham Số URL
+* Tương thích mượt mà với ô tìm kiếm (`Task TF1A94A`): Khi đang tìm kiếm từ khóa, bấm lọc theo loại sẽ lọc kết quả trong phạm vi loại món đó.
+* Hỗ trợ URL tham số: Truy cập `daily-menu.html?category=mon-canh` hoặc `?type=canh` sẽ tự động kích hoạt ngay tab món Canh khi tải trang.
+
+### 5. Hướng Dẫn Đẩy Nhánh & Nộp Bài (Task TF1B44A):
+```powershell
+# 1. Tạo và chuyển sang nhánh mới cho task FE TF1B44A
+git checkout -b feature/tf1b44a-ngan
+
+# 2. Thêm file và commit đúng mã task TF1B44A
+git add .
+git commit -m "TF1B44A: [FE] Lọc món theo loại trên trang thực đơn (món chính, canh, tráng miệng...)"
+
+# 3. Đẩy nhánh lên GitHub
+git push -u origin feature/tf1b44a-ngan
+```
+
+#### 🔗 Minh Chứng Nộp Bài (Task TF1B44A):
+* **Link Nhánh GitHub**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/tree/feature/tf1b44a-ngan`
+* **Link Tạo / Nộp Pull Request**:  
+  `https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an/pull/new/feature/tf1b44a-ngan`
+  *(Tiêu đề PR: `TF1B44A: [FE] Lọc món theo loại trên trang thực đơn`)*

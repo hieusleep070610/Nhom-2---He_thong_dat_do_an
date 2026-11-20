@@ -643,6 +643,77 @@ input, select {
     color: #fff !important;
 }
 
+/* ================= THANH TRẠNG THÁI LỌC MÓN THEO LOẠI (TASK TF1B44A) ================= */
+.active-filter-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    border: 1px solid #fed7aa;
+    border-radius: var(--radius-md);
+    padding: 10px 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.08);
+    animation: fadeIn 0.3s ease;
+}
+
+.active-filter-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+    color: var(--dark);
+}
+
+.active-filter-info strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.active-filter-count-badge {
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+
+.btn-clear-category-filter {
+    background: #fff;
+    border: 1px solid #f97316;
+    color: #ea580c;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-clear-category-filter:hover {
+    background: #ea580c;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+
+.cat-pill[data-category="mon-canh"]:hover {
+    border-color: #0d9488;
+    color: #0f766e;
+    background: #f0fdfa;
+}
+
+.cat-pill[data-category="mon-canh"].active {
+    background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important;
+    border-color: #0f766e !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+}
+
 /* ================= FILTER & SORT BAR ================= */
 .filter-bar {
     display: flex;

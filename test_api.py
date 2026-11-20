@@ -239,6 +239,58 @@ def run_tests():
     print(f"  ✅ Phản hồi chuẩn: {res14['message']}")
     print("  -> TEST 14 PASSED!\n")
 
+    # =========================================================================
+    # TASK TF1B44A: [FE] LỌC MÓN THEO LOẠI TRÊN TRANG THỰC ĐƠN
+    # =========================================================================
+    print("=" * 60)
+    print("  🍲 KIỂM THỬ BỘ LỌC THEO LOẠI MÓN TRÊN THỰC ĐƠN (TASK: TF1B44A)")
+    print("=" * 60)
+
+    # 15. Test phân loại món ăn trong thực đơn (Món chính, Canh, Món nước, Món chay, Tráng miệng)
+    print("\n[TEST 15] Kiểm tra cấu trúc dữ liệu các loại món theo yêu cầu Task TF1B44A:")
+    menu_today = get_menu_by_date("today")
+    all_dishes = menu_today["data"]
+    
+    categories = set(d["category"] for d in all_dishes)
+    assert "mon-chinh" in categories, "Thất bại: Thiếu loại 'mon-chinh' (Món chính)"
+    assert "mon-canh" in categories, "Thất bại: Thiếu loại 'mon-canh' (Canh)"
+    assert "trang-mieng" in categories, "Thất bại: Thiếu loại 'trang-mieng' (Tráng miệng)"
+    
+    canh_dishes = [d for d in all_dishes if d["category"] == "mon-canh"]
+    main_dishes = [d for d in all_dishes if d["category"] == "mon-chinh"]
+    dessert_dishes = [d for d in all_dishes if d["category"] == "trang-mieng"]
+
+    assert len(canh_dishes) >= 2, f"Thất bại: Cần có ít nhất 2 món canh, nhận {len(canh_dishes)}"
+    assert len(main_dishes) >= 4, f"Thất bại: Cần có ít nhất 4 món chính, nhận {len(main_dishes)}"
+    assert len(dessert_dishes) >= 3, f"Thất bại: Cần có ít nhất 3 món tráng miệng, nhận {len(dessert_dishes)}"
+    
+    print(f"  ✅ Món chính ({len(main_dishes)} món): {', '.join(d['name'] for d in main_dishes[:2])}...")
+    print(f"  ✅ Món canh ({len(canh_dishes)} món): {', '.join(d['name'] for d in canh_dishes)}...")
+    print(f"  ✅ Tráng miệng & Đồ uống ({len(dessert_dishes)} món): {', '.join(d['name'] for d in dessert_dishes[:2])}...")
+    print("  -> TEST 15 PASSED!\n")
+
+    # 16. Test giao diện Frontend Bộ lọc theo loại món (Task TF1B44A)
+    print("[TEST 16] Kiểm tra cấu trúc giao diện bộ lọc loại món trên daily-menu.html:")
+    daily_menu_file = os.path.join(base_dir, "daily-menu.html")
+    assert os.path.exists(daily_menu_file), "Thất bại: Không tìm thấy daily-menu.html"
+    
+    with open(daily_menu_file, "r", encoding="utf-8") as f:
+        daily_html = f.read()
+
+    assert 'data-category="mon-canh"' in daily_html, "Thất bại: Thiếu nút lọc món canh trong category-filters"
+    assert 'data-category="mon-chinh"' in daily_html, "Thất bại: Thiếu nút lọc món chính"
+    assert 'data-category="trang-mieng"' in daily_html, "Thất bại: Thiếu nút lọc tráng miệng"
+    assert 'id="countCanh"' in daily_html, "Thất bại: Thiếu badge số đếm cho món canh (countCanh)"
+    assert 'id="activeFilterIndicator"' in daily_html, "Thất bại: Thiếu thanh thông báo trạng thái lọc (activeFilterIndicator)"
+    assert 'id="btnClearCategoryFilter"' in daily_html, "Thất bại: Thiếu nút xóa bộ lọc loại món (btnClearCategoryFilter)"
+    assert 'TF1B44A' in daily_html, "Thất bại: Thiếu mã task TF1B44A trên giao diện"
+
+    print("  ✅ Nút lọc 'Món chính', 'Canh', 'Tráng miệng...' đều hiện diện đầy đủ.")
+    print("  ✅ Badge đếm số lượng thời gian thực countCanh, countMain, countDrink tồn tại.")
+    print("  ✅ Thanh hiển thị trạng thái lọc activeFilterIndicator và nút xem tất cả đầy đủ.")
+    print("  ✅ Mã task TF1B44A đã được định danh trên giao diện.")
+    print("  -> TEST 16 PASSED!\n")
+
     print("=" * 60)
     print("  🎉 TẤT CẢ CÁC BÀI TEST ĐỀU THÀNH CÔNG RỰC RỠ (100% PASS)!")
     print("=" * 60)

@@ -127,39 +127,39 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'dish-4',
-            name: 'Bún Chả Nướng Than Hoa',
-            category: 'mon-nuoc',
-            category_name: 'Món nước',
-            meal_time: 'Bữa Trưa',
-            price: 50000,
-            original_price: 55000,
+            name: 'Canh Sườn Non Hầm Rau Củ Bắp Ngọt',
+            category: 'mon-canh',
+            category_name: 'Canh / Súp',
+            meal_time: 'Trưa & Tối',
+            price: 45000,
+            original_price: 52000,
             base_stock: 18,
             stock: 2,
-            tag: 'hot',
-            tag_label: 'Sắp hết',
-            calories: '510 kcal',
-            image_url: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=600&q=80',
-            description: 'Chả viên và chả miếng nướng xém cạnh trên than hoa đượm khói, chấm nước mắm đu đủ cà rốt ấm nóng kèm đĩa bún tươi và rau ghém xanh mướt.',
+            tag: 'chef',
+            tag_label: 'Thanh mát',
+            calories: '380 kcal',
+            image_url: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
+            description: 'Sườn non heo tươi hầm mềm róc xương cùng bắp ngọt Mỹ, cà rốt, khoai tây và nấm hương trong nước dùng thanh trong ngọt tự nhiên.',
             ingredients: [
-                'Bún lá tươi sợi nhỏ',
-                'Thịt ba chỉ heo nướng xém cạnh',
-                'Chả băm viên ướp hành tím nướng vỉ',
-                'Nước mắm pha tỏi ớt đường ấm nóng',
-                'Đu đủ xanh & cà rốt thái lát ngâm chua',
-                'Rau sống: xà lách, tía tô, kinh giới, húng bạc hà'
+                'Sườn non heo tươi tuyển chọn',
+                'Bắp ngọt Mỹ cắt khúc vừa ăn',
+                'Cà rốt & khoai tây Đà Lạt tươi',
+                'Nấm hương khô ngâm nở thơm lừng',
+                'Hành hoa, ngò rí & tiêu sọ xay',
+                'Nước dùng hầm xương ống ngọt thanh'
             ],
             allergy_info: [
-                'Có chứa cá (nước mắm cá cơm truyền thống)',
-                'Có chứa đậu nành (trong nước màu caramel ướp thịt)',
-                'Không chứa sữa',
-                'Không chứa trứng'
+                'Không chứa chất dị ứng nguy hiểm phổ biến',
+                'Thịt heo tươi nguyên chất',
+                'Không chứa đậu phộng',
+                'Không chứa sữa'
             ],
-            allergens: ['Cá', 'Đậu nành'],
+            allergens: [],
             nutrition: {
-                calories: '510 kcal',
-                protein: '29g',
-                carbs: '60g',
-                fat: '18g'
+                calories: '380 kcal',
+                protein: '26g',
+                carbs: '32g',
+                fat: '14g'
             },
             preparation_time: '8 - 10 phút'
         },
@@ -203,9 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'dish-6',
-            name: 'Salad Đậu Hũ Nấm Sốt Mè Rang (Chay)',
-            category: 'mon-chay',
-            category_name: 'Món chay',
+            name: 'Canh Rong Biển Đậu Hũ Non Hạt Sen (Chay)',
+            category: 'mon-canh',
+            category_name: 'Canh / Súp',
             meal_time: 'Cả Ngày',
             price: 38000,
             original_price: 45000,
@@ -213,29 +213,30 @@ document.addEventListener('DOMContentLoaded', () => {
             stock: 12,
             tag: 'new',
             tag_label: 'Thực dưỡng',
-            calories: '320 kcal',
-            image_url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80',
-            description: 'Đậu hũ non chiên giòn, nấm đùi gà áp chảo, xà lách romaine, cà chua bi organic rưới sốt mè rang béo thơm thanh mát.',
+            calories: '240 kcal',
+            image_url: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
+            description: 'Rong biển nang Hàn Quốc thanh mát nấu cùng đậu hũ non mềm mịn, hạt sen tươi Huế bở bùi và nấm đùi gà áp chảo giải nhiệt cơ thể hiệu quả.',
             ingredients: [
-                'Đậu hũ non organic chiên vàng ruộm',
-                'Nấm đùi gà tươi áp chảo dầu olive',
-                'Rau xà lách Romaine & bắp cải tím bào',
-                'Cà chua bi organic cherry ngọt mát',
-                'Sốt mè rang Nhật Bản đậm đà',
-                'Hạt vừng trắng rang thơm'
+                'Rong biển nang Hàn Quốc cao cấp',
+                'Đậu hũ non organic mềm mịn',
+                'Hạt sen tươi Huế bở bùi',
+                'Nấm đùi gà cắt lát áp chảo',
+                'Kỷ tử đỏ & dầu mè thơm',
+                'Gừng tươi đập dập khử hàn'
             ],
             allergy_info: [
-                'Có chứa hạt mè (vừng trắng)',
-                'Có chứa đậu nành (đậu hũ & sốt mè)',
-                'Món thuần chay (Vegan) hoàn toàn không chứa thịt, trứng, sữa',
-                'Không chứa gluten'
+                'Có chứa đậu nành (trong đậu hũ non)',
+                'Có chứa mè (dầu mè)',
+                'Món thuần chay (Vegan) thanh đạm',
+                'Không chứa gluten',
+                'Không chứa sữa, trứng, thịt'
             ],
-            allergens: ['Mè (Vừng)', 'Đậu nành'],
+            allergens: ['Đậu nành', 'Mè (Vừng)'],
             nutrition: {
-                calories: '320 kcal',
-                protein: '16g',
-                carbs: '28g',
-                fat: '14g'
+                calories: '240 kcal',
+                protein: '15g',
+                carbs: '26g',
+                fat: '8g'
             },
             preparation_time: '5 - 8 phút'
         },
@@ -763,6 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cột phải: Thông tin & Giá
         const categoryMap = {
             'mon-chinh': 'Món chính',
+            'mon-canh': 'Canh / Súp',
             'mon-nuoc': 'Món nước',
             'mon-chay': 'Món chay',
             'trang-mieng': 'Tráng miệng / Đồ uống'

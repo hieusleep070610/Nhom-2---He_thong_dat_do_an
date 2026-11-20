@@ -22,7 +22,7 @@
                 <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
                 <span class="logo-text">Foodie<span>Hub</span></span>
                 <span class="badge-team">Nhóm 2</span>
-                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A6E9, TF1A86F, TF1A8D7 & TF1A94A</strong></span>
+                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A6E9, TF1A86F, TF1A8D7, TF1A94A & TF1B44A</strong></span>
             </a>
 
             <div class="search-box" id="searchBoxWrapper">
@@ -140,28 +140,31 @@
             </div>
         </section>
 
-        <!-- THANH LỌC DANH MỤC & SẮP XẾP -->
+        <!-- THANH LỌC DANH MỤC & SẮP XẾP (TASK TF1B44A) -->
         <section class="filter-bar">
-            <div class="category-filters" id="categoryFilters">
-                <button class="cat-pill active" data-category="all">
+            <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Bộ lọc theo loại món">
+                <button class="cat-pill active" data-category="all" role="tab" aria-selected="true">
                     <i class="fa-solid fa-border-all"></i> Tất cả (<span id="countAll">0</span>)
                 </button>
-                <button class="cat-pill" data-category="mon-chinh">
+                <button class="cat-pill" data-category="mon-chinh" role="tab" aria-selected="false">
                     <i class="fa-solid fa-drumstick-bite"></i> Món chính (<span id="countMain">0</span>)
                 </button>
-                <button class="cat-pill" data-category="mon-nuoc">
+                <button class="cat-pill" data-category="mon-canh" role="tab" aria-selected="false">
+                    <i class="fa-solid fa-bowl-food"></i> Canh (<span id="countCanh">0</span>)
+                </button>
+                <button class="cat-pill" data-category="mon-nuoc" role="tab" aria-selected="false">
                     <i class="fa-solid fa-bowl-rice"></i> Món nước / Bún Phở (<span id="countSoup">0</span>)
                 </button>
-                <button class="cat-pill" data-category="mon-chay">
+                <button class="cat-pill" data-category="mon-chay" role="tab" aria-selected="false">
                     <i class="fa-solid fa-leaf"></i> Món chay (<span id="countVeggie">0</span>)
                 </button>
-                <button class="cat-pill" data-category="trang-mieng">
+                <button class="cat-pill" data-category="trang-mieng" role="tab" aria-selected="false">
                     <i class="fa-solid fa-mug-hot"></i> Đồ uống & Tráng miệng (<span id="countDrink">0</span>)
                 </button>
-                <button class="cat-pill pill-avail" data-category="available-only">
+                <button class="cat-pill pill-avail" data-category="available-only" role="tab" aria-selected="false">
                     <i class="fa-solid fa-circle-check"></i> Còn món (<span id="countAvailableOnly">0</span>)
                 </button>
-                <button class="cat-pill pill-out" data-category="out-of-stock-only">
+                <button class="cat-pill pill-out" data-category="out-of-stock-only" role="tab" aria-selected="false">
                     <i class="fa-solid fa-circle-xmark"></i> Hết món (<span id="countOutOnly">0</span>)
                 </button>
             </div>
@@ -177,6 +180,19 @@
                 </select>
             </div>
         </section>
+
+        <!-- THANH TRẠNG THÁI LỌC MÓN THEO LOẠI (TASK TF1B44A) -->
+        <div class="active-filter-indicator" id="activeFilterIndicator" style="display: none;">
+            <div class="active-filter-info">
+                <i class="fa-solid fa-filter text-primary"></i>
+                <span>Đang lọc theo loại món: <strong id="activeCategoryName">Canh</strong></span>
+                <span class="active-filter-count-badge" id="activeCategoryCountBadge">0 món</span>
+                <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> TF1B44A</span>
+            </div>
+            <button type="button" class="btn-clear-category-filter" id="btnClearCategoryFilter" title="Xem tất cả loại món">
+                <i class="fa-solid fa-xmark"></i> <span>Xem tất cả loại</span>
+            </button>
+        </div>
 
         <!-- THANH TIÊU ĐỀ TRANG KẾT QUẢ TÌM KIẾM (TASK TF1A94A) -->
         <section class="search-results-banner" id="searchResultsBanner" style="display: none;">
@@ -325,8 +341,8 @@
                 </div>
                 <p class="footer-desc">Hệ thống đặt đồ ăn theo ngày tiện lợi, đảm bảo an toàn vệ sinh thực phẩm, phục vụ cơm trưa và bữa tối văn phòng, sinh viên.</p>
                 <div class="team-meta">
-                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Tasks: <strong>TF1A6E9 & TF1A94A</strong></span>
-                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Ô tìm kiếm món ăn & gợi ý khi gõ)</span>
+                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Tasks: <strong>TF1A6E9, TF1A94A & TF1B44A</strong></span>
+                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Lọc món theo loại món & Tìm kiếm)</span>
                 </div>
             </div>
             <div class="footer-col">
@@ -350,7 +366,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container footer-bottom-content">
-                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Thực đơn theo ngày (TF1A6E9), Chi tiết món ăn (TF1A86F), API tìm kiếm (TF1A8D7) & Ô tìm kiếm món ăn với gợi ý khi gõ (Mã task: TF1A94A).</p>
+                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Thực đơn theo ngày (TF1A6E9), Chi tiết món ăn (TF1A86F), API tìm kiếm (TF1A8D7), Gợi ý tìm kiếm (TF1A94A) & Lọc món theo loại trên trang thực đơn (Mã task: TF1B44A).</p>
                 <p class="git-link-meta">
                     <i class="fa-brands fa-github"></i> <a href="https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an" target="_blank">Nhom-2---He_thong_dat_do_an</a>
                 </p>
