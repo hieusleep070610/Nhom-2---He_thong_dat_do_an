@@ -1,7 +1,13 @@
 const PROCESSING = new Set(["pending", "confirmed", "preparing", "ready"]);
 
 const listEl = document.getElementById("order-list");
-const searchEl = document.getElementById("order-search");
+const searchEl =
+  document.getElementById("order-search") ||
+  document.querySelector('input[type="search"]');
+
+if (searchEl) {
+  searchEl.addEventListener("input", render);
+}
 let orders = [];
 let filter = "all";
 
@@ -22,12 +28,18 @@ function readLocalOrders() {
 }
 
 function visibleOrders() {
-  const keyword = searchEl.value.trim().toLowerCase();
+  const keyword = (searchEl ? searchEl.value : "").trim().toLowerCase();
   return orders.filter((order) => {
     const group = groupOf(order.status);
     const matchesFilter = filter === "all" || group === filter;
-    const matchesSearch = !keyword || String(order.title).toLowerCase().includes(keyword);
-    return matchesFilter && matchesSearch;
+    if (!matchesFilter) return false;
+    if (!keyword) return true;
+
+    const inTitle = String(order.title || "").toLowerCase().includes(keyword);
+    const inItems = getOrderItems(order).some((it) =>
+      String(it.item_name || it.name || "").toLowerCase().includes(keyword)
+    );
+    return inTitle || inItems;
   });
 }
 

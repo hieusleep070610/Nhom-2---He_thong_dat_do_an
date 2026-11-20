@@ -1,9 +1,11 @@
 let BASE_PRICE = 55000;
 const FALLBACK_IMAGE = "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg";
+const DISH_CART_KEY = typeof CART_KEY !== "undefined" ? CART_KEY : "quickbite_cart";
+const DISH_ORDER_KEY = typeof DRAFT_ORDER_KEY !== "undefined" ? DRAFT_ORDER_KEY : "quickbite_active_order";
 
 let dish = {
+  id: 1,
   name: "Bún bò Huế đặc biệt",
-  images: [],
   toppings: [
     { name: "Giò heo", price: 15000, image: "" },
     { name: "Thêm chả", price: 10000, image: "" },
@@ -11,137 +13,109 @@ let dish = {
   ],
 };
 
-function imageSrc(url) {
-  return typeof url === "string" && url.trim() ? url.trim() : FALLBACK_IMAGE;
-}
-
-function bindImageFallback(img) {
-  img.addEventListener("error", () => {
-    if (img.dataset.plate === "1") return;
-    img.dataset.plate = "1";
-    img.hidden = true;
-    const plate = document.createElement("div");
-    plate.className = "plate";
-    plate.innerHTML = "<span><i></i><i></i><i></i></span>";
-    img.parentElement.appendChild(plate);
-  });
-}
-
-const state = {
-  size: "Thường",
-  qty: 1,
-};
-
+const state = { size: "Thường", qty: 1 };
 const priceEl = document.getElementById("dish-price");
 const addBtn = document.getElementById("btn-add");
 const qtyEl = document.getElementById("qty-value");
+const heroImg = document.getElementById("dish-hero");
+const toppingsEl = document.getElementById("dish-toppings");
 
-function dong(value) {
-  return Number(value).toLocaleString("vi-VN") + "đ";
+const dong = (v) => Number(v || 0).toLocaleString("vi-VN") + "đ";
+const toast = (msg, type = "success") =>
+  typeof showToast === "function" ? showToast(msg, type) : alert(msg);
+
+function showPlate(img) {
+  if (!img || img.dataset.plate === "1") return;
+  img.dataset.plate = "1";
+  img.hidden = true;
+  img.parentElement.insertAdjacentHTML("beforeend", '<div class="plate"><span><i></i><i></i><i></i></span></div>');
 }
 
-function toppingTotal() {
-  return [...document.querySelectorAll("#dish-toppings input:checked")]
-    .reduce((sum, input) => sum + Number(input.value), 0);
-}
-
-function lineTotal() {
-  return (BASE_PRICE + toppingTotal()) * state.qty;
-}
+const toppingTotal = () =>
+  [...document.querySelectorAll("#dish-toppings input:checked")].reduce((s, el) => s + Number(el.value || 0), 0);
 
 function renderPrice() {
-  priceEl.textContent = dong(BASE_PRICE + toppingTotal());
-  addBtn.textContent = `Thêm vào giỏ hàng · ${dong(lineTotal())}`;
+  const unit = BASE_PRICE + toppingTotal();
+  priceEl.textContent = dong(unit);
+  addBtn.textContent = `Thêm vào giỏ hàng · ${dong(unit * state.qty)}`;
 }
 
-const heroImg = document.getElementById("dish-hero");
-const thumbsEl = document.getElementById("dish-thumbs");
-const gallery = dish.images.filter((url) => typeof url === "string" && url.trim());
-const photos = gallery;
+function saveAndSyncOrder(newItem) {
+  let cart = [];
+  try {
+    cart = JSON.parse(localStorage.getItem(DISH_CART_KEY) || "[]");
+    if (!Array.isArray(cart)) cart = [];
+  } catch { cart = []; }
 
-function showPlate(target) {
-  target.hidden = true;
-  const plate = document.createElement("div");
-  plate.className = "plate";
-  plate.innerHTML = "<span><i></i><i></i><i></i></span>";
-  target.parentElement.appendChild(plate);
+  const keyOf = (it) => `${it.dish_id}|${it.size}|${[...(it.toppings || [])].sort().join(",")}`;
+  const existing = cart.find((it) => keyOf(it) === keyOf(newItem));
+  if (existing) {
+    existing.qty = Math.min(99, Number(existing.qty || 0) + newItem.qty);
+    existing.unitPrice = newItem.unitPrice;
+  } else {
+    cart.push(newItem);
+  }
+  localStorage.setItem(DISH_CART_KEY, JSON.stringify(cart));
+
+  const subtotal = cart.reduce((s, it) => s + Number(it.unitPrice || 0) * Number(it.qty || 1), 0);
+  const ship = subtotal > 0 && subtotal < 150000 ? 15000 : 0;
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem(DISH_ORDER_KEY) || "null"); } catch {}
+  if (!draft || draft.status !== "pending") {
+    const id = Date.now();
+    draft = { id, code: `DH-${String(id).slice(-4)}`, status: "pending" };
+  }
+  draft.items = cart.map((it) => ({
+    dish_id: it.dish_id,
+    item_name: it.name,
+    size: it.size,
+    toppings: it.toppings || [],
+    unit_price: it.unitPrice,
+    quantity: it.qty,
+    line_total: it.unitPrice * it.qty,
+  }));
+  draft.subtotal = subtotal;
+  draft.ship = ship;
+  draft.total_amount = subtotal + ship;
+  draft.title = `${draft.code} — ${draft.items.map((i) => `${i.item_name} ×${i.quantity}`).join(", ")}`;
+  localStorage.setItem(DISH_ORDER_KEY, JSON.stringify(draft));
+  return draft;
 }
 
-function showPhoto(index) {
-  heroImg.src = imageSrc(photos[index]);
-  thumbsEl.querySelectorAll("button").forEach((button, buttonIndex) => {
-    button.classList.toggle("is-selected", buttonIndex === index);
-  });
-}
-
-if (!photos.length) {
-  showPlate(heroImg);
-} else photos.forEach((url, index) => {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.setAttribute("aria-label", `Ảnh ${index + 1}`);
-  const img = document.createElement("img");
-  img.alt = "";
-  img.src = imageSrc(url);
-  bindImageFallback(img);
-  button.appendChild(img);
-  button.addEventListener("click", () => showPhoto(index));
-  thumbsEl.appendChild(button);
-});
-
-if (photos.length) {
-  bindImageFallback(heroImg);
-  showPhoto(0);
-}
-
-const toppingsEl = document.getElementById("dish-toppings");
-dish.toppings.forEach((topping) => {
+showPlate(heroImg);
+dish.toppings.forEach((t) => {
   const label = document.createElement("label");
-  const main = document.createElement("span");
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.value = String(topping.price);
-  input.dataset.name = topping.name;
-  const img = document.createElement("img");
-  img.alt = topping.name;
-  img.src = imageSrc(topping.image);
-  bindImageFallback(img);
-  const name = document.createElement("span");
-  name.textContent = topping.name;
-  main.append(input, img, name);
-  const price = document.createElement("span");
-  price.textContent = dong(topping.price);
-  label.append(main, price);
+  label.innerHTML = `
+    <span>
+      <input type="checkbox" value="${t.price}" data-name="${t.name}">
+      <img src="${t.image || FALLBACK_IMAGE}" alt="${t.name}">
+      <span>${t.name}</span>
+    </span>
+    <span>${dong(t.price)}</span>`;
+  label.querySelector("img").addEventListener("error", (e) => showPlate(e.target));
   toppingsEl.appendChild(label);
 });
 
-document.getElementById("dish-sizes").addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-size]");
-  if (!button) return;
-  state.size = button.dataset.size;
-  document.querySelectorAll("#dish-sizes button").forEach((item) => {
-    item.classList.toggle("is-selected", item === button);
-  });
+document.getElementById("dish-sizes").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-size]");
+  if (!btn) return;
+  state.size = btn.dataset.size;
+  document.querySelectorAll("#dish-sizes button").forEach((b) => b.classList.toggle("is-selected", b === btn));
 });
 
-document.getElementById("dish-toppings").addEventListener("change", renderPrice);
-
+toppingsEl.addEventListener("change", renderPrice);
 document.getElementById("qty-minus").addEventListener("click", () => {
-  state.qty = Math.max(1, state.qty - 1);
-  qtyEl.textContent = String(state.qty);
+  qtyEl.textContent = String(state.qty = Math.max(1, state.qty - 1));
   renderPrice();
 });
-
 document.getElementById("qty-plus").addEventListener("click", () => {
-  state.qty = Math.min(10, state.qty + 1);
-  qtyEl.textContent = String(state.qty);
+  qtyEl.textContent = String(state.qty = Math.min(10, state.qty + 1));
   renderPrice();
 });
 
 addBtn.addEventListener("click", () => {
-  const toppings = [...document.querySelectorAll("#dish-toppings input:checked")]
-    .map((input) => input.dataset.name);
-  addToCart({
+  const toppings = [...document.querySelectorAll("#dish-toppings input:checked")].map((i) => i.dataset.name);
+  const order = saveAndSyncOrder({
     dish_id: dish.id,
     name: dish.name,
     size: state.size,
@@ -150,37 +124,29 @@ addBtn.addEventListener("click", () => {
     qty: state.qty,
     tone: "peach",
   });
-  const extra = toppings.length ? `, topping: ${toppings.join(", ")}` : "";
-  showToast(`Đã thêm ${state.qty} Bún bò Huế (${state.size})${extra}`);
+  toast(`Đã thêm ${state.qty} ${dish.name} (${state.size}) vào giỏ & đơn #${order.code}`);
 });
 
-renderPrice();
-
 async function loadDish() {
-  addBtn.disabled = true;
   const id = Number(new URLSearchParams(location.search).get("id"));
-  if (!Number.isInteger(id) || id < 1) {
-    addBtn.disabled = true;
-    showToast("Món chưa được chọn từ thực đơn.", "error");
-    return;
-  }
+  if (!Number.isInteger(id) || id < 1) return;
   try {
-    const response = await fetch(`${CONFIG.API_BASE_URL}/menu/dishes`);
-    if (!response.ok) throw new Error("API món ăn lỗi");
-    const rows = await response.json();
-    const selected = Array.isArray(rows) ? rows.find((row) => Number(row.id) === id) : null;
-    if (!selected) throw new Error("Không tìm thấy món");
+    const base = (typeof CONFIG !== "undefined" && CONFIG.API_BASE_URL ? CONFIG.API_BASE_URL : "http://127.0.0.1:8000/api").replace(/\/+$/, "");
+    const res = await fetch(`${base}/menu/dishes`);
+    if (!res.ok) return;
+    const raw = await res.json();
+    const rows = Array.isArray(raw) ? raw : raw.items || raw.dishes || raw.data || [];
+    const selected = rows.find((r) => Number(r.id) === id);
+    if (!selected) return;
+
     dish = { ...dish, id, name: selected.name };
-    BASE_PRICE = Number(selected.price);
+    if (Number(selected.price) > 0) BASE_PRICE = Number(selected.price);
     document.querySelector(".fd-info h1").textContent = selected.name;
     document.querySelector(".fd-crumb").textContent = `Trang chủ / Thực đơn / ${selected.name}`;
-    document.getElementById("dish-hero").alt = selected.name;
+    if (selected.description) document.querySelector(".fd-desc").textContent = selected.description;
     renderPrice();
-    addBtn.disabled = false;
-  } catch (error) {
-    addBtn.disabled = true;
-    showToast("Không tải được món ăn từ máy chủ.", "error");
-  }
+  } catch {}
 }
 
+renderPrice();
 loadDish();
