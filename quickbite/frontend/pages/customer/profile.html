@@ -126,6 +126,15 @@
                     <div>
                         <small>Địa chỉ</small>
                         <strong id="profile-address">--</strong>
+                        <button type="button" class="profile-address-edit" id="btn-edit-address">Cập nhật địa chỉ</button>
+                        <form id="profile-address-form" class="profile-address-form" hidden>
+                            <textarea id="profile-address-input" maxlength="500" rows="3" placeholder="Nhập địa chỉ của bạn"></textarea>
+                            <div>
+                                <button type="submit" id="btn-save-profile-address">Lưu địa chỉ</button>
+                                <button type="button" id="btn-cancel-address">Hủy</button>
+                            </div>
+                            <small id="profile-address-status" aria-live="polite"></small>
+                        </form>
                     </div>
                 </article>
 

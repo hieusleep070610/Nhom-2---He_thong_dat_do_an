@@ -157,6 +157,7 @@ function renderProfile(user) {
     document.getElementById("profile-phone").textContent = phone;
 
     document.getElementById("profile-address").textContent = address;
+    document.getElementById("profile-address-input").value = user.address || "";
 
     // Hiển thị tên trên Header
     document.getElementById("header-username").textContent =
@@ -171,6 +172,34 @@ function renderProfile(user) {
     errorBox.hidden = true;
     profileContent.hidden = false;
 }
+
+document.getElementById("btn-edit-address").addEventListener("click", () => {
+    const form = document.getElementById("profile-address-form");
+    form.hidden = !form.hidden;
+    document.getElementById("profile-address-status").textContent = "";
+});
+
+document.getElementById("btn-cancel-address").addEventListener("click", () => {
+    document.getElementById("profile-address-form").hidden = true;
+    document.getElementById("profile-address-status").textContent = "";
+});
+
+document.getElementById("profile-address-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const address = document.getElementById("profile-address-input").value.trim();
+    const status = document.getElementById("profile-address-status");
+    const saveButton = document.getElementById("btn-save-profile-address");
+    if (!address) { status.textContent = "Vui lòng nhập địa chỉ."; return; }
+    saveButton.disabled = true;
+    try {
+        const user = await api.put("/auth/me", { address });
+        document.getElementById("profile-address").textContent = user.address || "Chưa cập nhật";
+        document.getElementById("profile-address-input").value = user.address || "";
+        status.textContent = "Địa chỉ đã được cập nhật.";
+    } catch (error) {
+        status.textContent = error.message || "Không thể cập nhật địa chỉ.";
+    } finally { saveButton.disabled = false; }
+});
 
 
 // ============================================

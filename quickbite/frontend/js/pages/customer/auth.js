@@ -10,6 +10,15 @@ function saveSession(payload, remember) {
   store.setItem(USER_KEY, JSON.stringify(payload.user));
 }
 
+function getPostLoginPage(user) {
+  const role = String(user?.role || user?.role_name || "").trim().toLowerCase();
+  const roles = Array.isArray(user?.roles) ? user.roles.map((item) => String(item).toLowerCase()) : [];
+  if (Number(user?.role_id) === 1 || role === "admin" || role === "administrator" || roles.includes("admin")) {
+    return "../admin/index.html";
+  }
+  return "profile.html";
+}
+
 function showError(id, message) {
   const box = document.getElementById(id);
   if (!box) return;
@@ -47,7 +56,7 @@ if (loginForm) {
         password: document.getElementById("login-password").value,
       });
       saveSession(payload, document.getElementById("login-remember").checked);
-      window.location.href = "profile.html";
+      window.location.href = getPostLoginPage(payload.user);
     } catch (error) {
       showError("login-error", error.message || "Đăng nhập thất bại");
       button.disabled = false;

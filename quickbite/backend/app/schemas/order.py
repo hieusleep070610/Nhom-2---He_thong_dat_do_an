@@ -15,7 +15,8 @@ class OrderCreate(BaseModel):
     pickup_slot_id: int = Field(..., gt=0)
     items: list[OrderCreateItem] = Field(..., min_length=1, max_length=50)
     coupon_code: str | None = Field(default=None, max_length=40)
-    payment_method: Literal["wallet"] = "wallet"
+    payment_method: Literal["wallet", "cod"] = "wallet"
+    delivery_address: str | None = Field(default=None, max_length=500)
     note: str | None = Field(default=None, max_length=200)
 
 
@@ -39,6 +40,7 @@ class CreatedOrderResponse(BaseModel):
     total_amount: Decimal
     pickup_date: date
     pickup_slot_id: int
+    delivery_address: str
     items: list[CreatedOrderItem]
 
 

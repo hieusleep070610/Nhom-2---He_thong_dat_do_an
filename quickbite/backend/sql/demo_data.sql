@@ -7,9 +7,7 @@ VALUES
   ('Gỏi cuốn tôm thịt', 39000, 'Gỏi cuốn tươi, kèm nước chấm.', TRUE),
   ('Bánh mì đặc biệt', 32000, 'Bánh mì giòn với nhân đặc biệt.', TRUE)
 ON DUPLICATE KEY UPDATE
-  price = VALUES(price),
-  description = VALUES(description),
-  is_available = VALUES(is_available);
+  id = id;
 
 INSERT INTO daily_menus (menu_date, dish_id, quantity)
 SELECT dates.menu_date, d.id,
@@ -50,10 +48,7 @@ VALUES
   ('18:00', '18:00:00', '18:30:00', 20, 1),
   ('18:30', '18:30:00', '19:00:00', 16, 1)
 ON DUPLICATE KEY UPDATE
-  start_time = VALUES(start_time),
-  end_time = VALUES(end_time),
-  max_servings = VALUES(max_servings),
-  is_active = VALUES(is_active);
+  id = id;
 
 INSERT INTO orders
   (code, customer_name, customer_phone, note, pickup_date, pickup_slot_id,
@@ -128,3 +123,17 @@ WHERE NOT EXISTS (
   SELECT 1 FROM slot_daily_quotas AS q
   WHERE q.pickup_slot_id = s.id AND q.service_date = CURDATE()
 );
+
+-- Reconcile today's demo reservation count with non-cancelled order items.
+UPDATE slot_daily_quotas AS q
+JOIN (
+  SELECT o.pickup_slot_id, o.pickup_date, SUM(oi.quantity) AS reserved_servings
+  FROM orders AS o
+  JOIN order_items AS oi ON oi.order_id = o.id
+  WHERE o.pickup_date = CURDATE() AND o.status <> 'cancelled'
+  GROUP BY o.pickup_slot_id, o.pickup_date
+) AS active_orders
+  ON active_orders.pickup_slot_id = q.pickup_slot_id
+  AND active_orders.pickup_date = q.service_date
+SET q.booked_servings = LEAST(q.max_servings, active_orders.reserved_servings)
+WHERE q.service_date = CURDATE();

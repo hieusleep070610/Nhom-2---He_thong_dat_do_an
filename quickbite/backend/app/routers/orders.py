@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.config import settings
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
@@ -9,7 +8,11 @@ from app.schemas.order import CreatedOrderResponse, OrderCreate, OrderStatusUpda
 from app.services.order_service import update_order_status
 from app.services.create_order_service import create_order
 from app.core.exceptions import NotFoundException
-from app.routers.auth import get_current_user
+from app.routers.auth import (
+    get_current_customer,
+    get_current_user,
+    has_role,
+)
 
 
 router = APIRouter(tags=["Orders"], prefix="/orders")
@@ -19,7 +22,7 @@ router = APIRouter(tags=["Orders"], prefix="/orders")
 def create_order_endpoint(
     request: OrderCreate,
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=100),
-    customer=Depends(get_current_user),
+    customer=Depends(get_current_customer),
     db: Session = Depends(get_db),
 ):
     return create_order(
@@ -30,6 +33,7 @@ def create_order_endpoint(
         items=[(item.dish_id, item.quantity) for item in request.items],
         note=request.note,
         payment_method=request.payment_method,
+        delivery_address=request.delivery_address,
         coupon_code=request.coupon_code,
         idempotency_key=idempotency_key.strip() if idempotency_key else None,
     )
@@ -66,8 +70,14 @@ def list_my_orders(
 @router.get("")
 def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db)):
     query = db.query(Order).options(selectinload(Order.items))
-    if customer.user_id not in settings.admin_user_ids:
+    if has_role(customer, "admin"):
+        pass
+    elif has_role(customer, "kitchen"):
+        query = query.filter(Order.status.in_(["confirmed", "preparing", "ready"]))
+    elif has_role(customer, "customer"):
         query = query.filter(Order.user_id == customer.user_id)
+    else:
+        raise HTTPException(status_code=403, detail="Tài khoản chưa được gán vai trò.")
     rows = query.order_by(Order.created_at.desc()).all()
     
     return [
@@ -77,6 +87,9 @@ def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db
             "customer_name": row.customer_name,
             "status": row.status,
             "total_amount": float(row.total_amount),
+            "created_at": row.created_at,
+            "payment_method": row.payment_method,
+            "payment_status": row.payment_status,
             # Lấy tên món từ mảng items
             "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
         }
@@ -94,12 +107,24 @@ def change_order_status(
     if order is None:
         raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
     is_owner = order.user_id == customer.user_id
-    is_admin = customer.user_id in settings.admin_user_ids
-    if not is_owner and not is_admin:
+    is_admin = has_role(customer, "admin")
+    is_kitchen = has_role(customer, "kitchen")
+    new_status = request.new_status.strip().lower()
+    if is_admin:
+        pass
+    elif is_kitchen:
+        if new_status not in {"preparing", "ready"}:
+            raise HTTPException(status_code=403, detail="Nhân viên bếp chỉ được chuyển đơn sang đang chế biến hoặc sẵn sàng.")
+    elif has_role(customer, "customer") and is_owner and new_status == "cancelled":
+        pass
+    else:
         raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
-    if not is_admin and request.new_status.strip().lower() != "cancelled":
-        raise HTTPException(status_code=403, detail="Khách hàng chỉ có thể yêu cầu hủy đơn của mình.")
-    order = update_order_status(db=db, order_id=order_id, new_status=request.new_status)
+    order = update_order_status(
+        db=db,
+        order_id=order_id,
+        new_status=new_status,
+        changed_by=customer.user_id,
+    )
 
     return {
         "status": "success",
@@ -125,7 +150,7 @@ def get_order_status_history(
 
     if order is None or (
         order.user_id != customer.user_id
-        and customer.user_id not in settings.admin_user_ids
+        and not has_role(customer, "admin", "kitchen")
     ):
         raise NotFoundException(
             message=f"Không tìm thấy đơn hàng có ID {order_id}"
