@@ -16,6 +16,10 @@ def init_db() -> None:
     if not database_exists(engine.url):
         create_database(engine.url)
     Base.metadata.create_all(bind=engine)
+    from app.services.role_service import seed_roles_and_assign_users
+
+    with SessionLocal() as db:
+        seed_roles_and_assign_users(db)
 
 
 def get_db():

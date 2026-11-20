@@ -10,8 +10,16 @@ class Dish(Base):
     price = Column(Numeric(12, 0), nullable=False)
     description = Column(String(255), nullable=True)
     is_available = Column(Boolean, default=True)
+    image_url = Column(String(1000), nullable=True)
+    image_public_id = Column(String(255), nullable=True)
+    category_id = Column(Integer, ForeignKey("dish_categories.id"), nullable=True)
 
     daily_menus = relationship("DailyMenu", back_populates="dish", cascade="all, delete-orphan")
+    category = relationship("DishCategory", back_populates="dishes")
+
+    @property
+    def category_name(self):
+        return self.category.name if self.category else None
 
 
 class DailyMenu(Base):
