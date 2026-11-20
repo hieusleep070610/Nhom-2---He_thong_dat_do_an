@@ -23,7 +23,7 @@ def create_wallet(db: Session, wallet_in: WalletCreate):
     db_wallet = WalletModel(
         user_id=wallet_in.user_id,
         balance=Decimal("0.00"),
-        status="active",
+        status="ACTIVE",
     )
     db.add(db_wallet)
     db.commit()

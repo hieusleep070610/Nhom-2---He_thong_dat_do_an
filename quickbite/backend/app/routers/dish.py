@@ -13,6 +13,7 @@ from app.models.pickup_slot import PickupSlot, SlotDailyQuota
 from app.schemas.menu import RemainingMenuResponse, PickupSlotsResponse
 from app.services.menu_availability_service import get_remaining_by_date
 from app.routers.auth import get_current_admin
+from app.schemas.dish import DishOut
 
 router = APIRouter(prefix="/menu", tags=["Menu Management"])
 search_router = APIRouter(tags=["Dish Search"])
@@ -96,9 +97,9 @@ def search_dishes(
         ],
     }
 
-@router.get("/dishes", response_model=list)
-def get_dishes(db: Session = Depends(get_db)):
-    return db.query(Dish).filter(Dish.is_available.is_(True)).all()
+@router.get("/dishes", response_model=list[DishOut])
+def list_dishes(db: Session = Depends(get_db)):
+    return db.query(Dish).all()
 
 @router.post("/dishes", status_code=status.HTTP_201_CREATED)
 def create_dish(
