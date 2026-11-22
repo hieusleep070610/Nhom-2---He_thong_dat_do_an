@@ -21,6 +21,7 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True, index= True)
     code = Column(String(20), nullable=False, unique=True)
     customer_name = Column(String(80), nullable=False)
     customer_phone = Column(String(15), nullable=False)

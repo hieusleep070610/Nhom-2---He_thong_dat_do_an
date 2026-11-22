@@ -1,18 +1,59 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import settings
+from app.core.exceptions import NotFoundException
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
-from app.schemas.order import CreatedOrderResponse, OrderCreate, OrderStatusUpdate
-from app.services.order_service import update_order_status
-from app.services.create_order_service import create_order
-from app.core.exceptions import NotFoundException
 from app.routers.auth import get_current_user
-
+from app.schemas.order import (
+    CreatedOrderResponse,
+    OrderCreate,
+    OrderDetailResponse,
+    OrderStatusUpdate,
+    PaginatedOrderResponse,
+)
+from app.services import order_service
+from app.services.create_order_service import create_order
+from app.services.order_service import update_order_status
 
 router = APIRouter(tags=["Orders"], prefix="/orders")
+
+
+@router.get("/me", response_model=PaginatedOrderResponse)
+def get_my_orders(
+    status: Optional[str] = Query(
+        default=None,
+        description="Lọc theo trạng thái: pending, confirmed, preparing, ready, completed, cancelled",
+    ),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return order_service.list_my_orders(
+        db=db,
+        user_id=current_user.user_id,
+        status=status,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.get("/me/{order_id}", response_model=OrderDetailResponse)
+def get_my_order_detail(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return order_service.get_my_order_detail(
+        db=db,
+        user_id=current_user.user_id,
+        order_id=order_id,
+    )
 
 
 @router.post("", response_model=CreatedOrderResponse, status_code=status.HTTP_201_CREATED)
@@ -69,7 +110,7 @@ def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db
     if customer.user_id not in settings.admin_user_ids:
         query = query.filter(Order.user_id == customer.user_id)
     rows = query.order_by(Order.created_at.desc()).all()
-    
+
     return [
         {
             "id": row.id,
@@ -77,11 +118,11 @@ def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db
             "customer_name": row.customer_name,
             "status": row.status,
             "total_amount": float(row.total_amount),
-            # Lấy tên món từ mảng items
             "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
         }
         for row in rows
     ]
+
 
 @router.patch("/{order_id}/status")
 def change_order_status(
@@ -106,8 +147,8 @@ def change_order_status(
         "message": "Cập nhật trạng thái đơn hàng thành công",
         "data": {
             "order_id": order.id,
-            "order_status": order.status
-        }
+            "order_status": order.status,
+        },
     }
 
 
@@ -115,7 +156,7 @@ def change_order_status(
 def get_order_status_history(
     order_id: int,
     customer=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     order = (
         db.query(Order)
@@ -147,8 +188,8 @@ def get_order_status_history(
                 "old_status": item.old_status,
                 "new_status": item.new_status,
                 "changed_at": item.changed_at,
-                "changed_by": item.changed_by
+                "changed_by": item.changed_by,
             }
             for item in histories
-        ]
+        ],
     }
