@@ -1,15 +1,50 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session, selectinload
+from typing import Optional
 
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
-from app.schemas.order import OrderStatusUpdate
+from app.schemas.order import OrderStatusUpdate, OrderDetailResponse, PaginatedOrderResponse
 from app.services.order_service import update_order_status
 from app.core.exceptions import NotFoundException
+from app.routers.auth import get_current_user
+from app.services import order_service
 
 
 router = APIRouter(tags=["Orders"], prefix="/orders")
+
+@router.get("/me", response_model=PaginatedOrderResponse)
+def get_my_orders(
+    status: Optional[str] = Query(
+        default=None,
+        description="Lọc theo trạng thái: pending, confirmed, preparing, ready, completed, cancelled",
+    ),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return order_service.list_my_orders(
+        db=db,
+        user_id=current_user.user_id,
+        status=status,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.get("/me/{order_id}", response_model=OrderDetailResponse)
+def get_my_order_detail(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return order_service.get_my_order_detail(
+        db=db,
+        user_id=current_user.user_id,
+        order_id=order_id,
+    )
 
 @router.get("")
 def list_orders(db: Session = Depends(get_db)):

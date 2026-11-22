@@ -10,7 +10,7 @@ class Dish(Base):
     price = Column(Float, nullable=False)
     description = Column(String(255), nullable=True)
     is_available = Column(Boolean, default=True)
-
+    menu_id = Column(Integer, ForeignKey("menus.menu_id"), nullable=False)
     daily_menus = relationship("DailyMenu", back_populates="dish", cascade="all, delete-orphan")
 
 
