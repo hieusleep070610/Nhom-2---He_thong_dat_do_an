@@ -1,10 +1,19 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session, selectinload
 
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
-from app.schemas.order import CreatedOrderResponse, OrderCreate, OrderStatusUpdate
+from app.schemas.order import (
+    CreatedOrderResponse,
+    OrderCreate,
+    OrderDetailResponse,
+    OrderStatusUpdate,
+    PaginatedOrderResponse,
+)
+from app.services import order_service
 from app.services.order_service import update_order_status
 from app.services.create_order_service import create_order
 from app.core.exceptions import NotFoundException
@@ -16,6 +25,36 @@ from app.routers.auth import (
 
 
 router = APIRouter(tags=["Orders"], prefix="/orders")
+
+
+@router.get("/me", response_model=PaginatedOrderResponse)
+def get_my_orders(
+    status: Optional[str] = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return order_service.list_my_orders(
+        db=db,
+        user_id=current_user.user_id,
+        status=status,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.get("/me/{order_id}", response_model=OrderDetailResponse)
+def get_my_order_detail(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return order_service.get_my_order_detail(
+        db=db,
+        user_id=current_user.user_id,
+        order_id=order_id,
+    )
 
 
 @router.post("", response_model=CreatedOrderResponse, status_code=status.HTTP_201_CREATED)
