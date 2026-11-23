@@ -9,14 +9,14 @@ from app.services.wallet_service import (
     get_wallet_by_user_id,
     process_payment,
 )
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_customer
 from app.core.exceptions import NotFoundException
 
 router_wallet = APIRouter(prefix="/wallets", tags=["Wallet"])
 
 
 @router_wallet.get("/mine", response_model=WalletResponse)
-def get_my_wallet(customer=Depends(get_current_user), db: Session = Depends(get_db)):
+def get_my_wallet(customer=Depends(get_current_customer), db: Session = Depends(get_db)):
     wallet = get_wallet_by_user_id(db, customer.user_id)
     if wallet is None:
         raise NotFoundException(message="Tài khoản chưa có ví điện tử.")
@@ -25,7 +25,7 @@ def get_my_wallet(customer=Depends(get_current_user), db: Session = Depends(get_
 @router_wallet.post("/", response_model=WalletResponse, status_code=201)
 def create_new_wallet(
     wallet_in: WalletCreate,
-    customer=Depends(get_current_user),
+    customer=Depends(get_current_customer),
     db: Session = Depends(get_db),
 ):
     if wallet_in.user_id != customer.user_id:
@@ -35,7 +35,7 @@ def create_new_wallet(
 @router_wallet.post("/pay")
 def pay_order(
     data: PaymentRequest,
-    customer=Depends(get_current_user),
+    customer=Depends(get_current_customer),
     db: Session = Depends(get_db),
 ):
     wallet = get_wallet_by_id(db, wallet_id=data.wallet_id)
@@ -61,7 +61,7 @@ def pay_order(
 @router_wallet.get("/{wallet_id}", response_model=WalletResponse)
 def get_wallet(
     wallet_id: int,
-    customer=Depends(get_current_user),
+    customer=Depends(get_current_customer),
     db: Session = Depends(get_db),
 ):
     db_wallet = get_wallet_by_id(db, wallet_id=wallet_id)

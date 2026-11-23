@@ -3,227 +3,218 @@ const timeSlots = document.getElementById("time-slots");
 const slotStatus = document.getElementById("slot-status");
 const pickupSummary = document.getElementById("pickup-summary");
 const confirmButton = document.getElementById("btn-confirm");
+const state = { slotId: null, slotLabel: "", slots: [], loading: false, wallet: null, customer: null };
+const PENDING_ORDER_KEY = "foodie_pending_order";
 
-const state = { slotId: null, slotLabel: "", slots: [], wallet: null };
-const el = document.getElementById("pickup-date");
-console.log({
-  disabled: el.disabled,
-  readOnly: el.readOnly,
-  attrDisabled: el.hasAttribute("disabled"),
-  pointerEvents: getComputedStyle(el).pointerEvents,
-});
-
-function todayStr(offsetDays = 0) {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+function todayString(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
-
-function money(val) {
-  return `${Number(val || 0).toLocaleString("vi-VN")}đ`;
+function escapeHtml(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
-
-function getCart() {
-  return typeof readCart === "function"
-    ? readCart()
-    : JSON.parse(localStorage.getItem("foodie_cart") || "[]");
+function money(value) { return `${Number(value).toLocaleString("vi-VN")}đ`; }
+function cartNow() { return typeof readCart === "function" ? readCart() : []; }
+function totalServings() { return cartNow().reduce((sum, item) => sum + (Number(item.qty) || 0), 0); }
+function formatDate(value) {
+  const [year, month, day] = value.split("-");
+  return `${day}/${month}/${year}`;
 }
-
-function clearCart() {
-  if (typeof writeCart === "function") writeCart([]);
-  localStorage.setItem("foodie_cart", "[]");
-}
-
 function getToken() {
   return localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
 }
-
-function totalQty() {
-  return getCart().reduce((sum, item) => sum + Number(item.qty || 0), 0);
-}
-
-function isSlotPast(slot) {
-  if (pickupDate.value !== todayStr(0)) return false;
-  const [h, m] = String(slot.end_time || "23:59").slice(0, 5).split(":").map(Number);
-  const end = new Date();
-  end.setHours(h, m, 0, 0);
+function slotIsPast(slot) {
+  if (pickupDate.value !== todayString()) return false;
+  const [hour, minute] = String(slot.end_time).slice(0, 5).split(":").map(Number);
+  const end = new Date(); end.setHours(hour, minute, 0, 0);
   return end <= new Date();
 }
-
 function renderSummary() {
-  const cart = getCart();
+  const cart = cartNow();
   const subtotal = cart.reduce((sum, item) => sum + Number(item.unitPrice || 0) * Number(item.qty || 0), 0);
-
   document.getElementById("checkout-subtotal").textContent = money(subtotal);
   document.getElementById("checkout-shipping").textContent = money(0);
   document.getElementById("checkout-total").textContent = money(subtotal);
-
-  const linesEl = document.getElementById("checkout-lines");
-  linesEl.innerHTML = cart.length
-    ? cart
-        .map(
-          (item) => `
-      <article class="ck-line">
-        <div>
-          <strong>${item.name} × ${Number(item.qty || 0)}</strong>
-          <span>${money(Number(item.unitPrice || 0) * Number(item.qty || 0))}</span>
-        </div>
-      </article>`
-        )
-        .join("")
-    : '<p class="cart-empty">Giỏ hàng đang trống.</p>';
-
+  document.getElementById("checkout-lines").innerHTML = cart.length ? cart.map((item) => `
+    <article class="ck-line"><div class="cart-thumb ${item.tone === "green" ? "art-green" : "art-peach"}"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
+      <div><strong>${escapeHtml(item.name)} × ${Number(item.qty) || 0}</strong><span>${money(Number(item.unitPrice || 0) * Number(item.qty || 0))}</span></div>
+    </article>`).join("") : '<p class="cart-empty">Giỏ hàng đang trống.</p>';
   renderSlots();
 }
-
 function renderSlots() {
-  const needQty = totalQty();
-  const validSlots = state.slots.filter(
-    (s) => s.is_active && !s.is_full && !isSlotPast(s) && Number(s.remaining_servings) >= needQty
-  );
-
-  if (!validSlots.some((s) => Number(s.pickup_slot_id) === state.slotId)) {
-    state.slotId = null;
-    state.slotLabel = "";
-  }
-
-  pickupSummary.textContent = state.slotId ? `${pickupDate.value} · ${state.slotLabel}` : "Chưa chọn";
-
-  if (!state.slots.length) {
-    slotStatus.textContent = "Ngày này chưa có khung giờ nhận món.";
-  } else if (!validSlots.length) {
-    slotStatus.textContent = "Không còn khung giờ đủ chỗ cho giỏ hàng.";
-  } else {
-    slotStatus.textContent = `Chọn khung giờ (${validSlots.length} khung khả dụng)`;
-  }
-
-  timeSlots.innerHTML = state.slots
-    .map((s) => {
-      const label = `${String(s.start_time).slice(0, 5)}–${String(s.end_time).slice(0, 5)}`;
-      const disabled = !s.is_active || s.is_full || isSlotPast(s) || Number(s.remaining_servings) < needQty;
-      const selected = Number(s.pickup_slot_id) === state.slotId;
-
-      return `
-      <button type="button" class="ck-slot ${selected ? "is-selected" : ""} ${disabled ? "is-unavailable" : ""}"
-        data-slot-id="${Number(s.pickup_slot_id)}" ${disabled ? "disabled" : ""}>
-        <strong>${label}</strong>
-        <small>${disabled ? "Hết chỗ / Qua giờ" : `Còn ${Number(s.remaining_servings)} suất`}</small>
-      </button>`;
-    })
-    .join("");
+  const validSlots = state.slots.filter((slot) => slot.is_active && !slot.is_full && !slotIsPast(slot)
+    && Number(slot.remaining_servings) >= totalServings());
+  const selected = state.slots.find((slot) => Number(slot.pickup_slot_id) === state.slotId);
+  if (!selected || !validSlots.includes(selected)) state.slotId = null;
+  pickupSummary.textContent = state.slotId
+    ? `${formatDate(pickupDate.value)} · ${state.slotLabel}` : "Chưa chọn";
+  if (state.loading) slotStatus.textContent = "Đang tải khung giờ và số suất còn lại…";
+  else if (!state.slots.length) slotStatus.textContent = slotStatus.dataset.error || "Ngày này chưa có khung giờ nhận món.";
+  else if (!validSlots.length) slotStatus.textContent = "Không còn khung giờ hợp lệ đủ chỗ cho giỏ hàng.";
+  else slotStatus.textContent = `Chọn khung giờ · ${validSlots.length} khung đủ chỗ`;
+  timeSlots.innerHTML = state.slots.map((slot) => {
+    const label = `${String(slot.start_time).slice(0, 5)}–${String(slot.end_time).slice(0, 5)}`;
+    let status = "Còn chỗ";
+    if (!slot.is_active) status = "Ngừng hoạt động";
+    else if (slotIsPast(slot)) status = "Đã qua";
+    else if (slot.is_full || Number(slot.remaining_servings) <= 0) status = "Đã đầy";
+    else if (Number(slot.remaining_servings) < totalServings()) status = "Không đủ chỗ";
+    const disabled = status !== "Còn chỗ";
+    return `<button type="button" role="option" class="ck-slot ${Number(slot.pickup_slot_id) === state.slotId ? "is-selected" : ""} ${disabled ? "is-unavailable" : ""}"
+      data-slot-id="${Number(slot.pickup_slot_id)}" ${disabled ? "disabled" : ""} aria-selected="${Number(slot.pickup_slot_id) === state.slotId}">
+      <strong>${escapeHtml(label)}</strong><small>${escapeHtml(status)} · ${Number(slot.remaining_servings) || 0} suất</small></button>`;
+  }).join("");
 }
-
-async function loadSlots() {
-  state.slots = [];
-  state.slotId = null;
-  renderSlots();
-
+async function loadDateData() {
+  state.loading = true; state.slots = []; state.slotId = null; slotStatus.dataset.error = ""; renderSlots();
   try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/menu/pickup-slots?service_date=${encodeURIComponent(pickupDate.value)}`);
-    const data = await res.json();
-    state.slots = Array.isArray(data?.slots) ? data.slots : [];
-  } catch (err) {
-    slotStatus.textContent = "Không tải được khung giờ.";
-  }
-  renderSlots();
+    const [menuResponse, slotResponse] = await Promise.all([
+      fetch(`${CONFIG.API_BASE_URL}/menu/daily-menus/remaining?menu_date=${encodeURIComponent(pickupDate.value)}`),
+      fetch(`${CONFIG.API_BASE_URL}/menu/pickup-slots?service_date=${encodeURIComponent(pickupDate.value)}`),
+    ]);
+    if (!menuResponse.ok || !slotResponse.ok) throw new Error("Không lấy được dữ liệu ngày nhận từ máy chủ.");
+    const [menu, slotData] = await Promise.all([menuResponse.json(), slotResponse.json()]);
+    if (!menu || !Array.isArray(menu.items) || !slotData || !Array.isArray(slotData.slots)) {
+      throw new Error("Dữ liệu ngày nhận không đúng định dạng.");
+    }
+    state.slots = slotData.slots;
+    if (!menu.items.length) slotStatus.dataset.error = "Ngày này chưa có thực đơn.";
+  } catch (error) {
+    slotStatus.dataset.error = error.message || "Không tải được dữ liệu. Hãy thử lại.";
+  } finally { state.loading = false; renderSlots(); }
 }
-
-async function loadUserAndWallet() {
-  const balanceEl = document.getElementById("checkout-wallet-balance");
+async function loadCustomerAndWallet() {
+  const balanceLabel = document.getElementById("checkout-wallet-balance");
+  const addressStatus = document.getElementById("checkout-address-status");
   if (!getToken()) {
-    balanceEl.textContent = "Đăng nhập để dùng ví thanh toán.";
+    balanceLabel.textContent = "Đăng nhập để thanh toán bằng ví.";
+    addressStatus.textContent = "Đăng nhập để tải địa chỉ đã lưu trong hồ sơ.";
     return;
   }
-
   try {
     const user = await api.get("/auth/me");
+    state.customer = user;
     document.getElementById("checkout-name").value = user.full_name || "";
     document.getElementById("checkout-phone").value = user.phone || "";
-  } catch (err) {}
-
+    document.getElementById("checkout-address").value = user.address || "";
+    addressStatus.textContent = user.address
+      ? "Đã tải địa chỉ từ trang cá nhân. Bạn có thể sửa và lưu địa chỉ mới."
+      : "Chưa có địa chỉ trong hồ sơ. Hãy nhập và lưu địa chỉ để dùng lần sau.";
+  } catch (error) {
+    if (error.status === 401) balanceLabel.textContent = "Phiên đăng nhập hết hạn. Hãy đăng nhập lại.";
+    addressStatus.textContent = "Không tải được địa chỉ đã lưu. Hãy nhập địa chỉ nhận hàng.";
+  }
   try {
     const wallet = await api.get("/wallets/mine");
-    if (wallet && wallet.status?.toLowerCase() === "active") {
-      state.wallet = wallet;
-      balanceEl.textContent = `Số dư ví: ${money(wallet.balance)}`;
-    } else {
+    if (wallet.status?.toLowerCase() !== "active") {
       state.wallet = null;
-      balanceEl.textContent = "Ví chưa kích hoạt.";
+      balanceLabel.textContent = "Ví hiện không hoạt động.";
+      return;
     }
-  } catch (err) {
+    state.wallet = wallet;
+    balanceLabel.textContent = `Số dư khả dụng: ${money(wallet.balance)}`;
+  } catch (error) {
     state.wallet = null;
-    balanceEl.textContent = "Không lấy được thông tin ví.";
+    balanceLabel.textContent = error.status === 404 ? "Tài khoản chưa có ví điện tử." : error.message;
   }
 }
+function pendingIdempotencyKey(payload) {
+  const serialized = JSON.stringify(payload);
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(PENDING_ORDER_KEY) || "null");
+    if (saved && saved.payload === serialized && saved.key) return saved.key;
+  } catch (error) { /* replace unreadable saved state */ }
+  const key = globalThis.crypto?.randomUUID?.()
+    || `web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({ payload: serialized, key }));
+  return key;
+}
 
-pickupDate.disabled = false;
-pickupDate.readOnly = false;
-pickupDate.min = todayStr(0);
-pickupDate.max = todayStr(7);
-pickupDate.value = todayStr(0);
-
+pickupDate.min = todayString();
+const maxDate = new Date(); maxDate.setDate(maxDate.getDate() + 7);
+pickupDate.max = todayString(maxDate); pickupDate.value = todayString();
 pickupDate.addEventListener("change", () => {
-  if (!pickupDate.value || pickupDate.value < pickupDate.min) pickupDate.value = pickupDate.min;
-  if (pickupDate.value > pickupDate.max) pickupDate.value = pickupDate.max;
-  loadSlots();
+  if (!pickupDate.value || pickupDate.value < pickupDate.min || pickupDate.value > pickupDate.max) pickupDate.value = pickupDate.min;
+  loadDateData();
 });
-
-timeSlots.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-slot-id]");
-  if (!btn || btn.disabled) return;
-  const slot = state.slots.find((s) => Number(s.pickup_slot_id) === Number(btn.dataset.slotId));
+timeSlots.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-slot-id]");
+  if (!button || button.disabled) return;
+  const slot = state.slots.find((item) => Number(item.pickup_slot_id) === Number(button.dataset.slotId));
   if (!slot) return;
   state.slotId = Number(slot.pickup_slot_id);
   state.slotLabel = `${String(slot.start_time).slice(0, 5)}–${String(slot.end_time).slice(0, 5)}`;
   renderSlots();
 });
-
+document.getElementById("pay-methods").addEventListener("change", (event) => {
+  document.querySelectorAll(".ck-pay").forEach((row) => row.classList.toggle("is-selected", row.contains(event.target) && event.target.checked));
+});
+document.getElementById("btn-save-address").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  const address = document.getElementById("checkout-address").value.trim();
+  const status = document.getElementById("checkout-address-status");
+  if (!address) { status.textContent = "Nhập địa chỉ trước khi lưu."; return; }
+  if (!getToken()) { status.textContent = "Hãy đăng nhập để lưu địa chỉ."; return; }
+  button.disabled = true;
+  try {
+    state.customer = await api.put("/auth/me", { address });
+    document.getElementById("checkout-address").value = state.customer.address || "";
+    status.textContent = "Địa chỉ đã được lưu vào trang cá nhân.";
+  } catch (error) {
+    status.textContent = error.message || "Không thể lưu địa chỉ.";
+  } finally { button.disabled = false; }
+});
 confirmButton.addEventListener("click", async () => {
-  const cart = getCart();
-  const token = getToken();
-  if (!token) return showToast("Hãy đăng nhập trước khi đặt hàng.", "error");
-  if (!cart.length) return showToast("Giỏ hàng đang trống.", "error");
-  if (!state.slotId) return showToast("Hãy chọn khung giờ nhận món.", "error");
-  if (!state.wallet) return showToast("Cần ví điện tử hoạt động để thanh toán.", "error");
+  const cart = cartNow();
+  if (!getToken()) { showToast("Hãy đăng nhập trước khi đặt hàng.", "error"); return; }
+  if (!cart.length) { showToast("Giỏ hàng đang trống.", "error"); return; }
+  const deliveryAddress = document.getElementById("checkout-address").value.trim()
+    || (state.customer?.address || "").trim();
+  if (!deliveryAddress) { showToast("Hãy nhập địa chỉ nhận hàng hoặc lưu địa chỉ trong trang cá nhân.", "error"); return; }
+  if (cart.some((item) => !Number.isInteger(Number(item.dish_id)) || Number(item.dish_id) < 1)) {
+    showToast("Giỏ hàng có món thiếu mã. Hãy xóa món đó và thêm lại từ thực đơn.", "error"); return;
+  }
+  if (cart.some((item) => !Number.isInteger(Number(item.qty)) || Number(item.qty) < 1 || Number(item.qty) > 10)) {
+    showToast("Mỗi món chỉ đặt được từ 1 đến 10 suất.", "error"); return;
+  }
+  if (!pickupDate.value || pickupDate.value < pickupDate.min) { showToast("Hãy chọn ngày nhận hợp lệ.", "error"); return; }
+  const slot = state.slots.find((item) => Number(item.pickup_slot_id) === state.slotId);
+  if (!slot || !slot.is_active || slot.is_full || slotIsPast(slot) || Number(slot.remaining_servings) < totalServings()) {
+    showToast("Khung giờ đã chọn không còn đủ chỗ. Hãy tải lại ngày nhận.", "error"); await loadDateData(); return;
+  }
+  const paymentMethod = document.querySelector('input[name="pay"]:checked')?.value;
+  if (!['wallet', 'cod'].includes(paymentMethod)) { showToast("Hãy chọn phương thức thanh toán.", "error"); return; }
+  if (paymentMethod === "wallet" && !state.wallet) { showToast("Cần có ví điện tử hoạt động để thanh toán.", "error"); return; }
 
-  const payload = {
+  const orderRequest = {
     pickup_date: pickupDate.value,
     pickup_slot_id: state.slotId,
     items: cart.map((item) => ({ dish_id: Number(item.dish_id), quantity: Number(item.qty) })),
-    payment_method: "wallet",
-    note: document.getElementById("checkout-note")?.value.trim() || null,
+    payment_method: paymentMethod,
+    delivery_address: deliveryAddress,
+    note: document.getElementById("checkout-note").value.trim() || null,
   };
-
   confirmButton.disabled = true;
-  const prevText = confirmButton.textContent;
+  const originalText = confirmButton.textContent;
   confirmButton.textContent = "Đang tạo đơn…";
-
   try {
-    const order = await api.post("/orders", payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Idempotency-Key": `web-${Date.now()}`,
-      },
+    const order = await api.post("/orders", orderRequest, {
+      headers: { "Idempotency-Key": pendingIdempotencyKey(orderRequest) },
     });
-    clearCart();
-    const orderCode = order?.order_code || order?.code || "";
-    showToast(orderCode ? `Đặt hàng thành công · ${orderCode}` : "Đặt hàng thành công!", "success");
-    setTimeout(() => {
-      window.location.href = "orders.html";
-    }, 800);
-  } catch (err) {
-    showToast(err.message || "Đặt hàng thất bại.", "error");
-    await loadSlots();
+    writeCart([]);
+    sessionStorage.removeItem(PENDING_ORDER_KEY);
+    showToast(`Đặt hàng thành công · ${order.order_code} · ${money(order.total_amount)}`, "success");
+    setTimeout(() => { window.location.href = "orders.html"; }, 900);
+  } catch (error) {
+    showToast(error.message || "Không thể tạo đơn. Hãy thử lại.", "error");
+    if (["INSUFFICIENT_SERVINGS", "SLOT_FULL", "INSUFFICIENT_INGREDIENTS"].includes(error.data?.details?.code)) {
+      await loadDateData();
+    }
   } finally {
     confirmButton.disabled = false;
-    confirmButton.textContent = prevText;
+    confirmButton.textContent = originalText;
   }
 });
-
-
+window.addEventListener("storage", (event) => { if (event.key === "foodie_cart") renderSummary(); });
 renderSummary();
-loadSlots();
-loadUserAndWallet();
+loadDateData();
+loadCustomerAndWallet();

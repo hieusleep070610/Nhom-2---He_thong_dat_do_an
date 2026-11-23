@@ -25,6 +25,7 @@ function renderPrice() {
 
 function showPlaceholderImage() {
   if (!heroImage) return;
+  heroImage.removeAttribute("src");
   heroImage.hidden = true;
   if (heroImage.parentElement && !heroImage.parentElement.querySelector(".plate")) {
     const plate = document.createElement("div");
@@ -99,6 +100,7 @@ if (addButton) {
 }
 
 async function loadDish() {
+  if (addButton) addButton.disabled = true;
   const id = Number(new URLSearchParams(location.search).get("id"));
   if (!Number.isInteger(id) || id < 1) {
     if (descEl) descEl.textContent = "Hãy mở món ăn từ thực đơn.";
@@ -120,6 +122,7 @@ async function loadDish() {
       name: found.name,
       description: found.description || "Chưa có mô tả cho món ăn này.",
       price: Number(found.price ?? found.unit_price ?? 0),
+      image_url: found.image_url || "",
     };
 
     if (titleEl) titleEl.textContent = selectedDish.name;
@@ -127,9 +130,16 @@ async function loadDish() {
     if (descEl) descEl.textContent = selectedDish.description;
     if (heroImage) heroImage.alt = selectedDish.name;
 
-    showPlaceholderImage();
+    if (heroImage && selectedDish.image_url) {
+      heroImage.hidden = false;
+      heroImage.src = selectedDish.image_url;
+      heroImage.onerror = showPlaceholderImage;
+      heroImage.parentElement.querySelector(".plate")?.remove();
+    } else showPlaceholderImage();
+    if (addButton) addButton.disabled = selectedDish.price <= 0;
     renderPrice();
   } catch (error) {
+    selectedDish = null;
     if (descEl) {
       descEl.textContent = error.message || "Không tải được món ăn từ máy chủ.";
     }

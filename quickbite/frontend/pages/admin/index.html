@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tổng quan · QuickBite</title>
+  <link rel="stylesheet" href="../../css/common/style.css"><link rel="stylesheet" href="../../css/admin/menu.css">
+</head>
+<body data-admin-page="dashboard">
+  <div class="admin-shell"><aside class="admin-side"></aside><main class="admin-main">
+    <header class="admin-page-heading"><div><p class="admin-eyebrow">QUICKBITE · ADMIN</p><h1>Tổng quan</h1><p>Theo dõi hoạt động kinh doanh và các việc cần xử lý.</p></div><button id="exportReport" class="btn btn-primary" type="button">Xuất báo cáo</button></header>
+    <section id="dashboardState" class="admin-state" role="status">Đang tải dữ liệu tổng quan…</section>
+    <section class="dashboard-metrics">
+      <article class="inventory-metric"><span>Đơn hàng hôm nay</span><strong id="dashboardOrders">—</strong></article>
+      <article class="inventory-metric"><span>Doanh thu hôm nay</span><strong id="dashboardRevenue">—</strong></article>
+      <article class="inventory-metric"><span>Món đang bán</span><strong id="dashboardDishes">—</strong></article>
+      <article class="inventory-metric"><span>Nguyên liệu cần chú ý</span><strong id="dashboardStockAlerts">—</strong></article>
+    </section>
+    <section class="dashboard-columns">
+      <article class="admin-section card"><h2>Doanh thu 7 ngày</h2><div id="dashboardRevenueChart" class="dashboard-chart" role="img" aria-label="Biểu đồ doanh thu 7 ngày"></div></article>
+      <article class="admin-section card"><h2>Đơn hàng gần đây</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Món</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody id="dashboardRecentOrders"></tbody></table></div></article>
+    </section>
+    <section class="dashboard-columns"><article class="admin-section card"><h2>Cảnh báo tồn kho</h2><div id="dashboardStockList" class="dashboard-stock-list"></div></article></section>
+  </main></div>
+  <script src="../../js/config/config.js"></script><script src="../../js/pages/admin/shell.js"></script><script src="../../js/pages/admin/ui.js"></script><script src="../../js/pages/admin/dashboard.js"></script>
+</body></html>
