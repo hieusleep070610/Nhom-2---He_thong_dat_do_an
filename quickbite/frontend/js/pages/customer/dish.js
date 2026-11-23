@@ -16,7 +16,9 @@ function renderPrice() {
 }
 
 function showPlaceholderImage() {
+  heroImage.removeAttribute("src");
   heroImage.hidden = true;
+  heroImage.parentElement.querySelector(".plate")?.remove();
   const plate = document.createElement("div");
   plate.className = "plate";
   plate.innerHTML = "<span><i></i><i></i><i></i></span>";
@@ -63,12 +65,18 @@ async function loadDish() {
       name: selectedDish.name,
       description: selectedDish.description || "Chưa có mô tả cho món ăn này.",
       price: Number(selectedDish.price),
+      image_url: selectedDish.image_url || "",
     };
     document.querySelector(".fd-info h1").textContent = selectedDish.name;
     document.querySelector(".fd-crumb").textContent = `Trang chủ / Thực đơn / ${selectedDish.name}`;
     document.getElementById("dish-description").textContent = selectedDish.description;
     heroImage.alt = selectedDish.name;
-    showPlaceholderImage();
+    if (selectedDish.image_url) {
+      heroImage.hidden = false;
+      heroImage.src = selectedDish.image_url;
+      heroImage.onerror = showPlaceholderImage;
+      heroImage.parentElement.querySelector(".plate")?.remove();
+    } else showPlaceholderImage();
     addButton.disabled = false;
     renderPrice();
   } catch (error) {

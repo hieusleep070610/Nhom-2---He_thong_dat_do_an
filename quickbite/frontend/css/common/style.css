@@ -418,6 +418,11 @@ th { font-size: 13px; color: var(--color-muted); text-transform: uppercase; }
   font-size: 14px;
 }
 .ck-input:focus { outline: 2px solid #ffe3c4; background: #fff; }
+.ck-address-input { height: auto; min-height: 76px; padding: 12px 14px; resize: vertical; }
+.ck-address-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.ck-address-actions small { color: #6a727d; font-size: 12px; }
+.ck-address-save { padding: 0; border: 0; background: transparent; color: #e9651a; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.ck-address-save:disabled { opacity: .55; cursor: wait; }
 .ck-hint { margin: 8px 0 0; color: #6a727d; font-size: 13px; }
 .ck-slot-label { margin: 16px 0 8px; color: #1e2936; font-size: 14px; font-weight: 600; }
 .ck-slots { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -751,6 +756,7 @@ th { font-size: 13px; color: var(--color-muted); text-transform: uppercase; }
 .menu-card { overflow: hidden; }
 .menu-card a { display: block; color: inherit; }
 .menu-card .art { height: 148px; display: grid; place-items: center; }
+.menu-card .dish-photo { width: 100%; height: 100%; object-fit: cover; }
 .menu-card .plate { width: 92px; height: 92px; }
 .menu-card .plate span { width: 66px; height: 48px; }
 .menu-card h3 { margin: 14px 16px 0; font-size: 16px; }

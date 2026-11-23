@@ -38,7 +38,7 @@ function render() {
   grid.innerHTML = rows.map((dish, index) => `
     <article class="menu-card">
       <a href="dish.html?id=${encodeURIComponent(dish.id)}">
-        <div class="art ${dish.tone}"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
+        <div class="art ${dish.tone}">${dish.image_url ? `<img class="dish-photo" src="${escapeHtml(dish.image_url)}" alt="${escapeHtml(dish.name)}" loading="lazy">` : '<div class="plate"><span><i></i><i></i><i></i></span></div>'}</div>
         <h3>${escapeHtml(dish.name)}</h3>
         <p>${escapeHtml(dish.desc)}</p>
       </a>
@@ -47,6 +47,14 @@ function render() {
         <button type="button" class="menu-add" data-add="${index}" aria-label="Thêm ${escapeHtml(dish.name)}">+</button>
       </div>
     </article>`).join("");
+  grid.querySelectorAll(".dish-photo").forEach((image) => {
+    image.addEventListener("error", () => {
+      const fallback = document.createElement("div");
+      fallback.className = "plate";
+      fallback.innerHTML = "<span><i></i><i></i><i></i></span>";
+      image.replaceWith(fallback);
+    }, { once: true });
+  });
   grid.querySelectorAll("[data-add]").forEach((button) => {
     button.addEventListener("click", () => {
       const dish = rows[Number(button.dataset.add)];
@@ -86,6 +94,7 @@ async function loadDishes() {
       name: dish.name,
       desc: dish.description || "Món trong thực đơn hôm nay",
       price: Number(dish.price) || 0,
+      image_url: dish.image_url || "",
       tone: TONES[index % TONES.length],
     })).filter((dish) => Number.isInteger(dish.id) && dish.id > 0);
   } catch (error) {

@@ -108,6 +108,23 @@
     overflow-wrap: anywhere;
 }
 
+.profile-address-edit, .profile-address-form button {
+    width: fit-content;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #e9651a;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.profile-address-form { display: grid; gap: 8px; width: 100%; }
+.profile-address-form textarea { box-sizing: border-box; width: 100%; padding: 8px; border: 1px solid #d9dee5; border-radius: 8px; font: inherit; resize: vertical; }
+.profile-address-form > div { display: flex; gap: 12px; }
+.profile-address-form small { color: #64748b; }
+
 .profile-accent {
     width: 3px;
     height: 16px;
