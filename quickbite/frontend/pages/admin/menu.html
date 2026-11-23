@@ -1,116 +1,76 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Thực Đơn & Món Ăn - QuickBite</title>
-    <link rel="stylesheet" href="../../css/common/style.css">
-    <link rel="stylesheet" href="../../css/admin/menu.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý thực đơn · QuickBite</title>
+  <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/admin/menu.css">
 </head>
-<body>
-    <div class="admin-shell">
-        <aside class="admin-side">
-            <h2>QuickBite Admin</h2>
-            <p class="admin-side-subtitle">Quản trị hệ thống</p>
-            <nav class="admin-nav">
-                <a href="menu.html" class="nav-link active">Quản lý thực đơn</a>
-                <a href="ingredients.html" class="nav-link">Nguyên liệu & tồn kho</a>
-            </nav>
-        </aside>
+<body data-admin-page="dishes">
+  <div class="admin-shell">
+    <aside class="admin-side">
+      <h2>QuickBite Admin</h2><p class="admin-side-subtitle">Quản trị hệ thống</p>
+      <nav class="admin-nav" aria-label="Quản trị">
+        <a class="nav-link" href="index.html">Tổng quan</a>
+        <a class="nav-link active" href="menu.html">Quản lý thực đơn</a>
+        <a class="nav-link" href="ingredients.html">Nguyên liệu &amp; tồn kho</a>
+      </nav>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-page-heading">
+        <div><p class="admin-eyebrow">QUẢN TRỊ · THỰC ĐƠN</p><h1>Quản lý món ăn</h1><p>Quản lý món, giá bán và hình ảnh hiển thị cho khách hàng.</p></div>
+        <button id="addDishToggle" class="btn btn-primary" type="button">+ Thêm món</button>
+      </header>
 
-        <main class="admin-main">
-            <h1>Quản Lý Thực Đơn & Món Ăn</h1>
+      <section class="dashboard-metrics dish-metrics" aria-label="Tổng quan món ăn">
+        <article class="inventory-metric"><span class="dish-metric-icon" aria-hidden="true">☷</span><span>Tổng số món</span><strong id="dishMetricTotal">—</strong><small>Trong danh sách</small></article>
+        <article class="inventory-metric"><span class="dish-metric-icon is-green" aria-hidden="true">✓</span><span>Đang bán</span><strong id="dishMetricAvailable">—</strong><small>Được phục vụ</small></article>
+        <article class="inventory-metric"><span class="dish-metric-icon is-blue" aria-hidden="true">▧</span><span>Đã có hình ảnh</span><strong id="dishMetricImages">—</strong><small>Lưu trên Cloudinary</small></article>
+        <article class="inventory-metric"><span class="dish-metric-icon is-purple" aria-hidden="true">▦</span><span>Danh mục</span><strong id="dishMetricCategories">—</strong><small>Đang hiển thị</small></article>
+      </section>
 
-            <section class="card">
-                <h2>Thêm Món Ăn Mới</h2>
-                <form id="addDishForm" class="card-form">
-                    <div class="form-group">
-                        <label for="dishName">Tên món ăn:</label>
-                        <input type="text" id="dishName" placeholder="Ví dụ: Cơm tấm sườn bì chả" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="dishPrice">Giá tiền (VNĐ):</label>
-                        <input type="number" id="dishPrice" min="1000" step="1000" placeholder="Ví dụ: 45000" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="dishDesc">Mô tả:</label>
-                        <textarea id="dishDesc" rows="3" placeholder="Mô tả ngắn gọn về món ăn"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Thêm Món Ăn</button>
-                    </div>
-                </form>
-            </section>
+      <section id="dishFormPanel" class="admin-section card" aria-labelledby="dish-form-heading" hidden>
+        <div class="admin-section-heading"><div><h2 id="dish-form-heading">Thêm món mới</h2><p>Tạo món ăn và tải ảnh lên Cloudinary.</p></div></div>
+        <form id="addDishForm" class="admin-form-grid">
+          <label class="form-group">Tên món<input id="dishName" maxlength="150" required placeholder="Ví dụ: Cơm gà xối mỡ"></label>
+          <label class="form-group">Giá bán<input id="dishPrice" type="text" inputmode="numeric" autocomplete="off" aria-describedby="dishPriceHint" required placeholder="45.000"><span id="dishPriceHint" class="field-hint">Đơn vị VNĐ · nhập số nguyên, ví dụ 45.000</span></label>
+          <label class="form-group">Danh mục<select id="dishCategory"><option value="">Chưa phân loại</option></select></label>
+          <label class="form-group admin-form-wide">Mô tả<textarea id="dishDesc" maxlength="255" rows="2" placeholder="Mô tả ngắn về món ăn"></textarea></label>
+          <label class="form-group admin-form-wide">Ảnh món <span class="field-hint">JPG, PNG hoặc WebP · tối đa 10 MB</span><input id="dishImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <div id="dishImagePreview" class="admin-image-preview admin-form-wide" hidden></div>
+          <div class="admin-form-actions admin-form-wide"><button type="submit" class="btn btn-primary">Thêm món ăn</button><button id="dishCancel" type="button" class="btn btn-secondary">Hủy</button></div>
+        </form>
+        <p id="dishFormMessage" class="admin-inline-message" role="status" hidden></p>
+      </section>
 
-            <section id="editDishCard" class="card hidden">
-                <h2>Chỉnh Sửa Món Ăn</h2>
-                <form id="editDishForm" class="card-form">
-                    <input type="hidden" id="editDishId">
-                    <div class="form-group">
-                        <label for="editDishName">Tên món ăn:</label>
-                        <input type="text" id="editDishName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editDishPrice">Giá tiền (VNĐ):</label>
-                        <input type="number" id="editDishPrice" min="1000" step="1000" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editDishDesc">Mô tả:</label>
-                        <textarea id="editDishDesc" rows="3"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Lưu Cập Nhật</button>
-                        <button type="button" id="cancelEditBtn" class="btn btn-secondary">Hủy</button>
-                    </div>
-                </form>
-            </section>
-
-            <section class="card">
-                <h2>Gán Món Vào Thực Đơn Theo Ngày</h2>
-                <form id="assignMenuForm" class="card-form">
-                    <div class="form-group">
-                        <label for="menuDate">Chọn Ngày Áp Dụng:</label>
-                        <input type="date" id="menuDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="selectDishId">Chọn Món Ăn:</label>
-                        <select id="selectDishId" required>
-                            <option value="">-- Chọn món ăn từ hệ thống --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="menuQuantity">Số lượng định mức (Quantity):</label>
-                        <input type="number" id="menuQuantity" min="1" placeholder="Ví dụ: 50" required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Gán Vào Thực Đơn</button>
-                    </div>
-                </form>
-            </section>
-
-            <section class="card">
-                <h2>Danh Sách Món Ăn Đang Hoạt Động</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên món</th>
-                            <th>Giá (VNĐ)</th>
-                            <th>Mô tả</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dishTableBody">
-                        <tr>
-                            <td colspan="5">Đang tải dữ liệu...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-        </main>
-    </div>
-
-    <script src="../../js/pages/admin/menu.js"></script>
-    <script src="../../js/layout.js"></script>
+      <section class="admin-section card" aria-labelledby="dishes-heading">
+        <div class="dish-list-heading"><div><h2 id="dishes-heading">Danh sách món ăn</h2><p id="dishCount">Đang tải danh sách…</p></div><button id="reloadDishes" type="button" class="btn btn-secondary" aria-label="Tải lại và xóa bộ lọc">Làm mới</button></div>
+        <div class="dish-toolbar"><label class="admin-search dish-search">Tìm món<input id="dishSearch" type="search" placeholder="Tên món hoặc mã MON-001" autocomplete="off"></label><label class="admin-search">Danh mục<select id="dishCategoryFilter"><option value="">Tất cả danh mục</option></select></label><label class="admin-search">Trạng thái<select id="dishAvailabilityFilter"><option value="">Tất cả trạng thái</option><option value="true">Đang bán</option><option value="false">Tạm hết hàng</option></select></label><button id="clearDishFilters" class="btn btn-secondary dish-clear-filters" type="button" hidden>Xóa bộ lọc</button>
+        </div>
+        <p class="dish-api-note" id="dishAvailabilityNotice">Hiện backend chỉ trả về món đang bán; món tạm ngừng chưa xuất hiện trong danh sách.</p>
+        <p id="dishUpdatedAt" class="dish-updated-at"></p>
+        <div id="dishState" class="admin-state" role="status" aria-live="polite">Đang tải danh sách món…</div>
+        <div class="admin-table-wrap"><table class="admin-table dish-table"><thead><tr><th>Ảnh</th><th>Tên món / Mã</th><th>Danh mục</th><th>Giá bán</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="dishTableBody"></tbody></table></div>
+        <div class="admin-pagination"><span id="dishPageLabel"></span><div><button id="dishPrev" class="btn btn-secondary" type="button">Trước</button><span id="dishPageNumber"></span><button id="dishNext" class="btn btn-secondary" type="button">Sau</button></div></div>
+      </section>
+      <section class="admin-section card" aria-labelledby="daily-menu-heading">
+        <div class="admin-section-heading"><div><h2 id="daily-menu-heading">Thực đơn theo ngày</h2><p>Chọn ngày bán và số lượng định mức cho từng món.</p></div></div>
+        <form id="dailyMenuForm" class="admin-form-grid admin-daily-form">
+          <input type="hidden" id="dailyMenuId">
+          <label class="form-group">Ngày áp dụng<input id="menuDate" type="date" required></label>
+          <label class="form-group">Món ăn<select id="selectDishId" required><option value="">Đang tải món…</option></select></label>
+          <label class="form-group">Số lượng<input id="menuQuantity" type="number" min="1" step="1" required placeholder="50"></label>
+          <div class="admin-form-actions"><button id="dailyMenuSubmit" type="submit" class="btn btn-primary">Gán vào thực đơn</button><button id="cancelDailyEdit" type="button" class="btn btn-secondary" hidden>Hủy sửa</button></div>
+        </form>
+        <div class="dish-list-heading admin-filter-heading"><div><h2>Các món trong ngày</h2><p>Định mức phục vụ theo ngày đã chọn.</p></div><label class="admin-search">Lọc theo ngày<input id="menuDateFilter" type="date"></label></div>
+        <div id="dailyMenuState" class="admin-state" role="status">Đang tải thực đơn…</div>
+        <div class="admin-table-wrap"><table class="admin-table daily-menu-table"><thead><tr><th>Ngày</th><th>Món ăn</th><th>Số lượng</th><th>Thao tác</th></tr></thead><tbody id="dailyMenuTableBody" data-page-body="dish-daily-menus"></tbody></table></div>
+      </section>
+    </main>
+  </div>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/pages/admin/shell.js"></script><script src="../../js/pages/admin/ui.js"></script>
+  <script src="../../js/pages/admin/menu.js"></script>
 </body>
 </html>

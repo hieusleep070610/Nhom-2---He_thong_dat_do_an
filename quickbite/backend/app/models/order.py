@@ -25,6 +25,7 @@ class Order(Base):
     code = Column(String(20), nullable=False, unique=True)
     customer_name = Column(String(80), nullable=False)
     customer_phone = Column(String(15), nullable=False)
+    delivery_address = Column(String(500), nullable=True)
     note = Column(String(200))
     pickup_date = Column(Date, nullable=False)
     pickup_slot_id = Column(BigInteger, ForeignKey("pickup_slots.id"), nullable=False)

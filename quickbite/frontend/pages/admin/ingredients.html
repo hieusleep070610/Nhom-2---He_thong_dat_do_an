@@ -1,69 +1,38 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nguyên liệu &amp; tồn kho | foodie</title>
-  <link rel="icon" href="../../assets/images/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../css/common/style.css">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nguyên liệu &amp; tồn kho · QuickBite</title>
+  <link rel="stylesheet" href="../../css/common/style.css"><link rel="stylesheet" href="../../css/admin/menu.css">
 </head>
-<body class="foodie-body">
+<body data-admin-page="ingredients">
   <div class="admin-shell">
-    <aside class="admin-side">
-      <strong>foodie</strong>
-      <small>Admin workspace</small>
-      <nav class="admin-nav" aria-label="Quản trị">
-        <span>Dashboard</span>
-        <span>Quản lý món ăn</span>
-        <span>Quản lý danh mục</span>
-        <a class="is-active" href="ingredients.html">Nguyên liệu &amp; tồn kho</a>
-        <span>Công thức món</span>
-        <span>Quản lý đơn hàng</span>
-        <span>Quản lý thanh toán</span>
-        <span>Quản lý người dùng</span>
-      </nav>
+    <aside class="admin-side"><h2>QuickBite Admin</h2><p class="admin-side-subtitle">Quản trị hệ thống</p>
+      <nav class="admin-nav" aria-label="Quản trị"><a class="nav-link" href="index.html">Tổng quan</a><a class="nav-link" href="menu.html">Quản lý thực đơn</a><a class="nav-link active" href="ingredients.html">Nguyên liệu &amp; tồn kho</a></nav>
     </aside>
     <main class="admin-main">
-      <div class="admin-top">
-        <div>
-          <h1>Nguyên liệu &amp; tồn kho</h1>
-          <p class="ck-lead">Theo dõi nguyên liệu và trạng thái còn hàng của món.</p>
-        </div>
-      </div>
-      <section class="metric-grid">
-        <article class="metric-card"><i></i><div><small>Nguyên liệu</small><strong>2</strong></div></article>
-        <article class="metric-card green"><i></i><div><small>Dưới mức tối thiểu</small><strong>0</strong></div></article>
-        <article class="metric-card red"><i></i><div><small>Đã hết hàng</small><strong>1</strong></div></article>
-        <article class="metric-card blue"><i></i><div><small>Giá trị tồn kho</small><strong>—</strong></div></article>
+      <header class="admin-page-heading"><div><p class="admin-eyebrow">QUẢN TRỊ · KHO</p><h1>Nguyên liệu &amp; tồn kho</h1><p>Theo dõi số lượng tồn và ngưỡng cảnh báo nguyên liệu.</p></div><button id="addIngredient" class="btn btn-primary" type="button">+ Thêm nguyên liệu</button></header>
+      <section class="inventory-metrics" aria-label="Tổng quan kho">
+        <article class="inventory-metric"><span>Tổng nguyên liệu</span><strong id="ingredientTotal">—</strong></article>
+        <article class="inventory-metric"><span>Sắp hết hàng</span><strong id="ingredientLow">—</strong></article>
+        <article class="inventory-metric"><span>Hết hàng</span><strong id="ingredientEmpty">—</strong></article>
       </section>
-      <section class="panel">
-        <h2>Món ăn và trạng thái tồn kho</h2>
-        <table class="admin-table">
-          <thead>
-            <tr><th>ID</th><th>Tên món</th><th>Giá (VNĐ)</th><th>Trạng thái tồn kho</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Cơm tấm sườn bì chả</td><td>45,000</td><td>Còn hàng</td></tr>
-            <tr><td>2</td><td>Phở bò đặc biệt</td><td>50,000</td><td>Còn hàng</td></tr>
-            <tr><td>3</td><td>Bánh mì chảo full topping</td><td>35,000</td><td class="text-error">Hết hàng</td></tr>
-          </tbody>
-        </table>
-        <h2 style="margin-top:22px">Nguyên liệu</h2>
-        <table class="admin-table">
-          <thead>
-            <tr><th>ID Nguyên liệu</th><th>Tên nguyên liệu</th><th>Đơn vị tính</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>Thịt heo sườn</td><td>kg</td></tr>
-            <tr><td>2</td><td>Gạo tấm</td><td>kg</td></tr>
-          </tbody>
-        </table>
+      <section id="ingredientFormPanel" class="admin-section card" aria-labelledby="ingredientFormTitle" hidden><div class="admin-section-heading"><div><h2 id="ingredientFormTitle">Thêm nguyên liệu</h2><p>Nhập lượng tồn hiện tại và ngưỡng cảnh báo.</p></div></div>
+        <form id="ingredientForm" class="admin-form-grid">
+          <input type="hidden" id="ingredientId">
+          <label class="form-group">Tên nguyên liệu<input id="ingredientName" maxlength="100" required placeholder="Ví dụ: Gạo tấm"></label>
+          <label class="form-group">Đơn vị<input id="ingredientUnit" maxlength="20" required placeholder="kg, lít, gói"></label>
+          <label class="form-group">Số lượng tồn<input id="ingredientStock" type="number" min="0" step="0.001" required placeholder="0"></label>
+          <label class="form-group">Cảnh báo khi còn dưới<input id="ingredientMin" type="number" min="0" step="0.001" required value="0"></label>
+          <div class="admin-form-actions admin-form-wide"><button id="ingredientSubmit" class="btn btn-primary" type="submit">Thêm nguyên liệu</button><button id="ingredientCancel" class="btn btn-secondary" type="button">Hủy</button></div>
+        </form><p id="ingredientMessage" class="admin-inline-message" role="status" hidden></p>
+      </section>
+      <section class="admin-section card"><div class="admin-section-heading"><div><h2>Danh sách nguyên liệu</h2><p>Trạng thái được xác định theo số lượng và ngưỡng cảnh báo.</p></div><label class="admin-search">Tìm nguyên liệu<input id="ingredientSearch" type="search" placeholder="Nhập tên"></label><label class="admin-search">Trạng thái<select id="ingredientStatusFilter"><option value="">Tất cả</option><option value="low">Sắp hết</option><option value="empty">Hết hàng</option><option value="available">Đủ hàng</option></select></label></div>
+        <div id="ingredientState" class="admin-state" role="status">Đang tải kho…</div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nguyên liệu</th><th>Đơn vị</th><th>Tồn kho</th><th>Tối thiểu</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="ingredientTableBody" data-page-body="ingredients"></tbody></table></div>
       </section>
     </main>
   </div>
-  <script src="../../js/layout.js"></script>
+  <script src="../../js/config/config.js"></script><script src="../../js/pages/admin/shell.js"></script><script src="../../js/pages/admin/ui.js"></script><script src="../../js/pages/admin/ingredients.js"></script>
 </body>
 </html>

@@ -14,11 +14,17 @@ class Settings(BaseSettings):
     DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
     DB_USER: str = "root"
-    DB_PASSWORD: str = ""
+    DB_PASSWORD: str = "cellfite90"
     DB_NAME: str = "quickbite_db_demo"
 
     CORS_ORIGINS: str = "*"
     ADMIN_USER_IDS: str = ""
+    KITCHEN_USER_IDS: str = ""
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+    CLOUDINARY_FOLDER: str = "quickbite/dishes"
+    CLOUDINARY_MAX_IMAGE_SIZE_MB: int = 10
 
     SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
@@ -63,6 +69,13 @@ class Settings(BaseSettings):
             return {int(value.strip()) for value in self.ADMIN_USER_IDS.split(",") if value.strip()}
         except ValueError as error:
             raise ValueError("ADMIN_USER_IDS must be a comma-separated list of user IDs") from error
+
+    @property
+    def kitchen_user_ids(self) -> set[int]:
+        try:
+            return {int(value.strip()) for value in self.KITCHEN_USER_IDS.split(",") if value.strip()}
+        except ValueError as error:
+            raise ValueError("KITCHEN_USER_IDS must be a comma-separated list of user IDs") from error
 
 
 @lru_cache

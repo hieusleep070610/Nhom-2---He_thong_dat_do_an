@@ -37,16 +37,24 @@ def create_order(
     payment_method: str,
     coupon_code: str | None,
     idempotency_key: str | None,
+    delivery_address: str | None = None,
 ) -> dict:
     """Create and pay for an order atomically using the customer's wallet."""
     requested = _normalize_items(items)
+    effective_address = (delivery_address or "").strip() or (customer.address or "").strip()
     request_hash = _request_hash(
-        pickup_date, pickup_slot_id, requested, note, payment_method, coupon_code
+        pickup_date, pickup_slot_id, requested, effective_address, note, payment_method, coupon_code
     )
     if idempotency_key:
         prior = _find_idempotent_order(db, idempotency_key)
         if prior:
             return _replay_or_conflict(prior, customer.user_id, request_hash)
+
+    if not effective_address:
+        raise BadRequestException(
+            message="Vui lòng nhập địa chỉ nhận hàng hoặc cập nhật địa chỉ trong trang cá nhân.",
+            details={"code": "CUSTOMER_ADDRESS_REQUIRED"},
+        )
 
     phone = (customer.phone or "").strip()
     if not phone:
@@ -67,9 +75,9 @@ def create_order(
             message="Mã giảm giá không hợp lệ.",
             details={"code": "INVALID_COUPON"},
         )
-    if payment_method != "wallet":
+    if payment_method not in {"wallet", "cod"}:
         raise BadRequestException(
-            message="Phương thức thanh toán hiện được hỗ trợ là wallet.",
+            message="Phương thức thanh toán không được hỗ trợ.",
             details={"code": "UNSUPPORTED_PAYMENT_METHOD"},
         )
 
@@ -117,34 +125,37 @@ def create_order(
 
         discount = Decimal("0")
         total = max(Decimal("0"), subtotal - discount)
-        wallet = (
-            db.query(WalletModel)
-            .filter(WalletModel.user_id == customer.user_id)
-            .with_for_update()
-            .first()
-        )
-        if wallet is None or (wallet.status or "").strip().casefold() != "active":
-            raise ConflictException(
-                message="Ví điện tử chưa được tạo hoặc không hoạt động.", code="WALLET_UNAVAILABLE"
+        wallet = None
+        if payment_method == "wallet":
+            wallet = (
+                db.query(WalletModel)
+                .filter(WalletModel.user_id == customer.user_id)
+                .with_for_update()
+                .first()
             )
-        if Decimal(wallet.balance) < total:
-            raise ConflictException(
-                message="Số dư ví không đủ để thanh toán đơn hàng.",
-                code="INSUFFICIENT_WALLET_BALANCE",
-                details={"required": str(total), "balance": str(wallet.balance)},
-            )
+            if wallet is None or (wallet.status or "").strip().casefold() != "active":
+                raise ConflictException(
+                    message="Ví điện tử chưa được tạo hoặc không hoạt động.", code="WALLET_UNAVAILABLE"
+                )
+            if Decimal(wallet.balance) < total:
+                raise ConflictException(
+                    message="Số dư ví không đủ để thanh toán đơn hàng.",
+                    code="INSUFFICIENT_WALLET_BALANCE",
+                    details={"required": str(total), "balance": str(wallet.balance)},
+                )
 
         order = Order(
             code=f"FD{pickup_date:%Y%m%d}{secrets.token_hex(3).upper()}",
             customer_name=customer.full_name,
             customer_phone=phone,
+            delivery_address=effective_address,
             user_id=customer.user_id,
             note=(note or "").strip() or None,
             pickup_date=pickup_date,
             pickup_slot_id=pickup_slot_id,
             status="confirmed",
-            payment_method="wallet",
-            payment_status="paid",
+            payment_method=payment_method,
+            payment_status="paid" if payment_method == "wallet" else "unpaid",
             discount_amount=discount,
             total_amount=total,
             idempotency_key=idempotency_key,
@@ -175,14 +186,15 @@ def create_order(
             if ingredient.stock_quantity is not None:
                 ingredient.stock_quantity = Decimal(ingredient.stock_quantity) - required
 
-        wallet.balance = Decimal(wallet.balance) - total
-        db.add(
-            WalletTransactionModel(
-                wallet_id=wallet.id,
-                type_transaction=payment_key(order.id),
-                amount_money=-total,
+        if wallet is not None:
+            wallet.balance = Decimal(wallet.balance) - total
+            db.add(
+                WalletTransactionModel(
+                    wallet_id=wallet.id,
+                    type_transaction=payment_key(order.id),
+                    amount_money=-total,
+                )
             )
-        )
         db.add(
             OrderStatusHistory(
                 order_id=order.id,
@@ -225,11 +237,12 @@ def _normalize_items(items: list[tuple[int, int]]) -> list[tuple[int, int]]:
     return sorted(merged.items())
 
 
-def _request_hash(pickup_date, slot_id, items, note, payment_method, coupon_code) -> str:
+def _request_hash(pickup_date, slot_id, items, delivery_address, note, payment_method, coupon_code) -> str:
     payload = {
         "pickup_date": pickup_date.isoformat(),
         "pickup_slot_id": slot_id,
         "items": items,
+        "delivery_address": (delivery_address or "").strip(),
         "note": (note or "").strip(),
         "payment_method": payment_method,
         "coupon_code": (coupon_code or "").strip().upper(),
@@ -346,6 +359,7 @@ def _order_response(order: Order, items: list[OrderItem], subtotal: Decimal) -> 
         "total_amount": Decimal(order.total_amount),
         "pickup_date": order.pickup_date,
         "pickup_slot_id": order.pickup_slot_id,
+        "delivery_address": order.delivery_address,
         "items": [
             {
                 "dish_id": item.dish_id,

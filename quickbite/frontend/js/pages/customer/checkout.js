@@ -3,7 +3,7 @@ const timeSlots = document.getElementById("time-slots");
 const slotStatus = document.getElementById("slot-status");
 const pickupSummary = document.getElementById("pickup-summary");
 const confirmButton = document.getElementById("btn-confirm");
-const state = { slotId: null, slotLabel: "", slots: [], loading: false, wallet: null };
+const state = { slotId: null, slotLabel: "", slots: [], loading: false, wallet: null, customer: null };
 const PENDING_ORDER_KEY = "foodie_pending_order";
 
 function todayString(date = new Date()) {
@@ -84,16 +84,24 @@ async function loadDateData() {
 }
 async function loadCustomerAndWallet() {
   const balanceLabel = document.getElementById("checkout-wallet-balance");
+  const addressStatus = document.getElementById("checkout-address-status");
   if (!getToken()) {
     balanceLabel.textContent = "Đăng nhập để thanh toán bằng ví.";
+    addressStatus.textContent = "Đăng nhập để tải địa chỉ đã lưu trong hồ sơ.";
     return;
   }
   try {
     const user = await api.get("/auth/me");
+    state.customer = user;
     document.getElementById("checkout-name").value = user.full_name || "";
     document.getElementById("checkout-phone").value = user.phone || "";
+    document.getElementById("checkout-address").value = user.address || "";
+    addressStatus.textContent = user.address
+      ? "Đã tải địa chỉ từ trang cá nhân. Bạn có thể sửa và lưu địa chỉ mới."
+      : "Chưa có địa chỉ trong hồ sơ. Hãy nhập và lưu địa chỉ để dùng lần sau.";
   } catch (error) {
     if (error.status === 401) balanceLabel.textContent = "Phiên đăng nhập hết hạn. Hãy đăng nhập lại.";
+    addressStatus.textContent = "Không tải được địa chỉ đã lưu. Hãy nhập địa chỉ nhận hàng.";
   }
   try {
     const wallet = await api.get("/wallets/mine");
@@ -140,10 +148,28 @@ timeSlots.addEventListener("click", (event) => {
 document.getElementById("pay-methods").addEventListener("change", (event) => {
   document.querySelectorAll(".ck-pay").forEach((row) => row.classList.toggle("is-selected", row.contains(event.target) && event.target.checked));
 });
+document.getElementById("btn-save-address").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  const address = document.getElementById("checkout-address").value.trim();
+  const status = document.getElementById("checkout-address-status");
+  if (!address) { status.textContent = "Nhập địa chỉ trước khi lưu."; return; }
+  if (!getToken()) { status.textContent = "Hãy đăng nhập để lưu địa chỉ."; return; }
+  button.disabled = true;
+  try {
+    state.customer = await api.put("/auth/me", { address });
+    document.getElementById("checkout-address").value = state.customer.address || "";
+    status.textContent = "Địa chỉ đã được lưu vào trang cá nhân.";
+  } catch (error) {
+    status.textContent = error.message || "Không thể lưu địa chỉ.";
+  } finally { button.disabled = false; }
+});
 confirmButton.addEventListener("click", async () => {
   const cart = cartNow();
   if (!getToken()) { showToast("Hãy đăng nhập trước khi đặt hàng.", "error"); return; }
   if (!cart.length) { showToast("Giỏ hàng đang trống.", "error"); return; }
+  const deliveryAddress = document.getElementById("checkout-address").value.trim()
+    || (state.customer?.address || "").trim();
+  if (!deliveryAddress) { showToast("Hãy nhập địa chỉ nhận hàng hoặc lưu địa chỉ trong trang cá nhân.", "error"); return; }
   if (cart.some((item) => !Number.isInteger(Number(item.dish_id)) || Number(item.dish_id) < 1)) {
     showToast("Giỏ hàng có món thiếu mã. Hãy xóa món đó và thêm lại từ thực đơn.", "error"); return;
   }
@@ -155,15 +181,16 @@ confirmButton.addEventListener("click", async () => {
   if (!slot || !slot.is_active || slot.is_full || slotIsPast(slot) || Number(slot.remaining_servings) < totalServings()) {
     showToast("Khung giờ đã chọn không còn đủ chỗ. Hãy tải lại ngày nhận.", "error"); await loadDateData(); return;
   }
-  if (!state.wallet) { showToast("Cần có ví điện tử hoạt động để thanh toán.", "error"); return; }
   const paymentMethod = document.querySelector('input[name="pay"]:checked')?.value;
-  if (paymentMethod !== "wallet") { showToast("Phương thức thanh toán này chưa được hỗ trợ.", "error"); return; }
+  if (!['wallet', 'cod'].includes(paymentMethod)) { showToast("Hãy chọn phương thức thanh toán.", "error"); return; }
+  if (paymentMethod === "wallet" && !state.wallet) { showToast("Cần có ví điện tử hoạt động để thanh toán.", "error"); return; }
 
   const orderRequest = {
     pickup_date: pickupDate.value,
     pickup_slot_id: state.slotId,
     items: cart.map((item) => ({ dish_id: Number(item.dish_id), quantity: Number(item.qty) })),
-    payment_method: "wallet",
+    payment_method: paymentMethod,
+    delivery_address: deliveryAddress,
     note: document.getElementById("checkout-note").value.trim() || null,
   };
   confirmButton.disabled = true;
