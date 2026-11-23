@@ -8,9 +8,15 @@ from datetime import timezone, timedelta
 
 from app.core.exceptions import NotFoundException
 from app.database.db import get_db
-from app.models.food import Dish, DailyMenu
+from app.models.food import Dish, DishPriceHistory, DailyMenu
 from app.models.pickup_slot import PickupSlot, SlotDailyQuota
-from app.schemas.menu import RemainingMenuResponse, PickupSlotsResponse
+from app.schemas.menu import (
+    RemainingMenuResponse,
+    PickupSlotsResponse,
+    DishPriceUpdateRequest,
+    DishPriceUpdateResponse,
+    DishPriceHistoryResponse,
+)
 from app.schemas.dish import DishOut
 from app.services.menu_availability_service import get_remaining_by_date
 from app.routers.auth import get_current_admin
@@ -23,6 +29,18 @@ def _normalize_name(value: str) -> str:
     value = value.replace("đ", "d").replace("Đ", "d")
     value = unicodedata.normalize("NFD", value)
     return "".join(char for char in value if unicodedata.category(char) != "Mn").casefold().strip()
+
+
+def _extract_admin_identifier(admin_user) -> str | None:
+    if admin_user is None:
+        return None
+    if isinstance(admin_user, dict):
+        return admin_user.get("username") or admin_user.get("email") or str(admin_user.get("id") or "")
+    for attr in ("username", "email", "full_name", "name", "id"):
+        val = getattr(admin_user, attr, None)
+        if val is not None:
+            return str(val)
+    return str(admin_user)
 
 
 @search_router.get("/dishes/search")
@@ -97,9 +115,11 @@ def search_dishes(
         ],
     }
 
+
 @router.get("/dishes", response_model=list[DishOut])
 def get_dishes(db: Session = Depends(get_db)):
     return db.query(Dish).filter(Dish.is_available.is_(True)).all()
+
 
 @router.post("/dishes", status_code=status.HTTP_201_CREATED)
 def create_dish(
@@ -118,9 +138,87 @@ def create_dish(
 
     new_dish = Dish(name=name, price=price, description=description)
     db.add(new_dish)
+    db.flush()
+
+    initial_history = DishPriceHistory(
+        dish_id=new_dish.id,
+        old_price=None,
+        new_price=price,
+        reason="Khởi tạo giá món ăn mới",
+        changed_by=_extract_admin_identifier(_admin),
+    )
+    db.add(initial_history)
     db.commit()
     db.refresh(new_dish)
     return {"message": "Thêm món ăn thành công", "dish": new_dish}
+
+
+@router.patch("/dishes/{dish_id}/price", response_model=DishPriceUpdateResponse)
+def update_dish_price(
+    dish_id: int,
+    payload: DishPriceUpdateRequest,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    dish = db.query(Dish).filter(Dish.id == dish_id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Không tìm thấy món ăn!")
+
+    old_price = Decimal(str(dish.price))
+    new_price = Decimal(str(payload.new_price))
+
+    if new_price <= 0:
+        raise HTTPException(status_code=422, detail="Giá mới phải lớn hơn 0.")
+
+    if old_price == new_price:
+        raise HTTPException(status_code=400, detail="Giá mới phải khác giá hiện tại của món ăn.")
+
+    dish.price = new_price
+    history_entry = DishPriceHistory(
+        dish_id=dish.id,
+        old_price=old_price,
+        new_price=new_price,
+        reason=payload.reason.strip() if payload.reason and payload.reason.strip() else "Cập nhật giá món ăn",
+        changed_by=_extract_admin_identifier(_admin),
+    )
+    db.add(history_entry)
+    db.commit()
+    db.refresh(dish)
+    db.refresh(history_entry)
+
+    return {
+        "message": "Cập nhật giá món ăn thành công",
+        "dish_id": dish.id,
+        "dish_name": dish.name,
+        "old_price": old_price,
+        "new_price": new_price,
+        "history": history_entry,
+    }
+
+
+@router.get("/dishes/{dish_id}/price-history", response_model=DishPriceHistoryResponse)
+def get_dish_price_history(
+    dish_id: int,
+    db: Session = Depends(get_db),
+):
+    dish = db.query(Dish).filter(Dish.id == dish_id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Không tìm thấy món ăn!")
+
+    history_rows = (
+        db.query(DishPriceHistory)
+        .filter(DishPriceHistory.dish_id == dish.id)
+        .order_by(DishPriceHistory.changed_at.desc(), DishPriceHistory.id.desc())
+        .all()
+    )
+
+    return {
+        "dish_id": dish.id,
+        "dish_name": dish.name,
+        "current_price": Decimal(str(dish.price)),
+        "history": history_rows,
+    }
+
 
 @router.delete("/dishes/{dish_id}")
 def delete_dish(dish_id: int, _admin=Depends(get_current_admin), db: Session = Depends(get_db)):
@@ -131,6 +229,7 @@ def delete_dish(dish_id: int, _admin=Depends(get_current_admin), db: Session = D
     dish.is_available = False
     db.commit()
     return {"message": "Đã ngừng bán món ăn"}
+
 
 @router.post("/daily-menus", status_code=status.HTTP_201_CREATED)
 def assign_daily_menu(
@@ -152,6 +251,7 @@ def assign_daily_menu(
     db.commit()
     db.refresh(assignment)
     return {"message": "Gán món vào thực đơn thành công", "data": assignment}
+
 
 @router.get("/daily-menus")
 def get_daily_menus(db: Session = Depends(get_db)):
