@@ -2,6 +2,13 @@ const CATEGORY_API = `${CONFIG.API_BASE_URL}/categories`;
 let categories = [];
 const categoryToken = () => localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
 
+const categoryForm = document.getElementById("categoryForm");
+categoryForm.innerHTML =
+  '<input id="categoryId" type="hidden">' +
+  AdminUI.formField({ label: "Tên danh mục", id: "categoryName", name: "name", required: true }) +
+  AdminUI.formField({ label: "Mô tả", id: "categoryDescription", name: "description" }) +
+  `<div class="admin-form-actions admin-form-wide">${AdminUI.button({ label: "Lưu danh mục", variant: "primary", type: "submit", attributes: 'id="categorySubmit"' })}${AdminUI.button({ label: "Hủy", attributes: 'id="categoryCancel"' })}</div>`;
+
 async function categoryRequest(path = "", options = {}) {
   const token = categoryToken();
   const headers = { ...(options.headers || {}) };
@@ -22,7 +29,9 @@ function renderCategories() {
   const query = document.getElementById("categorySearch").value.trim().toLocaleLowerCase("vi");
   const filteredRows = categories.filter((row) => row.name.toLocaleLowerCase("vi").includes(query));
   const rows = AdminUI.page(filteredRows, "categories", renderCategories);
-  document.getElementById("categoryRows").innerHTML = rows.map((row) => `<tr data-category="${row.id}"><td><strong>${categoryEscape(row.name)}</strong></td><td>${categoryEscape(row.description || "—")}</td><td>${Number(row.dish_count || 0)}</td><td><span class="stock-badge is-available">Hiển thị</span></td><td><div class="action-group"><button class="btn btn-edit" data-category-action="edit" data-id="${row.id}">Sửa</button><button class="btn btn-danger" data-category-action="delete" data-id="${row.id}">Xóa</button></div></td></tr>`).join("");
+  document.getElementById("categoryRows").innerHTML = rows.map((row) =>
+    `<tr data-category="${row.id}"><td><strong>${categoryEscape(row.name)}</strong></td><td>${categoryEscape(row.description || "—")}</td><td>${Number(row.dish_count || 0)}</td><td><span class="stock-badge is-available">Hiển thị</span></td><td><div class="action-group">${AdminUI.button({ label: "Sửa", variant: "edit", attributes: `data-category-action="edit" data-id="${row.id}"` })}${AdminUI.button({ label: "Xóa", variant: "danger", attributes: `data-category-action="delete" data-id="${row.id}"` })}</div></td></tr>`
+  ).join("");
   document.getElementById("categoryState").hidden = rows.length > 0;
   if (!rows.length) categoryState(query ? "Không tìm thấy danh mục phù hợp." : "Chưa có danh mục. Tạo danh mục đầu tiên để phân loại món ăn.", "empty");
   document.getElementById("categoryTotal").textContent = categories.length.toLocaleString("vi-VN");

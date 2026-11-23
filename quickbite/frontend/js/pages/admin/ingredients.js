@@ -1,6 +1,15 @@
 const INGREDIENTS_API = `${CONFIG.API_BASE_URL}/ingredients`;
 let ingredients = [];
 
+const ingredientForm = document.getElementById("ingredientForm");
+ingredientForm.innerHTML =
+  '<input type="hidden" id="ingredientId">' +
+  AdminUI.formField({ label: "Tên nguyên liệu", id: "ingredientName", name: "name", placeholder: "Ví dụ: Gạo tấm", required: true }) +
+  AdminUI.formField({ label: "Đơn vị", id: "ingredientUnit", name: "unit", placeholder: "kg, lít, gói", required: true }) +
+  AdminUI.formField({ label: "Số lượng tồn", id: "ingredientStock", name: "stock_quantity", type: "number", required: true, attributes: 'min="0" step="0.001"' }) +
+  AdminUI.formField({ label: "Cảnh báo khi còn dưới", id: "ingredientMin", name: "min_stock", type: "number", value: "0", required: true, attributes: 'min="0" step="0.001"' }) +
+  `<div class="admin-form-actions admin-form-wide">${AdminUI.button({ label: "Thêm nguyên liệu", variant: "primary", type: "submit", attributes: 'id="ingredientSubmit"' })}${AdminUI.button({ label: "Hủy", attributes: 'id="ingredientCancel"' })}</div>`;
+
 async function ingredientRequest(path = "", options = {}) {
   const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
   const headers = { ...(options.headers || {}) };
@@ -28,16 +37,20 @@ function renderIngredients() {
   const status = document.getElementById("ingredientStatusFilter").value;
   const filteredRows = ingredients.filter((item) => { const stock = Number(item.stock_quantity || 0), minimum = Number(item.min_stock || 0); const itemStatus = stock <= 0 ? "empty" : stock <= minimum ? "low" : "available"; return item.name.toLocaleLowerCase("vi").includes(search) && (!status || status === itemStatus); });
   const rows = AdminUI.page(filteredRows, "ingredients", renderIngredients);
-  const body = document.getElementById("ingredientTableBody");
-  body.innerHTML = rows.map((item) => {
+  const tableRows = rows.map((item) => {
     const stock = Number(item.stock_quantity || 0);
     const minimum = Number(item.min_stock || 0);
     const empty = stock <= 0;
     const low = !empty && stock <= minimum;
     const badgeClass = empty ? "is-empty" : low ? "is-low" : "is-available";
     const badgeText = empty ? "Hết hàng" : low ? "Sắp hết" : "Đủ hàng";
-    return `<tr><td><strong>${safeText(item.name)}</strong><small class="admin-subcell">NL-${String(item.id).padStart(3, "0")}</small></td><td>${safeText(item.unit)}</td><td>${stock.toLocaleString("vi-VN")}</td><td>${minimum.toLocaleString("vi-VN")}</td><td><span class="stock-badge ${badgeClass}">${badgeText}</span></td><td><div class="action-group"><button class="btn btn-secondary" type="button" data-stock-action="in" data-id="${item.id}">Nhập kho</button><button class="btn btn-secondary" type="button" data-stock-action="adjust" data-id="${item.id}">Điều chỉnh</button><button class="btn btn-secondary" type="button" data-stock-action="history" data-id="${item.id}">Lịch sử</button><button class="btn btn-edit" type="button" data-action="edit" data-id="${item.id}">Sửa</button><button class="btn btn-danger" type="button" data-action="delete" data-id="${item.id}">Xóa</button></div></td></tr>`;
-  }).join("");
+    return `<tr><td><strong>${safeText(item.name)}</strong><small class="admin-subcell">NL-${String(item.id).padStart(3, "0")}</small></td><td>${safeText(item.unit)}</td><td>${stock.toLocaleString("vi-VN")}</td><td>${minimum.toLocaleString("vi-VN")}</td><td><span class="stock-badge ${badgeClass}">${badgeText}</span></td><td><div class="action-group">${AdminUI.button({ label: "Nhập kho", attributes: `data-stock-action="in" data-id="${item.id}"` })}${AdminUI.button({ label: "Điều chỉnh", attributes: `data-stock-action="adjust" data-id="${item.id}"` })}${AdminUI.button({ label: "Lịch sử", attributes: `data-stock-action="history" data-id="${item.id}"` })}${AdminUI.button({ label: "Sửa", variant: "edit", attributes: `data-action="edit" data-id="${item.id}"` })}${AdminUI.button({ label: "Xóa", variant: "danger", attributes: `data-action="delete" data-id="${item.id}"` })}</div></td></tr>`;
+  });
+  document.getElementById("ingredientTable").innerHTML = AdminUI.table({
+    headers: ["Nguyên liệu", "Đơn vị", "Tồn kho", "Tối thiểu", "Trạng thái", "Thao tác"],
+    rows: tableRows,
+    bodyAttributes: 'id="ingredientTableBody" data-page-body="ingredients"',
+  });
   document.getElementById("ingredientState").hidden = rows.length > 0;
   if (!rows.length) ingredientState(search ? "Không tìm thấy nguyên liệu phù hợp." : "Kho chưa có nguyên liệu. Thêm nguyên liệu đầu tiên bằng biểu mẫu phía trên.", "empty");
   document.getElementById("ingredientTotal").textContent = ingredients.length.toLocaleString("vi-VN");

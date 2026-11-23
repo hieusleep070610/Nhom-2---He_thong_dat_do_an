@@ -1,11 +1,25 @@
 let users = [];
 const userRoleNames = { admin: "Admin", kitchen: "Kitchen", customer: "Customer" };
+const userForm = document.getElementById("userForm");
+userForm.innerHTML =
+  AdminUI.formField({ label: "Họ và tên", id: "userName", name: "full_name", required: true }) +
+  AdminUI.formField({ label: "Email", id: "userEmail", name: "email", type: "email", required: true }) +
+  AdminUI.formField({ label: "Số điện thoại", id: "userPhone", name: "phone", type: "tel" }) +
+  AdminUI.formField({ label: "Mật khẩu tạm", id: "userPassword", name: "password", type: "password", required: true }) +
+  `<div class="admin-form-actions admin-form-wide">${AdminUI.button({ label: "Tạo tài khoản", variant: "primary", type: "submit" })}${AdminUI.button({ label: "Hủy", attributes: 'id="cancelUserForm"' })}</div>`;
 async function userRequest(path, options = {}) { const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token"); const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.body ? { "Content-Type": "application/json" } : {}) }; const response = await fetch(`${CONFIG.API_BASE_URL}${path}`, { ...options, headers }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`); return data; }
 const userEscape = (s) => String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 function userStatus(text, type = "info") { const el = document.getElementById("userState"); el.textContent = text; el.className = `admin-state is-${type}`; el.hidden = false; }
 function renderUsers() {
   const term = document.getElementById("userSearch").value.trim().toLocaleLowerCase("vi"); const role = document.getElementById("userRoleFilter").value; const filteredRows = users.filter((u) => (!role || Number(u.role_id) === Number(role)) && `${u.full_name} ${u.email} ${u.phone || ""}`.toLocaleLowerCase("vi").includes(term)); const rows = AdminUI.page(filteredRows, "users", renderUsers);
-  document.getElementById("userRows").innerHTML = rows.map((u) => `<tr><td><strong>${userEscape(u.full_name)}</strong><small class="admin-subcell">ND-${String(u.id).padStart(3, "0")}</small></td><td>${userEscape(u.email)}</td><td>${userEscape(u.phone || "—")}</td><td><select data-user-role="${u.id}" aria-label="Vai trò của ${userEscape(u.full_name)}">${[[1,"admin"],[2,"kitchen"],[3,"customer"]].map(([id, name]) => `<option value="${id}" ${Number(u.role_id) === id ? "selected" : ""}>${userRoleNames[name]}</option>`).join("")}</select></td><td><span class="stock-badge">Chưa có trạng thái khóa</span></td><td><button class="btn btn-secondary" type="button" data-save-user-role="${u.id}">Lưu vai trò</button> <button class="btn btn-secondary" type="button" data-user-lock="${u.id}">Khóa / mở khóa</button></td></tr>`).join("");
+  const tableRows = rows.map((u) =>
+    `<tr><td><strong>${userEscape(u.full_name)}</strong><small class="admin-subcell">ND-${String(u.id).padStart(3, "0")}</small></td><td>${userEscape(u.email)}</td><td>${userEscape(u.phone || "—")}</td><td><select data-user-role="${u.id}" aria-label="Vai trò của ${userEscape(u.full_name)}">${[[1,"admin"],[2,"kitchen"],[3,"customer"]].map(([id, name]) => `<option value="${id}" ${Number(u.role_id) === id ? "selected" : ""}>${userRoleNames[name]}</option>`).join("")}</select></td><td><span class="stock-badge">Chưa có trạng thái khóa</span></td><td><div class="action-group">${AdminUI.button({ label: "Lưu vai trò", attributes: `data-save-user-role="${u.id}"` })}${AdminUI.button({ label: "Khóa / mở khóa", attributes: `data-user-lock="${u.id}"` })}</div></td></tr>`
+  );
+  document.getElementById("userTable").innerHTML = AdminUI.table({
+    headers: ["Họ và tên", "Email", "Số điện thoại", "Vai trò", "Trạng thái", "Thao tác"],
+    rows: tableRows,
+    bodyAttributes: 'id="userRows" data-page-body="users"',
+  });
   document.getElementById("userState").hidden = rows.length > 0; if (!rows.length) userStatus(term ? "Không tìm thấy người dùng phù hợp." : "Chưa có tài khoản người dùng.", "empty");
   document.getElementById("userTotal").textContent = users.length; document.getElementById("userCustomers").textContent = users.filter((u) => u.role === "customer").length; document.getElementById("userAdmins").textContent = users.filter((u) => u.role === "admin").length; document.getElementById("userStaff").textContent = users.filter((u) => u.role === "kitchen").length;
 }

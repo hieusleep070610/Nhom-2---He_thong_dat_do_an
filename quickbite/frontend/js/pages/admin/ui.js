@@ -1,5 +1,21 @@
 (() => {
   const esc = (value) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  const button = ({ label, variant = "secondary", type = "button", className = "", attributes = "" }) =>
+    `<button class="btn btn-${esc(variant)} ${esc(className)}" type="${esc(type)}" ${attributes}>${esc(label)}</button>`;
+  const formField = ({ label, name = "", id = "", type = "text", value = "", placeholder = "", required = false, options = [], attributes = "" }) => {
+    if (Array.isArray(options) && options.length) {
+      return `<label class="form-group">${esc(label)}<select id="${esc(id)}" name="${esc(name)}" ${required ? "required" : ""}>${options.map((option) => `<option value="${esc(option.value)}" ${String(option.value) === String(value) ? "selected" : ""}>${esc(option.label)}</option>`).join("")}</select></label>`;
+    }
+    return `<label class="form-group">${esc(label)}<input id="${esc(id)}" name="${esc(name)}" type="${esc(type)}" value="${esc(value)}" placeholder="${esc(placeholder)}" ${required ? "required" : ""} ${attributes}></label>`;
+  };
+  const modalField = (label, value) =>
+    `<label class="admin-modal-field">${esc(label)}<span>${esc(value)}</span></label>`;
+  const modalNote = (value) =>
+    `<div class="admin-modal-note" role="status">${esc(value)}</div>`;
+  const sectionHeading = (title, description = "") =>
+    `<div class="admin-section-heading"><div><h2>${esc(title)}</h2>${description ? `<p>${esc(description)}</p>` : ""}</div></div>`;
+  const table = ({ headers, rows, bodyAttributes = "" }) =>
+    `<div class="admin-table-wrap"><table class="admin-table"><thead><tr>${headers.map((header) => `<th>${esc(header)}</th>`).join("")}</tr></thead><tbody ${bodyAttributes}>${rows.join("")}</tbody></table></div>`;
   const root = document.createElement("div");
   root.innerHTML = '<div class="admin-modal-backdrop" data-modal-backdrop hidden><section class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle"><button class="admin-modal-x" type="button" aria-label="Đóng">×</button><h2 id="adminModalTitle"></h2><p class="admin-modal-subtitle"></p><div class="admin-modal-content"></div><div class="admin-modal-actions"><button class="btn btn-secondary" type="button" data-modal-close>Đóng</button></div></section></div><div class="admin-toast-region" aria-live="polite" aria-atomic="true"></div>';
   document.body.append(root);
@@ -36,14 +52,18 @@
     const total = items.length, pages = Math.max(1, Math.ceil(total / size));
     pageState[key] = Math.min(pageState[key] || 1, pages);
     const current = pageState[key], table = document.querySelector(`[data-page-body="${key}"]`);
-    if (table) {
+    const setupPagination = () => {
+      const table = document.querySelector(`[data-page-body="${key}"]`);
+      if (!table) return;
       let footer = table.closest(".admin-table-wrap")?.nextElementSibling;
       if (!footer?.classList.contains("admin-pagination")) { footer = document.createElement("div"); footer.className = "admin-pagination"; table.closest(".admin-table-wrap")?.after(footer); }
       const from = total ? (current - 1) * size + 1 : 0, to = Math.min(current * size, total);
       footer.innerHTML = `<span>Hiển thị ${from}–${to} / ${total}</span><div><button class="btn btn-secondary" type="button" data-page-prev="${key}" ${current <= 1 ? "disabled" : ""}>Trước</button><span>${current} / ${pages}</span><button class="btn btn-secondary" type="button" data-page-next="${key}" ${current >= pages ? "disabled" : ""}>Sau</button></div>`;
       footer.querySelector("[data-page-prev]").addEventListener("click", () => { pageState[key] = current - 1; render(); });
       footer.querySelector("[data-page-next]").addEventListener("click", () => { pageState[key] = current + 1; render(); });
-    }
+    };
+    if (table) setupPagination();
+    else queueMicrotask(setupPagination);
     return items.slice((current - 1) * size, current * size);
   };
   root.addEventListener("click", (event) => { if (event.target.closest("[data-modal-close], .admin-modal-x") || event.target === backdrop) close(); });
@@ -52,7 +72,7 @@
     if (event.key === "Escape") close();
     if (event.key === "Tab") { const focusable = [...dialog.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]')]; if (!focusable.length) return; const first = focusable[0], last = focusable[focusable.length - 1]; if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } }
   });
-  window.AdminUI = { open, openNode, close, notify, esc, page };
+  window.AdminUI = { open, openNode, close, notify, esc, page, button, formField, modalField, modalNote, sectionHeading, table };
   window.addEventListener("error", (event) => { if (event.message) notify(`Có lỗi giao diện: ${event.message}`, "error"); });
   window.addEventListener("unhandledrejection", (event) => { const reason = event.reason; notify(reason?.message || "Tác vụ gặp lỗi không xác định.", "error"); });
 })();
