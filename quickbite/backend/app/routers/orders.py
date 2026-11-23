@@ -1,32 +1,105 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+from sqlalchemy.orm import Session, selectinload
 
+from app.core.config import settings
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
-from app.schemas.order import OrderStatusUpdate
+from app.schemas.order import CreatedOrderResponse, OrderCreate, OrderStatusUpdate
 from app.services.order_service import update_order_status
+from app.services.create_order_service import create_order
 from app.core.exceptions import NotFoundException
+from app.routers.auth import get_current_user
 
 
-router = APIRouter(
-    tags=["Orders"],
-    prefix="/orders"
-)
+router = APIRouter(tags=["Orders"], prefix="/orders")
 
 
-# API cập nhật trạng thái đơn hàng
+@router.post("", response_model=CreatedOrderResponse, status_code=status.HTTP_201_CREATED)
+def create_order_endpoint(
+    request: OrderCreate,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key", max_length=100),
+    customer=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return create_order(
+        db,
+        customer=customer,
+        pickup_date=request.pickup_date,
+        pickup_slot_id=request.pickup_slot_id,
+        items=[(item.dish_id, item.quantity) for item in request.items],
+        note=request.note,
+        payment_method=request.payment_method,
+        coupon_code=request.coupon_code,
+        idempotency_key=idempotency_key.strip() if idempotency_key else None,
+    )
+
+
+@router.get("/mine")
+def list_my_orders(
+    customer=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    rows = (
+        db.query(Order)
+        .options(selectinload(Order.items))
+        .filter(Order.user_id == customer.user_id)
+        .order_by(Order.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": row.id,
+            "code": row.code,
+            "status": row.status,
+            "payment_status": row.payment_status,
+            "total_amount": row.total_amount,
+            "pickup_date": row.pickup_date,
+            "pickup_slot_id": row.pickup_slot_id,
+            "title": ", ".join(item.item_name for item in row.items)
+            or f"Đơn hàng #{row.id}",
+        }
+        for row in rows
+    ]
+
+
+@router.get("")
+def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db)):
+    query = db.query(Order).options(selectinload(Order.items))
+    if customer.user_id not in settings.admin_user_ids:
+        query = query.filter(Order.user_id == customer.user_id)
+    rows = query.order_by(Order.created_at.desc()).all()
+    
+    return [
+        {
+            "id": row.id,
+            "code": row.code,
+            "customer_name": row.customer_name,
+            "status": row.status,
+            "total_amount": float(row.total_amount),
+            # Lấy tên món từ mảng items
+            "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
+        }
+        for row in rows
+    ]
+
 @router.patch("/{order_id}/status")
 def change_order_status(
     order_id: int,
     request: OrderStatusUpdate,
-    db: Session = Depends(get_db)
+    customer=Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    order = update_order_status(
-        db=db,
-        order_id=order_id,
-        new_status=request.new_status
-    )
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if order is None:
+        raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
+    is_owner = order.user_id == customer.user_id
+    is_admin = customer.user_id in settings.admin_user_ids
+    if not is_owner and not is_admin:
+        raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
+    if not is_admin and request.new_status.strip().lower() != "cancelled":
+        raise HTTPException(status_code=403, detail="Khách hàng chỉ có thể yêu cầu hủy đơn của mình.")
+    order = update_order_status(db=db, order_id=order_id, new_status=request.new_status)
 
     return {
         "status": "success",
@@ -38,25 +111,26 @@ def change_order_status(
     }
 
 
-# API xem lịch sử trạng thái đơn hàng
 @router.get("/{order_id}/status-history")
 def get_order_status_history(
     order_id: int,
+    customer=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Kiểm tra đơn hàng có tồn tại không
     order = (
         db.query(Order)
         .filter(Order.id == order_id)
         .first()
     )
 
-    if order is None:
+    if order is None or (
+        order.user_id != customer.user_id
+        and customer.user_id not in settings.admin_user_ids
+    ):
         raise NotFoundException(
             message=f"Không tìm thấy đơn hàng có ID {order_id}"
         )
 
-    # Lấy lịch sử thay đổi trạng thái
     histories = (
         db.query(OrderStatusHistory)
         .filter(OrderStatusHistory.order_id == order_id)

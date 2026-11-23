@@ -19,7 +19,7 @@ class PickupSlot(Base):
 
     __tablename__ = "pickup_slots"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     label = Column(String(5), nullable=False, unique=True)
     start_time = Column(Time, nullable=False)
     end_time = Column(Time, nullable=False)
@@ -40,7 +40,7 @@ class SlotDailyQuota(Base):
 
     __tablename__ = "slot_daily_quotas"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     pickup_slot_id = Column(BigInteger, ForeignKey("pickup_slots.id"), nullable=False)
     service_date = Column(Date, nullable=False)
     max_servings = Column(Integer, nullable=False)

@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie - Chi tiết đơn hàng</title>
+    <link rel="stylesheet" href="../css/order_status.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-logo">foodie</span>
+            <span class="brand-title">Ăn ngon mỗi ngày</span>
+        </div>
+
+        <div class="topbar-right">
+            <div class="search-box-top">
+                <input type="text" class="search-input-top"
+                    placeholder="⌕  Tìm kiếm...">
+            </div>
+
+            <nav class="topbar-nav">
+                <a href="#">Trang chủ</a>
+                <a href="#">Thực đơn</a>
+                <a href="#">Đơn hàng</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main-context">
+        <section class="page-header">
+            <h2>Đơn hàng đang được chuẩn bị</h2>
+            <p>Quản lý và theo dõi hoạt động Foodie</p>
+        </section>
+        <section class="stats-grid">
+
+            <div class="stat-card border-orange">
+                <span class="stat-label">Mã đơn</span>
+                <strong class="stat-value">FD-2026-01842</strong>
+            </div>
+
+            <div class="stat-card border-green">
+                <span class="stat-label">Nhà hàng</span>
+                <strong class="stat-value">Foodie Kitchen</strong>
+            </div>
+
+            <div class="stat-card border-blue">
+                <span class="stat-label">Địa chỉ nhận</span>
+                <strong class="stat-value">12 Trần Thái Tông</strong>
+            </div>
+
+            <div class="stat-card border-red">
+                <span class="stat-label">Trạng thái</span>
+                <strong class="stat-value">Đang chuẩn bị</strong>
+            </div>
+
+        </section>
+        <section class="tracking-card">
+            <div class="progress-container">
+
+                <div class="progress-line">
+                    <div class="progress-line-active"></div>
+                </div>
+
+                <div class="progress-step completed">
+                    <div class="step-circle"></div>
+                    <span>Đã xác nhận</span>
+                </div>
+
+                <div class="progress-step active">
+                    <div class="step-circle"></div>
+                    <span>Đang chuẩn bị</span>
+                </div>
+
+                <div class="progress-step">
+                    <div class="step-circle"></div>
+                    <span>Đang giao</span>
+                </div>
+
+                <div class="progress-step">
+                    <div class="step-circle"></div>
+                    <span>Đã giao</span>
+                </div>
+
+            </div>
+            <div class="delivery-info">
+                <h3>Thông tin giao hàng</h3>
+
+                <div class="delivery-detail">
+                    <span>Tài xế:</span>
+                    <strong>Trần Văn Hùng</strong>
+
+                    <span class="separator">•</span>
+
+                    <span>09xx xxx xxx</span>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

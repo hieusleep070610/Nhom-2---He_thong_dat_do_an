@@ -7,7 +7,7 @@ from sqlalchemy.exc import OperationalError
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
 from app.database.db import init_db
-from app.routers import health, menu_router, orders, wallet
+from app.routers import auth, foods, health, orders, wallet
 
 
 @asynccontextmanager
@@ -35,9 +35,11 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api")
-app.include_router(menu_router.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
+app.include_router(foods.router, prefix="/api")
+app.include_router(foods.search_router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
-app.include_router(wallet.router_wallet, prefix="/api")
+app.include_router(wallet.router_wallet, prefix="/api", tags=["Wallet"])
 
 @app.get("/")
 def root():

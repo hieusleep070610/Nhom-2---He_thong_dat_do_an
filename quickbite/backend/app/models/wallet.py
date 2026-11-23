@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database.db import Base
 
 class WalletModel(Base):
@@ -17,5 +17,5 @@ class WalletTransactionModel(Base):
     wallet_id = Column("Wallet_ID", Integer, ForeignKey("Wallet.Wallet_ID"), nullable=False)
     amount_money = Column("Amount", DECIMAL(15, 2), nullable=False)
     type_transaction = Column("Type_transaction", String(50), nullable=False)
-    created_at = Column("Created_At", DateTime, default=datetime.utcnow)
+    created_at = Column("Created_At", DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     wallet = relationship("WalletModel", back_populates="transactions")

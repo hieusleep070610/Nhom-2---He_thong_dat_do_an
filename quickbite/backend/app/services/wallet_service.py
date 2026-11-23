@@ -1,8 +1,6 @@
 from decimal import Decimal
-
 from sqlalchemy.orm import Session
-
-from app.core.exceptions import BadRequestException, ConflictException, NotFoundException
+from app.core.exceptions import BadRequestException, NotFoundException
 from app.models.order import Order
 from app.models.user import User
 from app.models.wallet import WalletModel, WalletTransactionModel
@@ -19,17 +17,8 @@ def get_wallet_by_user_id(db: Session, user_id: int):
 
 
 def create_wallet(db: Session, wallet_in: WalletCreate):
-    user_exists = db.query(User).filter(User.user_id == wallet_in.user_id).first()
-    if not user_exists:
-        raise NotFoundException(
-            message=f"Không tìm thấy người dùng (User ID: {wallet_in.user_id}) trong hệ thống để tạo ví!"
-        )
-
-    existing_wallet = db.query(WalletModel).filter(WalletModel.user_id == wallet_in.user_id).first()
-    if existing_wallet:
-        raise BadRequestException(
-            message=f"Người dùng với ID {wallet_in.user_id} đã sở hữu một ví rồi!"
-        )
+    if db.query(WalletModel).filter(WalletModel.user_id == wallet_in.user_id).first():
+        raise BadRequestException(message=f"Người dùng {wallet_in.user_id} đã có ví rồi!")
 
     db_wallet = WalletModel(
         user_id=wallet_in.user_id,
@@ -45,22 +34,16 @@ def create_wallet(db: Session, wallet_in: WalletCreate):
 def update_wallet(db: Session, wallet_id: int, status: str = None):
     wallet = get_wallet_by_id(db, wallet_id)
     if not wallet:
-        raise NotFoundException(message="Không tìm thấy ví để cập nhật")
+        raise NotFoundException(message="Không tìm thấy ví")
 
-    if status is not None:
+    if status:
         wallet.status = status
-
     db.commit()
     db.refresh(wallet)
     return wallet
 
 
-def _is_active(status: str | None) -> bool:
-    return (status or "").strip().lower() == "active"
-
-
 def process_payment(db: Session, wallet_id: int, order_id: int):
-    """Trừ ví theo tổng tiền của đơn trong DB. Không dùng số tiền do client gửi."""
     try:
         order = (
             db.query(Order)
@@ -68,29 +51,24 @@ def process_payment(db: Session, wallet_id: int, order_id: int):
             .with_for_update()
             .first()
         )
-        if order is None:
-            raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
+        if not order:
+            raise NotFoundException(message=f"Không tìm thấy đơn hàng ID {order_id}")
 
-        if (order.status or "").strip().lower() == "cancelled":
-            raise ConflictException(
-                message="Đơn đã hủy nên không thể thanh toán.",
-                code="INVALID_ORDER_STATE",
-            )
+        if order.status == "cancelled":
+            raise BadRequestException(message="Đơn hàng đã bị hủy, không thể thanh toán.")
+        if order.status not in {"pending", "confirmed"}:
+            raise BadRequestException(message="Đơn hàng đã chuyển sang chế biến, không thể thanh toán.")
+        if order.payment_status == "paid":
+            raise BadRequestException(message="Đơn hàng này đã được thanh toán trước đó.")
 
         amount = Decimal(order.total_amount)
-        if amount <= 0:
-            raise BadRequestException(message="Đơn hàng chưa có số tiền hợp lệ để thanh toán.")
-
         already_paid = (
             db.query(WalletTransactionModel)
             .filter(WalletTransactionModel.type_transaction == payment_key(order_id))
             .first()
         )
-        if already_paid is not None:
-            raise ConflictException(
-                message="Đơn này đã được thanh toán. Không trừ ví lần hai.",
-                code="DUPLICATE_PAYMENT",
-            )
+        if already_paid:
+            raise BadRequestException(message="Đơn hàng này đã được thanh toán trước đó.")
 
         wallet = (
             db.query(WalletModel)
@@ -100,22 +78,17 @@ def process_payment(db: Session, wallet_id: int, order_id: int):
         )
         if not wallet:
             raise NotFoundException(message="Không tìm thấy ví điện tử.")
+        if wallet.user_id != order.user_id:
+            raise BadRequestException(message="Ví không thuộc về khách hàng của đơn hàng.")
+        if (wallet.status or "").strip().casefold() != "active":
+            raise BadRequestException(message="Ví điện tử hiện không hoạt động.")
 
-        if not _is_active(wallet.status):
-            raise ConflictException(
-                message="Ví điện tử đang bị khóa.",
-                code="INVALID_ORDER_STATE",
-            )
-
-        if Decimal(wallet.balance) < amount:
-            raise ConflictException(
-                message=(
-                    f"Số dư không đủ! Hiện có: {wallet.balance} , cần thanh toán: {amount}."
-                ),
-                code="INSUFFICIENT_BALANCE",
-            )
+        if wallet.balance < amount:
+            raise BadRequestException(message=f"Số dư không đủ! Cần {amount}, hiện có {wallet.balance}.")
 
         wallet.balance = Decimal(wallet.balance) - amount
+        order.payment_method = "wallet"
+        order.payment_status = "paid"
         db.add(
             WalletTransactionModel(
                 wallet_id=wallet.id,
