@@ -1,4 +1,29 @@
 (() => {
+  const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
+  if (token && typeof CONFIG !== "undefined") {
+    fetch(`${CONFIG.API_BASE_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Phiên đăng nhập không hợp lệ.");
+        return response.json();
+      })
+      .then((user) => {
+        const roles = Array.isArray(user.roles)
+          ? user.roles.map((item) => String(item).trim().toLowerCase())
+          : [];
+        const role = String(user.role || "").trim().toLowerCase();
+        if (Number(user.role_id) !== 1 && role !== "admin" && !roles.includes("admin")) {
+          window.location.replace("../customer/profile.html");
+        }
+      })
+      .catch(() => {
+        window.location.replace("../customer/login.html");
+      });
+  } else if (!token) {
+    window.location.replace("../customer/login.html");
+  }
+
   const pages = [
     ["dashboard", "Tổng quan", "index.html"], ["dishes", "Món ăn", "menu.html"],
     ["categories", "Danh mục", "categories.html"], ["ingredients", "Nguyên liệu", "ingredients.html"],

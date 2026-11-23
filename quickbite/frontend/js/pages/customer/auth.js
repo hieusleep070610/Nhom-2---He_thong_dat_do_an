@@ -12,9 +12,26 @@ function saveSession(payload, remember) {
 
 function getPostLoginPage(user) {
   const role = String(user?.role || user?.role_name || "").trim().toLowerCase();
-  const roles = Array.isArray(user?.roles) ? user.roles.map((item) => String(item).toLowerCase()) : [];
-  if (Number(user?.role_id) === 1 || role === "admin" || role === "administrator" || roles.includes("admin")) {
+  const roles = Array.isArray(user?.roles)
+    ? user.roles.map((item) => String(item).trim().toLowerCase())
+    : [];
+  const roleId = Number(user?.role_id);
+  const isAdmin =
+    roleId === 1 ||
+    role === "admin" ||
+    role === "administrator" ||
+    roles.includes("admin");
+  const isKitchen =
+    roleId === 2 ||
+    role === "kitchen" ||
+    role === "chef" ||
+    roles.includes("kitchen");
+
+  if (isAdmin) {
     return "../admin/index.html";
+  }
+  if (isKitchen) {
+    return "../kitchen_orders.html";
   }
   return "profile.html";
 }
