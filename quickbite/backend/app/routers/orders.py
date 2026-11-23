@@ -129,7 +129,6 @@ def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db
             "created_at": row.created_at,
             "payment_method": row.payment_method,
             "payment_status": row.payment_status,
-            # Lấy tên món từ mảng items
             "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
         }
         for row in rows
@@ -216,3 +215,4 @@ def get_order_status_history(
             for item in histories
         ]
     }
+
