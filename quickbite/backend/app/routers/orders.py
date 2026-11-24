@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session, selectinload
-
+from datetime import date
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
@@ -223,3 +223,32 @@ def get_order_status_history(
         ]
     }
 
+@router.get("/filter")
+def filter_orders(
+    pickup_date: date | None = Query(default=None, description="Lọc theo ngày nhận (YYYY-MM-DD)"),
+    status: str | None = Query(default=None, description="Lọc theo trạng thái đơn hàng"),
+    pickup_slot_id: int | None = Query(default=None, ge=1, description="Lọc theo ID khung giờ nhận"),
+    slot_label: str | None = Query(default=None, description="Lọc theo nhãn khung giờ, vd: 11:00"),
+    page: int = Query(default=1, ge=1, description="Trang hiện tại"),
+    limit: int = Query(default=10, ge=1, le=100, description="Số bản ghi mỗi trang"),
+    customer=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not (
+        has_role(customer, "admin")
+        or has_role(customer, "kitchen")
+        or has_role(customer, "customer")
+    ):
+        raise HTTPException(status_code=403, detail="Tài khoản chưa được gán vai trò.")
+
+    return order_service.list_filtered_orders(
+        db=db,
+        current_user=customer,
+        has_role_fn=has_role,
+        pickup_date=pickup_date,
+        status=status,
+        pickup_slot_id=pickup_slot_id,
+        slot_label=slot_label,
+        page=page,
+        limit=limit,
+    )
