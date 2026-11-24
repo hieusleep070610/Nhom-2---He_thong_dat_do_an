@@ -204,6 +204,12 @@ def _ordered_quantities(db: Session, menu_date: date, dish_ids: set[int]) -> dic
         .join(Order, Order.id == OrderItem.order_id)
         .filter(Order.pickup_date == menu_date, Order.status != "cancelled")
         .group_by(OrderItem.item_code, OrderItem.item_name)
+        # The order creator locks the corresponding Dish rows before reaching
+        # this query. Use a locking/current read as well: under MySQL's default
+        # REPEATABLE READ isolation, the earlier idempotency lookup may have
+        # established a snapshot before waiting for that lock. A plain SELECT
+        # would then miss the order committed by the transaction we waited on.
+        .with_for_update()
         .all()
     )
 
