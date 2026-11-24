@@ -60,11 +60,17 @@
             </label>
           </div>
 
-          <p class="ck-hint">Đơn hàng nhận tại khung giờ đã chọn, không cần địa chỉ giao hàng.</p>
+          <label for="checkout-address">
+            Địa chỉ nhận hàng
+            <textarea class="ck-input ck-address-input" id="checkout-address" rows="3" maxlength="500" autocomplete="street-address" placeholder="Nhập địa chỉ nhận hàng"></textarea>
+          </label>
+          <div class="ck-address-actions">
+            <button type="button" class="ck-address-save" id="btn-save-address">Lưu địa chỉ vào trang cá nhân</button>
+            <small id="checkout-address-status" aria-live="polite">Địa chỉ lưu trong hồ sơ sẽ được dùng nếu bạn để trống.</small>
+          </div>
 
-          <label>
-            Ghi chú cho nhà hàng (không bắt buộc)
-            <input class="ck-input" id="checkout-note" type="text" placeholder="Ví dụ: Không hành...">
+         <label>Ghi chú cho nhà hàng (không bắt buộc)
+            <input class="ck-input" id="checkout-note" type="text" placeholder="Ví dụ: Không hành..." style="width:100%;box-sizing:border-box;margin-top:6px;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;font-size:14px;">
           </label>
         </section>
 
@@ -86,14 +92,14 @@
 
           <div class="ck-pays" id="pay-methods">
             <label class="ck-pay">
-              <input type="radio" name="pay" value="cod" disabled>
+              <input type="radio" name="pay" value="cod" checked>
               <span>
-                <strong>Thanh toán khi nhận hàng (COD)</strong>
-                <small>Chưa được hỗ trợ</small>
+                <strong>Thanh toán trực tiếp khi nhận món (COD)</strong>
+                <small>Thanh toán tiền mặt khi nhận món</small>
               </span>
             </label>
-            <label class="ck-pay is-selected">
-              <input type="radio" name="pay" value="wallet" checked>
+            <label class="ck-pay">
+              <input type="radio" name="pay" value="wallet">
               <span>
                 <strong>Ví điện tử Foodie</strong>
                 <small id="checkout-wallet-balance">Đang kiểm tra ví…</small>

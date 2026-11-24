@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.models.user import User
+from app.services.role_service import assign_customer_role
 from app.schemas.user import UserCreate
 
 
@@ -34,6 +35,8 @@ def create_user(db: Session, data: UserCreate) -> User:
         password=hash_password(data.password),
     )
     db.add(user)
+    db.flush()
+    assign_customer_role(db, user)
     db.commit()
     db.refresh(user)
     return user

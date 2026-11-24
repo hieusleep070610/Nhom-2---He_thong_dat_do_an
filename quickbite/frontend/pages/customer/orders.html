@@ -9,70 +9,79 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/customer/orders.css">
 </head>
-<body class="foodie-body">
-  <header class="fd-header">
-    <div class="fd-header-inner">
-      <a class="fd-logo" href="../../index.html">
-        <span class="fd-logo-name">foodie</span>
-        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
-      </a>
-      <label class="fd-search">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <input type="search" id="order-search" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
-      </label>
-      <nav class="fd-nav" aria-label="Chính">
-        <a href="../../index.html">Trang chủ</a>
-        <a href="menu.html">Thực đơn</a>
-        <a class="is-active" href="orders.html">Đơn hàng</a>
-        <a href="checkout.html">Giỏ hàng</a>
-        <a href="wallet.html">Ví</a>
-      </nav>
-      <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-      </a>
-        <a href="../customer/wallet.html">Ví</a>
-      <div class="fd-user">
-        <span>Xin chào, Vương</span>
-        <span class="fd-avatar" aria-hidden="true">V</span>
+<body class="foodie-body" data-role="customer">
+  <main class="fd-main orders-page">
+    <div class="orders-header-row">
+      <div>
+        <h1>Lịch sử đơn hàng</h1>
+        <p class="ck-lead">Theo dõi trạng thái đơn và xem chi tiết từng đơn hàng của bạn</p>
+      </div>
+      <div class="orders-toolbar">
+        <label class="orders-filter-select-wrap" for="order-status-select">
+          <span>Trạng thái:</span>
+          <select id="order-status-select" class="orders-select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="pending">Chờ xác nhận</option>
+            <option value="confirmed">Đã xác nhận</option>
+            <option value="preparing">Đang chuẩn bị</option>
+            <option value="ready">Sẵn sàng nhận</option>
+            <option value="completed">Hoàn tất</option>
+            <option value="cancelled">Đã hủy</option>
+          </select>
+        </label>
+        <input
+          type="search"
+          id="order-search"
+          class="orders-search-input"
+          placeholder="Tìm theo mã đơn hoặc ngày..."
+          aria-label="Tìm theo mã đơn hoặc ngày"
+        >
       </div>
     </div>
-  </header>
 
-  <main class="fd-main">
-    <h1>Lịch sử đơn hàng</h1>
-    <p class="ck-lead">Quản lý và theo dõi hoạt động Foodie</p>
+    <div class="status-tabs" id="order-status-tabs" role="tablist" aria-label="Lọc theo trạng thái đơn hàng">
+      <button class="status-tab is-active" type="button" role="tab" aria-selected="true" data-status="">Tất cả</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="pending">Chờ xác nhận</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="confirmed">Đã xác nhận</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="preparing">Đang chuẩn bị</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="ready">Sẵn sàng nhận</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="completed">Hoàn tất</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="cancelled">Đã hủy</button>
+    </div>
 
-    <section class="metric-grid" id="order-filters">
-      <button class="metric-card is-selected" type="button" data-filter="all">
-        <i></i>
-        <div><small>Tất cả đơn</small><strong id="count-all">0</strong></div>
-      </button>
-      <button class="metric-card green" type="button" data-filter="processing">
-        <i></i>
-        <div><small>Đang xử lý</small><strong id="count-processing">0</strong></div>
-      </button>
-      <button class="metric-card blue" type="button" data-filter="completed">
-        <i></i>
-        <div><small>Đã hoàn thành</small><strong id="count-completed">0</strong></div>
-      </button>
-      <button class="metric-card red" type="button" data-filter="cancelled">
-        <i></i>
-        <div><small>Đã hủy</small><strong id="count-cancelled">0</strong></div>
-      </button>
-    </section>
+    <section class="panel orders-panel">
+      <div class="orders-panel-top">
+        <h2>Danh sách đơn hàng</h2>
+        <span id="orders-summary-text" class="orders-summary-text"></span>
+      </div>
 
-    <section class="panel">
-      <h2>Danh sách và thông tin chi tiết</h2>
-      <div id="order-list"></div>
+      <div id="order-list" aria-live="polite"></div>
+
+      <nav class="orders-pagination" id="order-pagination" aria-label="Phân trang đơn hàng"></nav>
     </section>
   </main>
+
+  <!-- Modal xem chi tiết đơn hàng -->
+  <div class="order-modal-backdrop" id="order-detail-modal" hidden>
+    <div class="order-modal" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
+      <div class="order-modal-header">
+        <div>
+          <h2 id="order-detail-title">Chi tiết đơn hàng</h2>
+          <p id="order-detail-subtitle" class="order-modal-sub"></p>
+        </div>
+        <button type="button" class="order-modal-close" id="close-order-detail" aria-label="Đóng chi tiết">&times;</button>
+      </div>
+      <div class="order-modal-body" id="order-detail-body"></div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
   <script src="../../js/utils.js"></script>
   <script src="../../js/config/config.js"></script>
   <script src="../../js/api/api.js"></script>
   <script src="../../js/layout.js"></script>
-  <script src="../../js/pages/customer/orders.js"></script>
+  <script src="../../js/pages/customer/orders.js" defer></script>
 </body>
 </html>

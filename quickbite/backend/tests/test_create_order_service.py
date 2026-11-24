@@ -18,6 +18,7 @@ from app.models import (  # noqa: F401
     OrderItemIngredientSnapshot,
     OrderStatusHistory,
     PickupSlot,
+    Role,
     SlotDailyQuota,
     User,
     WalletModel,
@@ -39,10 +40,11 @@ def world():
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine, expire_on_commit=False)()
     customer = User(
-        email="customer@example.test",
+        email="customer@example.com",
         phone="0901234567",
         password="hashed",
         full_name="Test Customer",
+        address="12 Nguyễn Huệ, Quận 1",
     )
     slot = PickupSlot(
         label="18:00",
@@ -83,6 +85,7 @@ def submit(world, items=((1, 1),), **overrides):
         "pickup_date": world["date"],
         "pickup_slot_id": world["slot"].id,
         "items": list(items),
+        "delivery_address": None,
         "note": None,
         "payment_method": "wallet",
         "coupon_code": None,
@@ -97,8 +100,127 @@ def test_creates_wallet_paid_order_and_history(world):
     assert result["status"] == "confirmed"
     assert result["payment_status"] == "paid"
     assert result["subtotal"] == Decimal("40000")
+    assert result["delivery_address"] == world["customer"].address
     assert world["db"].query(Order).count() == 1
     assert world["db"].query(OrderStatusHistory).count() == 1
+
+
+def test_explicit_delivery_address_is_saved_on_order(world):
+    result = submit(world, delivery_address="99 Lê Lợi, Quận 1")
+    assert result["delivery_address"] == "99 Lê Lợi, Quận 1"
+    assert world["db"].query(Order).one().delivery_address == "99 Lê Lợi, Quận 1"
+
+
+def test_order_requires_address_when_checkout_and_profile_are_blank(world):
+    from app.core.exceptions import BadRequestException
+
+    world["customer"].address = None
+    world["db"].commit()
+    with pytest.raises(BadRequestException) as error:
+        submit(world)
+    assert error.value.details["code"] == "CUSTOMER_ADDRESS_REQUIRED"
+    assert world["db"].query(Order).count() == 0
+
+
+def test_profile_address_can_be_updated(world):
+    from app.routers.auth import update_me
+    from app.schemas.user import UserAddressUpdate
+
+    updated = update_me(
+        UserAddressUpdate(address="45 Trần Hưng Đạo, Quận 1"),
+        user=world["customer"],
+        db=world["db"],
+    )
+    assert updated.address == "45 Trần Hưng Đạo, Quận 1"
+
+
+def test_new_user_is_assigned_customer_role(world):
+    from app.schemas.user import UserCreate
+    from app.services.user_services import create_user
+
+    user = create_user(world["db"], UserCreate(
+        email="new-customer@example.com",
+        full_name="New Customer",
+        phone="0901111222",
+        password="secure-pass-123",
+    ))
+    assert [(role.id, role.name) for role in user.roles] == [(3, "customer")]
+
+
+def test_role_dependencies_allow_only_the_matching_staff_role():
+    from fastapi import HTTPException
+    from app.routers.auth import get_current_admin, get_current_kitchen_staff
+
+    admin = User(email="admin@example.test", phone=None, password="x", full_name="Admin")
+    admin.roles = [Role(id=1, name="admin", description="Admin")]
+    kitchen = User(email="kitchen@example.test", phone=None, password="x", full_name="Kitchen")
+    kitchen.roles = [Role(id=2, name="kitchen", description="Kitchen")]
+    customer = User(email="role-customer@example.test", phone=None, password="x", full_name="Customer")
+    customer.roles = [Role(id=3, name="customer", description="Customer")]
+
+    assert get_current_admin(user=admin) is admin
+    assert get_current_kitchen_staff(user=kitchen) is kitchen
+    assert get_current_kitchen_staff(user=admin) is admin
+    with pytest.raises(HTTPException) as error:
+        get_current_admin(user=customer)
+    assert error.value.status_code == 403
+    with pytest.raises(HTTPException) as error:
+        get_current_kitchen_staff(user=customer)
+    assert error.value.status_code == 403
+
+
+def test_startup_role_seed_assigns_fixed_roles_to_existing_users(world, monkeypatch):
+    from app.core.config import settings
+    from app.models.role import Role
+    from app.services.role_service import seed_roles_and_assign_users
+
+    kitchen = User(
+        email="kitchen@example.com",
+        phone="0901111223",
+        password="x",
+        full_name="Kitchen Staff",
+    )
+    world["db"].add(kitchen)
+    world["db"].flush()
+    monkeypatch.setattr(settings, "ADMIN_USER_IDS", str(world["customer"].user_id))
+    monkeypatch.setattr(settings, "KITCHEN_USER_IDS", str(kitchen.user_id))
+
+    seed_roles_and_assign_users(world["db"])
+
+    assert [(role.id, role.name) for role in world["customer"].roles] == [(1, "admin")]
+    assert [(role.id, role.name) for role in kitchen.roles] == [(2, "kitchen")]
+    assert [(role.id, role.name) for role in world["db"].query(Role).order_by(Role.id).all()] == [
+        (1, "admin"), (2, "kitchen"), (3, "customer")
+    ]
+
+
+def test_admin_can_assign_one_of_the_three_roles(world):
+    from app.routers.auth import assign_user_role
+    from app.schemas.user import UserRoleUpdate
+
+    admin_role = Role(id=1, name="admin", description="Admin")
+    kitchen_role = Role(id=2, name="kitchen", description="Kitchen")
+    customer_role = Role(id=3, name="customer", description="Customer")
+    world["db"].add_all([admin_role, kitchen_role, customer_role])
+    admin = User(
+        email="assigner@example.com",
+        phone=None,
+        password="x",
+        full_name="Admin",
+        roles=[admin_role],
+    )
+    world["db"].add(admin)
+    world["db"].commit()
+
+    response = assign_user_role(
+        world["customer"].user_id,
+        UserRoleUpdate(role_id=2),
+        _admin=admin,
+        db=world["db"],
+    )
+    assert response.role_id == 2
+    assert response.role == "kitchen"
+    assert response.roles == ["kitchen"]
 
 
 def test_multiple_items_calculate_database_prices(world):

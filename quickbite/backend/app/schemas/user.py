@@ -21,9 +21,21 @@ class UserLogin(BaseModel):
 class UserResponse(UserBase):
     id: int = Field(validation_alias="user_id")
     phone: str | None = None
+    address: str | None = None
+    role_id: int | None = None
+    role: str | None = None
+    roles: list[str] = Field(default_factory=list)
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class UserAddressUpdate(BaseModel):
+    address: str | None = Field(default=None, max_length=500)
+
+
+class UserRoleUpdate(BaseModel):
+    role_id: int = Field(..., ge=1, le=3)
 
 
 class TokenResponse(BaseModel):

@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,7 +15,8 @@ class OrderCreate(BaseModel):
     pickup_slot_id: int = Field(..., gt=0)
     items: list[OrderCreateItem] = Field(..., min_length=1, max_length=50)
     coupon_code: str | None = Field(default=None, max_length=40)
-    payment_method: Literal["wallet"] = "wallet"
+    payment_method: Literal["wallet", "cod"] = "wallet"
+    delivery_address: str | None = Field(default=None, max_length=500)
     note: str | None = Field(default=None, max_length=200)
 
 
@@ -39,8 +40,8 @@ class CreatedOrderResponse(BaseModel):
     total_amount: Decimal
     pickup_date: date
     pickup_slot_id: int
+    delivery_address: str
     items: list[CreatedOrderItem]
-
 
 class OrderStatusUpdate(BaseModel):
     new_status: str = Field(
@@ -49,3 +50,39 @@ class OrderStatusUpdate(BaseModel):
         max_length=30,
         description="Trạng thái mới của đơn hàng"
     )
+class OrderItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    item_code: str
+    item_name: str
+    unit_price: Decimal
+    quantity: int
+    line_total: Decimal
+
+
+class OrderSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    code: str
+    status: str
+    total_amount: Decimal
+    pickup_date: date
+    pickup_slot_id: int
+    created_at: datetime
+
+
+class OrderDetailResponse(OrderSummaryResponse):
+    customer_name: str
+    customer_phone: str
+    note: Optional[str] = None
+    updated_at: datetime
+    items: List[OrderItemResponse] = []
+
+
+class PaginatedOrderResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    items: List[OrderSummaryResponse]

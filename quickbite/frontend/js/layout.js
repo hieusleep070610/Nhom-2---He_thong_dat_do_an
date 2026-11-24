@@ -41,8 +41,15 @@ function getLayoutRole(user) {
   const role = String((user && (user.role || user.role_name || user.user_type)) || "")
     .trim()
     .toLowerCase();
-  if (role === "admin" || role === "administrator") return "admin";
-  if (role === "kitchen" || role === "chef") return "kitchen";
+  const roles = Array.isArray(user?.roles)
+    ? user.roles.map((item) => String(item).trim().toLowerCase())
+    : [];
+  if (Number(user?.role_id) === 1 || role === "admin" || role === "administrator" || roles.includes("admin")) {
+    return "admin";
+  }
+  if (Number(user?.role_id) === 2 || role === "kitchen" || role === "chef" || roles.includes("kitchen")) {
+    return "kitchen";
+  }
   return "customer";
 }
 
