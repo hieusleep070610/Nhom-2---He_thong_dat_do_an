@@ -7,11 +7,7 @@ from sqlalchemy.exc import OperationalError
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
 from app.database.db import init_db
-<<<<<<< HEAD
-from app.routers import auth, foods, health, orders, wallet, kitchen_orders
-=======
-from app.routers import auth, categories, dish, health, ingredients, orders, recipes, users, wallet
->>>>>>> b903b1354b44221569ca6275335b86dd9db0b6ee
+from app.routers import auth, categories, dish, health, ingredients, orders, recipes, users, wallet, kitchen_orders
 
 
 @asynccontextmanager
