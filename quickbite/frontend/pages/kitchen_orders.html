@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
@@ -10,93 +10,110 @@
 
 <body>
     <header class="topbar">
-    <div class="brand">
-        <span class="brand-logo">Foodie</span>
-        <span class="brand-title">KHU VỰC BẾP</span>
-    </div>
-
-    <div class="topbar-right">
-        <div class="search-box-top">
-            <input type="text" class="search-input-top" placeholder="Tìm kiếm...">
+        <div class="brand">
+            <span class="brand-logo">Foodie</span>
+            <span class="brand-title">KHU VỰC BẾP</span>
         </div>
-        <nav class="topbar-nav">
-            <a href="#">Trang chủ</a>
-            <a href="#">Thực đơn</a>
-            <a href="#">Đơn hàng</a>
-        </nav>
-    </div>
-</header>
+
+        <div class="topbar-right">
+            <div class="search-box-top">
+                <input type="text" id="kitchenSearchInput" class="search-input-top" placeholder="Tìm mã đơn, món...">
+            </div>
+            <nav class="topbar-nav">
+                <a href="#">Trang chủ</a>
+                <a href="#">Thực đơn</a>
+                <a href="#">Đơn hàng</a>
+            </nav>
+        </div>
+    </header>
+
     <main class="app-container">
         <aside class="sidebar">
             <div class="sidebar-top">
                 <div class="menu-category-label">BẾP</div>
                 <div class="nav-menu">
-                    <a href="#" class="nav-item active">Hàng đợi bếp</a>
-                    <a href="#" class="nav-item">Chi tiết chế biến</a>
-                    <a href="#" class="nav-item">Lịch sử chế biến</a>
+                    <a href="kitchen_orders.html" class="nav-item active">Hàng đợi bếp</a>
+                    <a href="order_detail.html" class="nav-item">Chi tiết chế biến</a>
+                    <a href="order_status.html" class="nav-item">Lịch sử chế biến</a>
                 </div>
             </div>
-            <div class="sidebar-bottom">
-            </div>
+            <div class="sidebar-bottom"></div>
         </aside>
+
         <div class="content">
             <div class="main-context">
                 <section class="page-header">
                     <div>
                         <h2 class="page-title">Hàng đợi chế biến</h2>
-                        <p class="page-description">Quản lý và theo dõi hoạt động Foodie</p>
+                        <p class="page-description">Quản lý và theo dõi hoạt động Foodie — Sắp xếp theo giờ nhận</p>
+                    </div>
+                    <div class="kitchen-filters">
+                        <label for="pickupDateInput">Ngày nhận:</label>
+                        <input type="date" id="pickupDateInput">
+                        <select id="pickupSlotSelect">
+                            <option value="">Tất cả khung giờ nhận</option>
+                        </select>
+                        <button type="button" id="refreshKitchenBtn" class="btn-secondary-outline">Tải lại</button>
                     </div>
                 </section>
+
                 <section class="stats-grid">
                     <div class="stat-card border-orange">
                         <span class="stat-label">Đơn mới</span>
-                        <strong class="stat-value">8</strong>
+                        <strong class="stat-value" id="statPendingCount">0</strong>
                     </div>
                     <div class="stat-card border-green">
-                        <span class="stat-label">Đang chế biến</span>
-                        <strong class="stat-value">12</strong>
+                        <span class="stat-label">Đã tiếp nhận</span>
+                        <strong class="stat-value" id="statConfirmedCount">0</strong>
                     </div>
                     <div class="stat-card border-blue">
-                        <span class="stat-label">Sắp trễ</span>
-                        <strong class="stat-value">3</strong>
+                        <span class="stat-label">Tổng trong ngày</span>
+                        <strong class="stat-value" id="statTotalCount">0</strong>
                     </div>
                     <div class="stat-card border-red">
-                        <span class="stat-label">Hoàn thành hôm nay</span>
-                        <strong class="stat-value">86</strong>
+                        <span class="stat-label">Đã hủy / Từ chối</span>
+                        <strong class="stat-value" id="statCancelledCount">0</strong>
                     </div>
                 </section>
+
+                <div id="kitchenFeedbackBanner" class="kitchen-feedback" role="status" aria-live="polite"></div>
+
                 <section class="table-card">
-                    <div class="queue-tabs">
-                        <span class="tab-active">Đơn mới</span>
-                        <span class="tab-inactive">Đang chế biến</span>
-                        <span class="tab-inactive">Sắp trễ</span>
+                    <div class="queue-tabs" id="kitchenQueueTabs">
+                        <button type="button" class="tab-active" data-status="pending">Đơn mới</button>
+                        <button type="button" class="tab-inactive" data-status="confirmed">Đã tiếp nhận</button>
+                        <button type="button" class="tab-inactive" data-status="all">Tất cả</button>
                     </div>
-                    <div class="queue-list">
+
+                    <div class="queue-list" id="kitchenQueueList">
                         <div class="queue-item">
-                            <div class="item-title">#FD-01842 <span>• 2 món</span></div>
-                            <div class="item-time">12:00 • Đang chờ xử lý</div>
-                        </div>
-                        <div class="queue-item">
-                            <div class="item-title">#FD-01841 <span>• 3 món</span></div>
-                            <div class="item-time">12:01 • Đang chờ xử lý</div>
-                        </div>
-                        <div class="queue-item">
-                            <div class="item-title">#FD-01840 <span>• 1 món</span></div>
-                            <div class="item-time">12:02 • Đang chờ xử lý</div>
-                        </div>
-                        <div class="queue-item">
-                            <div class="item-title">#FD-01839 <span>• 2 món</span></div>
-                            <div class="item-time">12:03 • Đang chờ xử lý</div>
-                        </div>
-                        <div class="queue-item">
-                            <div class="item-title">#FD-01838 <span>• 4 món</span></div>
-                            <div class="item-time">12:04 • Đang chờ xử lý</div>
+                            <div class="item-title">Đang tải danh sách đơn...</div>
                         </div>
                     </div>
                 </section>
             </div>
         </div>
     </main>
+
+    <div id="rejectReasonModal" class="reject-modal hidden" aria-hidden="true">
+        <div class="reject-modal-backdrop" id="rejectModalBackdrop"></div>
+        <div class="reject-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
+            <h3 id="rejectModalTitle">Từ chối đơn hàng</h3>
+            <p id="rejectModalOrderInfo"></p>
+            <label for="rejectReasonInput">Lý do từ chối (bắt buộc):</label>
+            <textarea id="rejectReasonInput" rows="3" placeholder="Ví dụ: Hết nguyên liệu, quá tải khung giờ..."></textarea>
+            <p id="rejectReasonError" class="reject-error"></p>
+            <div class="reject-modal-actions">
+                <button type="button" id="cancelRejectBtn" class="btn-secondary-outline">Hủy</button>
+                <button type="button" id="confirmRejectBtn" class="btn-reject">Xác nhận từ chối</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="../js/config/config.js"></script>
+    <script src="../js/api/api.js"></script>
+    <script src="../js/pages/kitchen/kitchen_orders.js"></script>
 </body>
 
 </html>
