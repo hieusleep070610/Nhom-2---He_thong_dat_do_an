@@ -39,23 +39,100 @@ def create_order(
     idempotency_key: str | None,
     delivery_address: str | None = None,
 ) -> dict:
-    """Create and pay for an order atomically using the customer's wallet."""
     requested = _normalize_items(items)
     effective_address = (delivery_address or "").strip() or (customer.address or "").strip()
     request_hash = _request_hash(
         pickup_date, pickup_slot_id, requested, effective_address, note, payment_method, coupon_code
     )
-    if idempotency_key:
-        prior = _find_idempotent_order(db, idempotency_key)
-        if prior:
-            return _replay_or_conflict(prior, customer.user_id, request_hash)
+    if idempotency_key and (prior := _find_idempotent_order(db, idempotency_key)):
+        return _replay_or_conflict(prior, customer.user_id, request_hash)
 
+    _validate_order_input(customer, pickup_date, effective_address, payment_method, coupon_code)
+    phone = customer.phone.strip()
+
+    try:
+        serving_count = sum(qty for _, qty in requested)
+        reserve_slot_servings(db, pickup_slot_id, pickup_date, serving_count)
+
+        by_id = _lock_and_check_dishes(db, [dish_id for dish_id, _ in requested])
+        ensure_servings_available(db, pickup_date, requested, lock=True)
+        recipe_rows, locked_ingredients = _lock_and_check_ingredients(db, requested)
+
+        priced_items, subtotal = _price_items(requested, by_id)
+        total = max(Decimal("0"), subtotal)
+
+        wallet = _lock_and_check_wallet(db, customer.user_id, payment_method, total)
+
+        order = Order(
+            code=f"FD{pickup_date:%Y%m%d}{secrets.token_hex(3).upper()}",
+            customer_name=customer.full_name,
+            customer_phone=phone,
+            delivery_address=effective_address,
+            user_id=customer.user_id,
+            note=(note or "").strip() or None,
+            pickup_date=pickup_date,
+            pickup_slot_id=pickup_slot_id,
+            status="confirmed",
+            payment_method=payment_method,
+            payment_status="paid" if payment_method == "wallet" else "unpaid",
+            discount_amount=Decimal("0"),
+            total_amount=total,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash if idempotency_key else None,
+        )
+        db.add(order)
+        db.flush()
+
+        order_items = _create_order_items(db, order.id, priced_items)
+        _save_recipe_snapshots(db, order_items, recipe_rows)
+        _deduct_ingredients(requested, recipe_rows, locked_ingredients)
+
+        if wallet is not None:
+            wallet.balance = Decimal(wallet.balance) - total
+            db.add(
+                WalletTransactionModel(
+                    wallet_id=wallet.id,
+                    type_transaction=payment_key(order.id),
+                    amount_money=-total,
+                )
+            )
+
+        db.add(
+            OrderStatusHistory(
+                order_id=order.id,
+                old_status=None,
+                new_status="confirmed",
+                changed_by=str(customer.user_id),
+            )
+        )
+        db.commit()
+        db.refresh(order)
+        return _order_response(order, order_items, subtotal)
+    except IntegrityError as error:
+        db.rollback()
+        if idempotency_key and (prior := _find_idempotent_order(db, idempotency_key)):
+            return _replay_or_conflict(prior, customer.user_id, request_hash)
+        raise ConflictException(
+            message="Không thể tạo đơn do dữ liệu bị trùng hoặc thay đổi đồng thời.",
+            code="ORDER_CONFLICT",
+        ) from error
+    except Exception:
+        db.rollback()
+        raise
+
+
+def _validate_order_input(
+    customer: User,
+    pickup_date: date,
+    effective_address: str,
+    payment_method: str,
+    coupon_code: str | None,
+) -> None:
     if not effective_address:
         raise BadRequestException(
             message="Vui lòng nhập địa chỉ nhận hàng hoặc cập nhật địa chỉ trong trang cá nhân.",
             details={"code": "CUSTOMER_ADDRESS_REQUIRED"},
         )
-
     phone = (customer.phone or "").strip()
     if not phone:
         raise BadRequestException(
@@ -70,155 +147,99 @@ def create_order(
     if pickup_date < datetime.now(_LOCAL_TIMEZONE).date():
         raise BadRequestException(message="Ngày nhận món không được ở trong quá khứ.")
     if coupon_code and coupon_code.strip():
-        # The repository does not contain a coupon model or validation service.
-        raise BadRequestException(
-            message="Mã giảm giá không hợp lệ.",
-            details={"code": "INVALID_COUPON"},
-        )
+        raise BadRequestException(message="Mã giảm giá không hợp lệ.", details={"code": "INVALID_COUPON"})
     if payment_method not in {"wallet", "cod"}:
         raise BadRequestException(
             message="Phương thức thanh toán không được hỗ trợ.",
             details={"code": "UNSUPPORTED_PAYMENT_METHOD"},
         )
 
-    try:
-        serving_count = sum(quantity for _, quantity in requested)
-        reserve_slot_servings(db, pickup_slot_id, pickup_date, serving_count)
 
-        dish_ids = [dish_id for dish_id, _ in requested]
-        dishes = (
-            db.query(Dish)
-            .filter(Dish.id.in_(dish_ids))
-            .order_by(Dish.id)
-            .with_for_update()
-            .all()
-        )
-        by_id = {dish.id: dish for dish in dishes}
-        missing = sorted(set(dish_ids) - set(by_id))
-        if missing:
-            raise NotFoundException(message=f"Không tìm thấy món ăn: {', '.join(map(str, missing))}.")
-        unavailable = [dish_id for dish_id in dish_ids if not by_id[dish_id].is_available]
-        if unavailable:
-            raise ConflictException(
-                message="Món ăn đã ngừng kinh doanh.",
-                code="DISH_UNAVAILABLE",
-                details={"dish_ids": unavailable},
-            )
-
-        ensure_servings_available(db, pickup_date, requested, lock=True)
-        recipe_rows, locked_ingredients = _lock_and_check_ingredients(db, requested)
-
-        priced_items: list[dict] = []
-        subtotal = Decimal("0")
-        for dish_id, quantity in requested:
-            dish = by_id[dish_id]
-            unit_price = Decimal(str(dish.price)).quantize(Decimal("1"))
-            line_total = unit_price * quantity
-            subtotal += line_total
-            priced_items.append({
-                "dish": dish,
-                "dish_id": dish_id,
-                "quantity": quantity,
-                "unit_price": unit_price,
-                "line_total": line_total,
-            })
-
-        discount = Decimal("0")
-        total = max(Decimal("0"), subtotal - discount)
-        wallet = None
-        if payment_method == "wallet":
-            wallet = (
-                db.query(WalletModel)
-                .filter(WalletModel.user_id == customer.user_id)
-                .with_for_update()
-                .first()
-            )
-            if wallet is None or (wallet.status or "").strip().casefold() != "active":
-                raise ConflictException(
-                    message="Ví điện tử chưa được tạo hoặc không hoạt động.", code="WALLET_UNAVAILABLE"
-                )
-            if Decimal(wallet.balance) < total:
-                raise ConflictException(
-                    message="Số dư ví không đủ để thanh toán đơn hàng.",
-                    code="INSUFFICIENT_WALLET_BALANCE",
-                    details={"required": str(total), "balance": str(wallet.balance)},
-                )
-
-        order = Order(
-            code=f"FD{pickup_date:%Y%m%d}{secrets.token_hex(3).upper()}",
-            customer_name=customer.full_name,
-            customer_phone=phone,
-            delivery_address=effective_address,
-            user_id=customer.user_id,
-            note=(note or "").strip() or None,
-            pickup_date=pickup_date,
-            pickup_slot_id=pickup_slot_id,
-            status="confirmed",
-            payment_method=payment_method,
-            payment_status="paid" if payment_method == "wallet" else "unpaid",
-            discount_amount=discount,
-            total_amount=total,
-            idempotency_key=idempotency_key,
-            request_hash=request_hash if idempotency_key else None,
-        )
-        db.add(order)
-        db.flush()
-
-        order_items: list[OrderItem] = []
-        for priced in priced_items:
-            dish = priced["dish"]
-            order_item = OrderItem(
-                order_id=order.id,
-                dish_id=dish.id,
-                item_code=f"dish-{dish.id}",
-                item_name=dish.name,
-                unit_price=priced["unit_price"],
-                quantity=priced["quantity"],
-                line_total=priced["line_total"],
-            )
-            db.add(order_item)
-            order_items.append(order_item)
-        db.flush()
-
-        _save_recipe_snapshots(db, order_items, recipe_rows)
-        for ingredient_id, required in _ingredient_requirements(requested, recipe_rows).items():
-            ingredient = locked_ingredients[ingredient_id]
-            if ingredient.stock_quantity is not None:
-                ingredient.stock_quantity = Decimal(ingredient.stock_quantity) - required
-
-        if wallet is not None:
-            wallet.balance = Decimal(wallet.balance) - total
-            db.add(
-                WalletTransactionModel(
-                    wallet_id=wallet.id,
-                    type_transaction=payment_key(order.id),
-                    amount_money=-total,
-                )
-            )
-        db.add(
-            OrderStatusHistory(
-                order_id=order.id,
-                old_status=None,
-                new_status="confirmed",
-                changed_by=str(customer.user_id),
-            )
-        )
-        db.commit()
-        db.refresh(order)
-        return _order_response(order, order_items, subtotal)
-    except IntegrityError as error:
-        db.rollback()
-        if idempotency_key:
-            prior = _find_idempotent_order(db, idempotency_key)
-            if prior:
-                return _replay_or_conflict(prior, customer.user_id, request_hash)
+def _lock_and_check_dishes(db: Session, dish_ids: list[int]) -> dict[int, Dish]:
+    dishes = (
+        db.query(Dish).filter(Dish.id.in_(dish_ids)).order_by(Dish.id).with_for_update().all()
+    )
+    by_id = {dish.id: dish for dish in dishes}
+    missing = sorted(set(dish_ids) - set(by_id))
+    if missing:
+        raise NotFoundException(message=f"Không tìm thấy món ăn: {', '.join(map(str, missing))}.")
+    unavailable = [dish_id for dish_id in dish_ids if not by_id[dish_id].is_available]
+    if unavailable:
         raise ConflictException(
-            message="Không thể tạo đơn do dữ liệu bị trùng hoặc thay đổi đồng thời.",
-            code="ORDER_CONFLICT",
-        ) from error
-    except Exception:
-        db.rollback()
-        raise
+            message="Món ăn đã ngừng kinh doanh.",
+            code="DISH_UNAVAILABLE",
+            details={"dish_ids": unavailable},
+        )
+    return by_id
+
+
+def _price_items(requested: list[tuple[int, int]], by_id: dict[int, Dish]) -> tuple[list[dict], Decimal]:
+    priced_items: list[dict] = []
+    subtotal = Decimal("0")
+    for dish_id, quantity in requested:
+        dish = by_id[dish_id]
+        unit_price = Decimal(str(dish.price)).quantize(Decimal("1"))
+        line_total = unit_price * quantity
+        subtotal += line_total
+        priced_items.append({
+            "dish": dish,
+            "dish_id": dish_id,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "line_total": line_total,
+        })
+    return priced_items, subtotal
+
+
+def _lock_and_check_wallet(
+    db: Session, user_id: int, payment_method: str, total: Decimal
+) -> WalletModel | None:
+    if payment_method != "wallet":
+        return None
+    wallet = (
+        db.query(WalletModel).filter(WalletModel.user_id == user_id).with_for_update().first()
+    )
+    if wallet is None or (wallet.status or "").strip().casefold() != "active":
+        raise ConflictException(
+            message="Ví điện tử chưa được tạo hoặc không hoạt động.", code="WALLET_UNAVAILABLE"
+        )
+    if Decimal(wallet.balance) < total:
+        raise ConflictException(
+            message="Số dư ví không đủ để thanh toán đơn hàng.",
+            code="INSUFFICIENT_WALLET_BALANCE",
+            details={"required": str(total), "balance": str(wallet.balance)},
+        )
+    return wallet
+
+
+def _create_order_items(db: Session, order_id: int, priced_items: list[dict]) -> list[OrderItem]:
+    order_items: list[OrderItem] = []
+    for priced in priced_items:
+        dish = priced["dish"]
+        item = OrderItem(
+            order_id=order_id,
+            dish_id=dish.id,
+            item_code=f"dish-{dish.id}",
+            item_name=dish.name,
+            unit_price=priced["unit_price"],
+            quantity=priced["quantity"],
+            line_total=priced["line_total"],
+        )
+        db.add(item)
+        order_items.append(item)
+    db.flush()
+    return order_items
+
+
+def _deduct_ingredients(
+    requested: list[tuple[int, int]],
+    recipe_rows: list[DishIngredient],
+    locked_ingredients: dict[int, Ingredient],
+) -> None:
+    for ingredient_id, required in _ingredient_requirements(requested, recipe_rows).items():
+        ingredient = locked_ingredients[ingredient_id]
+        if ingredient.stock_quantity is not None:
+            ingredient.stock_quantity = Decimal(ingredient.stock_quantity) - required
 
 
 def _normalize_items(items: list[tuple[int, int]]) -> list[tuple[int, int]]:
