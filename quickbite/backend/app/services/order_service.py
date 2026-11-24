@@ -7,7 +7,7 @@ from app.services.refund_service import refund_paid_order
 from app.services.pickup_slot_quota_service import release_order_slot_servings
 from app.services.ingredient_stock_service import restore_order_ingredient_stock
 from sqlalchemy.orm import joinedload
-ORDER_STATUS_TRANSITIONS = {
+ORDER_STATUS_TRANSITIONS: dict[str, list[str]] = {
     "pending": ["confirmed", "cancelled"],
     "confirmed": ["preparing", "cancelled"],
     "preparing": ["ready"],
@@ -17,7 +17,6 @@ ORDER_STATUS_TRANSITIONS = {
 }
 
 LOCKED_CANCEL_STATUSES = {"preparing", "ready", "completed"}
-
 VALID_ORDER_STATUSES = set(ORDER_STATUS_TRANSITIONS.keys())
 
 
