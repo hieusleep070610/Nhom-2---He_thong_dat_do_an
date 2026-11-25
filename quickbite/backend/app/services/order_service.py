@@ -1,12 +1,13 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
+from app.models.pickup_slot import PickupSlot
 from app.core.exceptions import BadRequestException, ConflictException, NotFoundException
 from app.services.refund_service import refund_paid_order
 from app.services.pickup_slot_quota_service import release_order_slot_servings
 from app.services.ingredient_stock_service import restore_order_ingredient_stock
-from sqlalchemy.orm import joinedload
+from datetime import date
 ORDER_STATUS_TRANSITIONS: dict[str, list[str]] = {
     "pending": ["confirmed", "cancelled"],
     "confirmed": ["preparing", "cancelled"],
@@ -151,3 +152,86 @@ def get_my_order_detail(
         )
 
     return order
+
+def list_filtered_orders(
+    db: Session,
+    current_user,
+    has_role_fn,
+    pickup_date: date | None = None,
+    status: str | None = None,
+    pickup_slot_id: int | None = None,
+    slot_label: str | None = None,
+    page: int = 1,
+    limit: int = 10,
+):
+    query = db.query(Order).options(
+        joinedload(Order.items),
+        joinedload(Order.pickup_slot),
+    )
+
+    if has_role_fn(current_user, "admin"):
+        pass
+    elif has_role_fn(current_user, "kitchen"):
+        query = query.filter(Order.status.in_(["confirmed", "preparing", "ready"]))
+    elif has_role_fn(current_user, "customer"):
+        query = query.filter(Order.user_id == current_user.user_id)
+    else:
+        return {
+            "total": 0,
+            "page": page,
+            "limit": limit,
+            "items": [],
+        }
+
+    if pickup_date is not None:
+        query = query.filter(Order.pickup_date == pickup_date)
+
+    if status is not None and status.strip() != "":
+        normalized_status = status.strip().lower()
+        if normalized_status not in VALID_ORDER_STATUSES:
+            raise BadRequestException(
+                message=f"Trạng thái không hợp lệ: {status}"
+            )
+        query = query.filter(Order.status == normalized_status)
+
+    if pickup_slot_id is not None:
+        query = query.filter(Order.pickup_slot_id == pickup_slot_id)
+
+    if slot_label is not None and slot_label.strip() != "":
+        query = query.join(PickupSlot).filter(
+            PickupSlot.label == slot_label.strip()
+        )
+
+    total = query.count()
+    offset = (page - 1) * limit
+    rows = (
+        query.order_by(Order.created_at.desc(), Order.id.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    items = [
+        {
+            "id": row.id,
+            "code": row.code,
+            "customer_name": row.customer_name,
+            "status": row.status,
+            "pickup_date": row.pickup_date,
+            "pickup_slot_id": row.pickup_slot_id,
+            "slot_label": row.pickup_slot.label if row.pickup_slot else None,
+            "total_amount": float(row.total_amount),
+            "created_at": row.created_at,
+            "payment_method": row.payment_method,
+            "payment_status": row.payment_status,
+            "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
+        }
+        for row in rows
+    ]
+
+    return {
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "items": items,
+    }
