@@ -144,20 +144,29 @@ def change_order_status(
     order = db.query(Order).filter(Order.id == order_id).first()
     if order is None:
         raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
+
     is_owner = order.user_id == customer.user_id
     is_admin = has_role(customer, "admin")
     is_kitchen = has_role(customer, "kitchen")
     new_status = request.new_status.strip().lower()
+
     if is_admin:
         pass
     elif is_kitchen:
-        if new_status not in {"preparing", "ready"}:
-            raise HTTPException(status_code=403, detail="Nhân viên bếp chỉ được chuyển đơn sang đang chế biến hoặc sẵn sàng.")
+        if new_status not in {"preparing", "ready", "completed"}:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Nhân viên bếp chỉ được chuyển trạng thái trong quy trình chế biến/nhận đơn.",
+            )
     elif has_role(customer, "customer") and is_owner and new_status == "cancelled":
         pass
     else:
-        raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
-    order = update_order_status(
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền cập nhật trạng thái đơn hàng này.",
+        )
+
+    updated_order = update_order_status(
         db=db,
         order_id=order_id,
         new_status=new_status,
@@ -168,12 +177,10 @@ def change_order_status(
         "status": "success",
         "message": "Cập nhật trạng thái đơn hàng thành công",
         "data": {
-            "order_id": order.id,
-            "order_status": order.status
-        }
+            "order_id": updated_order.id,
+            "order_status": updated_order.status,
+        },
     }
-
-
 @router.get("/{order_id}/status-history")
 def get_order_status_history(
     order_id: int,
