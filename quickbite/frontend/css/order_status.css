@@ -15,6 +15,7 @@ a {
     text-decoration: none;
     color: inherit;
 }
+
 .topbar {
     width: 100%;
     height: 48px;
@@ -91,6 +92,7 @@ a {
 .topbar-nav a:hover {
     color: #ff7518;
 }
+
 .main-context {
     padding: 24px 34px 40px;
     width: 100%;
@@ -98,6 +100,11 @@ a {
 
 .page-header {
     margin-bottom: 21px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .page-header h2 {
@@ -111,6 +118,40 @@ a {
     color: #758399;
     font-size: 11px;
 }
+
+.auto-refresh-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: #68778d;
+    flex-wrap: wrap;
+}
+
+.interval-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    color: #253044;
+    font-weight: 600;
+}
+
+#btn-manual-refresh {
+    padding: 6px 12px;
+    border: 1px solid #ff7518;
+    border-radius: 7px;
+    background-color: #ff7518;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#btn-manual-refresh:hover {
+    opacity: 0.92;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -172,16 +213,129 @@ a {
     font-weight: 700;
     color: #293447;
 }
+
+.today-orders-section {
+    background-color: #ffffff;
+    border: 1px solid #e3e9f0;
+    border-radius: 11px;
+    padding: 20px 24px;
+    margin-bottom: 19px;
+}
+
+.section-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.section-toolbar h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #253044;
+}
+
+#status-filter-select {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid #e1e7ef;
+    border-radius: 7px;
+    background-color: #f8fafc;
+    color: #253044;
+    font-size: 11px;
+    outline: none;
+}
+
+#status-filter-select:focus {
+    border-color: #ff7518;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.orders-table th,
+.orders-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.orders-table th {
+    color: #758399;
+    font-size: 10px;
+    font-weight: 700;
+    background-color: #f8fafc;
+}
+
+.orders-table .order-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.orders-table .order-row:hover {
+    background-color: #fff8f2;
+}
+
+.orders-table .order-row.is-selected {
+    background-color: #eef6ff;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    background-color: #f1f5f9;
+    color: #334155;
+}
+
+.status-badge.status-confirmed {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.status-badge.status-preparing {
+    background-color: #fff7ed;
+    color: #ea580c;
+}
+
+.status-badge.status-ready {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.status-badge.status-completed {
+    background-color: #ecfdf5;
+    color: #047857;
+}
+
+.status-badge.status-cancelled {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
 .tracking-card {
     width: 100%;
-    min-height: 368px;
+    min-height: 220px;
 
     background-color: #ffffff;
     border: 1px solid #e3e9f0;
     border-radius: 11px;
 
-    padding: 62px 32px;
+    padding: 40px 32px;
 }
+
 .progress-container {
     width: 500px;
     max-width: 100%;
@@ -204,9 +358,10 @@ a {
 }
 
 .progress-line-active {
-    width: 33.33%;
+    width: 0%;
     height: 100%;
     background-color: #16a34a;
+    transition: width 0.25s ease;
 }
 
 .progress-step {
@@ -250,6 +405,7 @@ a {
     color: #16a34a;
     font-weight: 600;
 }
+
 .delivery-info {
     margin-top: 28px;
 }
@@ -266,13 +422,15 @@ a {
     display: flex;
     align-items: center;
     gap: 5px;
+    flex-wrap: wrap;
 
     color: #7d8ba0;
     font-size: 10px;
 }
 
 .delivery-detail strong {
-    font-weight: 400;
+    font-weight: 600;
+    color: #253044;
 }
 
 .separator {
@@ -280,7 +438,6 @@ a {
 }
 
 @media (max-width: 768px) {
-
     .topbar {
         height: auto;
         padding: 12px 16px;
@@ -311,8 +468,12 @@ a {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .today-orders-section {
+        padding: 16px;
+    }
+
     .tracking-card {
-        padding: 50px 18px;
+        padding: 36px 18px;
     }
 
     .progress-container {
@@ -325,7 +486,6 @@ a {
 }
 
 @media (max-width: 400px) {
-
     .stats-grid {
         grid-template-columns: 1fr;
     }
@@ -338,4 +498,16 @@ a {
     .progress-step span {
         font-size: 8px;
     }
+}
+
+.stat-value.is-cancelled {
+  color: #dc2626;
+}
+
+.tracking-card.is-cancelled .step-circle {
+  opacity: 0.4;
+}
+
+.tracking-card.is-cancelled .progress-step span {
+  color: #9ca3af;
 }
