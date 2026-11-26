@@ -10,6 +10,7 @@ from app.models.pickup_slot import PickupSlot, SlotDailyQuota
 from app.models.user import User
 from app.models.role import Role, UserRole
 from app.models.wallet import WalletModel, WalletTransactionModel
+from app.models.notification import OrderNotification
 
 __all__ = [
     "Ingredient",
@@ -30,4 +31,5 @@ __all__ = [
     "UserRole",
     "WalletModel",
     "WalletTransactionModel",
+    "OrderNotification"
 ]
