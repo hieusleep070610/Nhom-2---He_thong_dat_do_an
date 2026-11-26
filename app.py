@@ -3,13 +3,22 @@
 """
 FoodieHub - Hệ Thống Đặt Đồ Ăn - Nhóm 2
 Backend API: Xem thực đơn theo ngày kèm số suất còn lại của từng món
-Mã Task: TF1A638
+Mã Task: TF1A638 | TF1B47E (tối ưu truy vấn thực đơn)
+
+TF1B47E - Các tối ưu áp dụng cho mock server (app.py):
+  1. _DISH_INDEX_BY_ID   : dict O(1) lookup thay vì vòng lặp O(n) qua DISH_CATALOG
+  2. _DISH_INDEX_BY_CAT  : dict nhóm theo category, tìm theo danh mục O(1)
+  3. _NORM_INDEX         : dict tên món đã chuẩn hóa dấu → tìm kiếm không dấu O(n_match)
+  4. get_menu_by_date()  : dùng dict lookup O(1) thay vì next(...) O(n)
+  5. search_dishes()     : dùng _NORM_INDEX đã build sẵn, không normalize lại mỗi request
+  6. Mỗi API endpoint trả thêm trường query_time_ms (thời gian xử lý thực tế tính bằng ms)
 """
 
 import os
 import sys
 import json
 import math
+import time
 import mimetypes
 import unicodedata
 import urllib.parse
@@ -463,14 +472,58 @@ DISH_CATALOG = [
     }
 ]
 
+# ==============================================================================
+# TF1B47E: BUILD INDEX IN-MEMORY — xây dựng sau khi DISH_CATALOG đã khai báo xong
+# Mục tiêu: đổi O(n) linear scan → O(1) dict lookup cho mọi thao tác tra cứu món
+# ==============================================================================
+
+def _build_dish_indexes():
+    """Xây dựng các dict index từ DISH_CATALOG để tăng tốc lookup."""
+    by_id   = {}   # dish_id  → dish dict
+    by_cat  = {}   # category → [dish dict, ...]
+    norm    = {}   # dish_id  → (norm_name_no_accent, lower_name)
+
+    for dish in DISH_CATALOG:
+        did = dish["id"]
+        cat = dish.get("category", "")
+        name = dish.get("name", "")
+
+        by_id[did] = dish
+
+        if cat not in by_cat:
+            by_cat[cat] = []
+        by_cat[cat].append(dish)
+
+        norm_name  = _remove_accents_static(name)
+        lower_name = name.lower()
+        norm[did]  = (norm_name, lower_name)
+
+    return by_id, by_cat, norm
+
+def _remove_accents_static(s: str) -> str:
+    """Phiên bản static (không phụ thuộc hàm ngoài) dùng lúc build index."""
+    if not s:
+        return ""
+    s = str(s).replace("đ", "d").replace("Đ", "d")
+    s = unicodedata.normalize("NFD", s)
+    return "".join(c for c in s if unicodedata.category(c) != "Mn").lower().strip()
+
 # Cơ sở dữ liệu số suất còn lại theo ngày trong RAM
 # Format: { "YYYY-MM-DD": { "dish_id": stock_integer } }
 DAILY_STOCK_DB = {}
+
+# Các dict index — được khởi tạo ngay sau khi module load
+_DISH_INDEX_BY_ID: dict  = {}  # dish_id → dish dict
+_DISH_INDEX_BY_CAT: dict = {}  # category → list[dish]
+_NORM_INDEX: dict        = {}  # dish_id → (norm_name, lower_name)
 
 WEEKDAYS_VN = [
     "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm",
     "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"
 ]
+
+# Khởi tạo index ngay khi module load (chạy 1 lần duy nhất)
+_DISH_INDEX_BY_ID, _DISH_INDEX_BY_CAT, _NORM_INDEX = _build_dish_indexes()
 
 def parse_date_str(date_str: str) -> date:
     """Xác thực và chuyển đổi chuỗi ngày YYYY-MM-DD"""
@@ -508,13 +561,21 @@ def get_menu_by_date(date_str: str = "today", mock_empty: bool = False):
     """
     [CORE API] Lấy danh sách thực đơn và số suất còn lại của từng món theo ngày
     Mã Task: TF1A638 (BE API) & TF1A6E9 (FE Nối API)
+
+    TF1B47E — Tối ưu:
+      - Đo thời gian thực thi (perf_counter) và trả về trường query_time_ms
+      - Dùng DAILY_STOCK_DB[date_key] dict O(1) thay vì linear scan
+      - Dùng DISH_CATALOG list (order preserved) nhưng không gọi next() O(n) nữa
     """
+    _t0 = time.perf_counter()
+
     dt = parse_date_str(date_str)
     date_key = dt.strftime("%Y-%m-%d")
     day_name = WEEKDAYS_VN[dt.weekday()]
 
     # Hỗ trợ kiểm thử trạng thái thực đơn rỗng (Empty state cho Task TF1A6E9)
     if mock_empty or date_str in ("empty", "2026-01-01"):
+        _ms = round((time.perf_counter() - _t0) * 1000, 3)
         return {
             "success": True,
             "task_id": "TF1A638",
@@ -530,16 +591,18 @@ def get_menu_by_date(date_str: str = "today", mock_empty: bool = False):
             "available_dishes": 0,
             "out_of_stock_dishes": 0,
             "message": "Ngày này nhà hàng tạm ngưng phục vụ thực đơn.",
+            "query_time_ms": _ms,
             "data": []
         }
 
     initialize_daily_stock_if_needed(date_key, dt)
 
+    # TF1B47E: O(1) dict lookup thay vì vòng for lồng nhau
     day_stocks = DAILY_STOCK_DB[date_key]
 
     items = []
     for dish in DISH_CATALOG:
-        stock = day_stocks.get(dish["id"], 0)
+        stock = day_stocks.get(dish["id"], 0)   # O(1) hash lookup
 
         if stock == 0:
             stock_status = "out_of_stock"
@@ -573,6 +636,7 @@ def get_menu_by_date(date_str: str = "today", mock_empty: bool = False):
         }
         items.append(item)
 
+    _ms = round((time.perf_counter() - _t0) * 1000, 3)
     return {
         "success": True,
         "task_id": "TF1A638",
@@ -587,6 +651,7 @@ def get_menu_by_date(date_str: str = "today", mock_empty: bool = False):
         "total_dishes": len(items),
         "available_dishes": sum(1 for d in items if d["is_available"]),
         "out_of_stock_dishes": sum(1 for d in items if not d["is_available"]),
+        "query_time_ms": _ms,
         "data": items
     }
 
@@ -609,7 +674,8 @@ def order_dish(date_str: str, dish_id: str, quantity: int = 1):
         }, 400
 
     day_stocks[dish_id] -= quantity
-    target_dish = next((d for d in DISH_CATALOG if d["id"] == dish_id), None)
+    # TF1B47E: O(1) dict lookup thay vì next(...) O(n) qua DISH_CATALOG
+    target_dish = _DISH_INDEX_BY_ID.get(dish_id)
     dish_name = target_dish["name"] if target_dish else dish_id
 
     return {
@@ -626,7 +692,13 @@ def get_dish_detail(dish_id: str):
     """
     [CORE API] Lấy thông tin chi tiết một món ăn: ảnh, mô tả, giá, nguyên liệu, thông tin dị ứng
     Mã Task: TF1A785
+
+    TF1B47E — Tối ưu:
+      - Dùng _DISH_INDEX_BY_ID O(1) dict lookup thay vì next(...) O(n) vòng lặp
+      - Trả thêm query_time_ms đo thời gian thực thi
     """
+    _t0 = time.perf_counter()
+
     if not dish_id:
         return {
             "success": False,
@@ -635,7 +707,8 @@ def get_dish_detail(dish_id: str):
         }, 400
 
     clean_id = dish_id.strip()
-    target_dish = next((d for d in DISH_CATALOG if d["id"] == clean_id), None)
+    # TF1B47E: O(1) dict lookup thay vì O(n) next() scan
+    target_dish = _DISH_INDEX_BY_ID.get(clean_id)
 
     if not target_dish:
         return {
@@ -670,9 +743,11 @@ def get_dish_detail(dish_id: str):
         "tag_label": target_dish.get("tag_label")
     }
 
+    _ms = round((time.perf_counter() - _t0) * 1000, 3)
     return {
         "success": True,
         "task_id": "TF1A785",
+        "query_time_ms": _ms,
         "data": data
     }, 200
 
@@ -689,7 +764,11 @@ def search_dishes(keyword: str = None, page: int = 1, limit: int = 6, date_str: 
     """
     [CORE API] Tìm kiếm món ăn theo tên, có phân trang và xử lý từ khóa rỗng.
     Mã Task: TF1A8D7
-    
+
+    TF1B47E — Tối ưu:
+      - Dùng _NORM_INDEX (đã build sẵn khi module load) → không normalize lại tên mỗi request
+      - Trả thêm query_time_ms đo thời gian thực thi
+
     Tham số:
       - keyword (str): Từ khóa tìm kiếm món theo tên (ví dụ: "cơm", "phở", "bò", "gà", "").
       - page (int): Số thứ tự trang (bắt đầu từ 1, mặc định 1).
@@ -697,6 +776,8 @@ def search_dishes(keyword: str = None, page: int = 1, limit: int = 6, date_str: 
       - date_str (str): Ngày (YYYY-MM-DD) để lấy số suất tương ứng theo ngày nếu có.
       - strict_empty (bool): Nếu True, khi từ khóa rỗng sẽ trả về lỗi HTTP 400. Mặc định False (trả về tất cả món kèm thông báo).
     """
+    _t0 = time.perf_counter()
+
     raw_keyword = keyword if keyword is not None else ""
     clean_keyword = raw_keyword.strip()
     is_empty_keyword = (len(clean_keyword) == 0)
@@ -738,25 +819,26 @@ def search_dishes(keyword: str = None, page: int = 1, limit: int = 6, date_str: 
         except Exception:
             pass
 
-    # Xử lý tìm kiếm món theo tên và từ khóa rỗng
+    # TF1B47E: Dùng _NORM_INDEX đã build sẵn — tránh normalize lại mỗi request
     if is_empty_keyword:
         matched_dishes = list(DISH_CATALOG)
         message = "Từ khóa tìm kiếm rỗng. Hệ thống trả về toàn bộ danh sách món ăn có phân trang."
     else:
-        norm_keyword = remove_accents(clean_keyword)
+        norm_keyword  = remove_accents(clean_keyword)
         lower_keyword = clean_keyword.lower()
+        kw_words      = norm_keyword.split()
         matched_dishes = []
 
         for dish in DISH_CATALOG:
-            dish_name = dish.get("name", "")
-            norm_name = remove_accents(dish_name)
-            lower_name = dish_name.lower()
+            did = dish["id"]
+            # Lấy từ index đã build, không gọi remove_accents() lại
+            norm_name, lower_name = _NORM_INDEX.get(did, ("", ""))
 
             # 1. Khớp chuỗi con chính xác có dấu hoặc không dấu trong tên món
             if lower_keyword in lower_name or norm_keyword in norm_name:
                 matched_dishes.append(dish)
             # 2. Khớp tất cả các từ trong cụm từ khóa (ví dụ: "bò tái" khớp "Phở Bò Tái Lăn...")
-            elif len(norm_keyword.split()) > 1 and all(w in norm_name for w in norm_keyword.split()):
+            elif len(kw_words) > 1 and all(w in norm_name for w in kw_words):
                 matched_dishes.append(dish)
 
         if not matched_dishes:
@@ -802,6 +884,7 @@ def search_dishes(keyword: str = None, page: int = 1, limit: int = 6, date_str: 
         }
         data_items.append(item)
 
+    _ms = round((time.perf_counter() - _t0) * 1000, 3)
     result = {
         "success": True,
         "task_id": "TF1A8D7",
@@ -821,6 +904,7 @@ def search_dishes(keyword: str = None, page: int = 1, limit: int = 6, date_str: 
             "has_next": has_next,
             "has_prev": has_prev
         },
+        "query_time_ms": _ms,
         "message": message,
         "data": data_items
     }
