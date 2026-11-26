@@ -20,6 +20,7 @@ FastAPI + SQLAlchemy + MySQL backend for the Foodie ordering application.
    For an existing database, also apply `sql/migrations/2026_11_20_add_dish_cloudinary_images.sql` once to add Cloudinary image fields to dishes.
    Apply `sql/migrations/2026_11_20_add_dish_categories.sql` once to create dish categories and connect dishes to them.
 4. To load a local sample dataset, select the configured database and run `sql/seed_database.sql`. It adds sample dishes, categories, stock, recipes, menus, pickup slots, quotas, a demo customer, and a wallet. The script is safe to re-run and preserves existing stock quantities and wallet balances. The demo login is `demo@quickbite.local` / `Foodie@123`. To add sample order states for the Admin screens, run `sql/demo_data.sql` after the seed; it creates pending, confirmed, and cancelled examples and reconciles today's reserved quota with the sample orders.
+5. For an existing database, run `sql/migrations/2026_11_26_seed_pickup_slots_and_index_orders.sql` to add any missing sample pickup slots and index orders by pickup date and slot. Run this migration once; its slot inserts are safe to re-run.
 
 ### Docker MySQL
 
