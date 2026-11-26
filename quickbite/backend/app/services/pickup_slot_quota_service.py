@@ -16,11 +16,10 @@ def reserve_slot_servings(
     service_date: date,
     servings: int,
 ) -> SlotDailyQuota:
-    """Lock capacity and reserve servings; caller must commit with order creation.
+    """Lock capacity and reserve servings; caller commits with order creation.
 
-    Locking the parent slot serializes the first-quota-row case. Once present,
-    the daily quota row is also locked until the caller commits or rolls back.
-    This relies on MySQL InnoDB and must be called in the order transaction.
+    Lock the parent slot to serialize creation of a first daily quota row. On
+    MySQL/InnoDB the row lock remains held until the order transaction ends.
     """
     if servings <= 0:
         raise BadRequestException(message="Số suất đặt phải lớn hơn 0.")
@@ -41,7 +40,7 @@ def reserve_slot_servings(
         )
 
     now = datetime.now(_LOCAL_TIMEZONE)
-    if service_date == now.date() and slot.start_time <= now.time().replace(tzinfo=None):
+    if service_date == now.date() and slot.end_time <= now.time().replace(tzinfo=None):
         raise ConflictException(
             message="Khung giờ nhận món đã qua.", code="SLOT_PAST"
         )
