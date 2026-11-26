@@ -5,7 +5,7 @@ FastAPI + SQLAlchemy + MySQL backend for the Foodie ordering application.
 ## Run locally
 
 1. Install Python 3.10+ and MySQL 8.
-2. From this directory, copy `.env.example` to `.env`, then set the MySQL password and a private random `SECRET_KEY`. Generate a key with `python -c "import secrets; print(secrets.token_urlsafe(48))"`. The secret must have at least 32 characters. For existing accounts, optionally list admin IDs in `ADMIN_USER_IDS` and kitchen IDs in `KITCHEN_USER_IDS` to assign those roles during startup. New registrations always receive the customer role.
+2. From this directory, copy `.env.example` to `.env`, then set `DB_USER`, `DB_PASSWORD`, and a private random `SECRET_KEY`. Generate a key with `python -c "import secrets; print(secrets.token_urlsafe(48))"`. The secret must have at least 32 characters. For existing accounts, optionally list admin IDs in `ADMIN_USER_IDS` and kitchen IDs in `KITCHEN_USER_IDS` to assign those roles during startup. New registrations always receive the customer role.
 3. Install dependencies and start the API:
 
    ```powershell
@@ -24,7 +24,7 @@ FastAPI + SQLAlchemy + MySQL backend for the Foodie ordering application.
 
 ### Docker MySQL
 
-From this directory, run `docker compose up -d`, then set `.env` to `DB_HOST=127.0.0.1`, `DB_PORT=3307`, `DB_USER=app_user`, `DB_PASSWORD=app_password`, and `DB_NAME=app_db`. Start the backend once so SQLAlchemy creates the tables. Run `sql/demo_data.sql` manually afterward if you want sample data; it is not an initialization schema.
+From this directory, set a private `MYSQL_ROOT_PASSWORD`, `DB_USER` (not `root`), `DB_PASSWORD`, and `DB_NAME=app_db` in `.env`; use the same `DB_USER` and `DB_PASSWORD` for the backend connection. Set `DB_HOST=127.0.0.1` and `DB_PORT=3307`, then run `docker compose up -d`. The MySQL port is bound to localhost only. Start the backend once so SQLAlchemy creates the tables. Run `sql/demo_data.sql` manually afterward if you want sample data; it is not an initialization schema.
 
 API docs: <http://127.0.0.1:8000/docs>
 Health check: <http://127.0.0.1:8000/api/health>

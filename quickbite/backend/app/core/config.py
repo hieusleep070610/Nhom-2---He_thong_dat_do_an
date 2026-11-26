@@ -13,11 +13,11 @@ class Settings(BaseSettings):
 
     DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
-    DB_USER: str = "root"
-    DB_PASSWORD: str = "cellfite90"
+    DB_USER: str
+    DB_PASSWORD: str
     DB_NAME: str = "quickbite_db_demo"
 
-    CORS_ORIGINS: str = "*"
+    CORS_ORIGINS: str
     ADMIN_USER_IDS: str = ""
     KITCHEN_USER_IDS: str = ""
     CLOUDINARY_CLOUD_NAME: str = ""
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     CLOUDINARY_FOLDER: str = "quickbite/dishes"
     CLOUDINARY_MAX_IMAGE_SIZE_MB: int = 10
 
-    SECRET_KEY: str = ""
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -40,7 +40,17 @@ class Settings(BaseSettings):
     @classmethod
     def strip_password(cls, value):
         if isinstance(value, str):
-            return value.strip()
+            value = value.strip()
+            if not value:
+                raise ValueError("DB_PASSWORD must not be empty")
+        return value
+
+    @field_validator("CORS_ORIGINS")
+    @classmethod
+    def require_explicit_cors_origins(cls, value: str) -> str:
+        origins = [item.strip() for item in value.split(",") if item.strip()]
+        if not origins or "*" in origins:
+            raise ValueError("CORS_ORIGINS must contain explicit origins and must not include '*'")
         return value
 
     @field_validator("SECRET_KEY")
@@ -60,8 +70,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        origins = [item.strip() for item in self.CORS_ORIGINS.split(",") if item.strip()]
-        return origins or ["*"]
+        return [item.strip() for item in self.CORS_ORIGINS.split(",") if item.strip()]
 
     @property
     def admin_user_ids(self) -> set[int]:
