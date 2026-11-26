@@ -2,7 +2,7 @@ import math
 import unicodedata
 from decimal import Decimal
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, contains_eager, joinedload
 from datetime import date, datetime
 from datetime import timezone, timedelta
 
@@ -127,7 +127,13 @@ def search_dishes(
 
 @router.get("/dishes", response_model=list[DishOut])
 def get_dishes(db: Session = Depends(get_db)):
-    return db.query(Dish).filter(Dish.is_available.is_(True)).all()
+    return (
+        db.query(Dish)
+        .options(joinedload(Dish.category))
+        .filter(Dish.is_available.is_(True))
+        .order_by(Dish.id)
+        .all()
+    )
 
 @router.post("/dishes", status_code=status.HTTP_201_CREATED)
 def create_dish(
@@ -362,7 +368,12 @@ def assign_daily_menu(
 
 @router.get("/daily-menus")
 def get_daily_menus(menu_date: date | None = None, db: Session = Depends(get_db)):
-    query = db.query(DailyMenu).join(Dish).filter(Dish.is_available.is_(True))
+    query = (
+        db.query(DailyMenu)
+        .join(Dish)
+        .options(contains_eager(DailyMenu.dish))
+        .filter(Dish.is_available.is_(True))
+    )
     if menu_date:
         query = query.filter(DailyMenu.menu_date == menu_date)
     rows = query.order_by(DailyMenu.menu_date.desc(), DailyMenu.id.desc()).all()

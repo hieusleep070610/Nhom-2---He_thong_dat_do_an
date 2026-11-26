@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric, Boolean, Date, DateTime, ForeignKey, func
+from sqlalchemy import Column, Index, Integer, String, Numeric, Boolean, Date, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.database.db import Base
 
@@ -9,7 +9,7 @@ class Dish(Base):
     name = Column(String(150), nullable=False, unique=True, index=True)
     price = Column(Numeric(12, 0), nullable=False)
     description = Column(String(255), nullable=True)
-    is_available = Column(Boolean, default=True)
+    is_available = Column(Boolean, default=True, index=True)
     image_url = Column(String(1000), nullable=True)
     image_public_id = Column(String(255), nullable=True)
     category_id = Column(Integer, ForeignKey("dish_categories.id"), nullable=True)
@@ -51,3 +51,7 @@ class DailyMenu(Base):
     quantity = Column(Integer, nullable=False, default=1) 
 
     dish = relationship("Dish", back_populates="daily_menus")
+
+    __table_args__ = (
+        Index("ix_daily_menus_date_dish", "menu_date", "dish_id"),
+    )
