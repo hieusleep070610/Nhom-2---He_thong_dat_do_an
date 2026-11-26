@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie - Khu vực Bếp</title>
+    <link rel="stylesheet" href="../css/kitchen_orders.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-logo">Foodie</span>
+            <span class="brand-title">KHU VỰC BẾP</span>
+        </div>
+
+        <div class="topbar-right">
+            <div class="search-box-top">
+                <input type="text" id="kitchenSearchInput" class="search-input-top" placeholder="Tìm mã đơn, món...">
+            </div>
+            <nav class="topbar-nav">
+                <a href="#">Trang chủ</a>
+                <a href="#">Thực đơn</a>
+                <a href="#">Đơn hàng</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="menu-category-label">BẾP</div>
+                <div class="nav-menu">
+                    <a href="kitchen_orders.html" class="nav-item active">Hàng đợi bếp</a>
+                    <a href="order_detail.html" class="nav-item">Chi tiết chế biến</a>
+                    <a href="order_status.html" class="nav-item">Lịch sử chế biến</a>
+                </div>
+            </div>
+            <div class="sidebar-bottom"></div>
+        </aside>
+
+        <div class="content">
+            <div class="main-context">
+                <section class="page-header">
+                    <div>
+                        <h2 class="page-title">Hàng đợi chế biến</h2>
+                        <p class="page-description">Quản lý và theo dõi hoạt động Foodie — Sắp xếp theo giờ nhận</p>
+                    </div>
+                    <div class="kitchen-filters">
+                        <label for="pickupDateInput">Ngày nhận:</label>
+                        <input type="date" id="pickupDateInput">
+                        <select id="pickupSlotSelect">
+                            <option value="">Tất cả khung giờ nhận</option>
+                        </select>
+                        <button type="button" id="refreshKitchenBtn" class="btn-secondary-outline">Tải lại</button>
+                    </div>
+                </section>
+
+                <section class="stats-grid">
+                    <div class="stat-card border-orange">
+                        <span class="stat-label">Đơn mới</span>
+                        <strong class="stat-value" id="statPendingCount">0</strong>
+                    </div>
+                    <div class="stat-card border-green">
+                        <span class="stat-label">Đã tiếp nhận</span>
+                        <strong class="stat-value" id="statConfirmedCount">0</strong>
+                    </div>
+                    <div class="stat-card border-blue">
+                        <span class="stat-label">Tổng trong ngày</span>
+                        <strong class="stat-value" id="statTotalCount">0</strong>
+                    </div>
+                    <div class="stat-card border-red">
+                        <span class="stat-label">Đã hủy / Từ chối</span>
+                        <strong class="stat-value" id="statCancelledCount">0</strong>
+                    </div>
+                </section>
+
+                <div id="kitchenFeedbackBanner" class="kitchen-feedback" role="status" aria-live="polite"></div>
+
+                <section class="table-card">
+                    <div class="queue-tabs" id="kitchenQueueTabs">
+                        <button type="button" class="tab-active" data-status="pending">Đơn mới</button>
+                        <button type="button" class="tab-inactive" data-status="confirmed">Đã tiếp nhận</button>
+                        <button type="button" class="tab-inactive" data-status="all">Tất cả</button>
+                    </div>
+
+                    <div class="queue-list" id="kitchenQueueList">
+                        <div class="queue-item">
+                            <div class="item-title">Đang tải danh sách đơn...</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <div id="rejectReasonModal" class="reject-modal hidden" aria-hidden="true">
+        <div class="reject-modal-backdrop" id="rejectModalBackdrop"></div>
+        <div class="reject-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
+            <h3 id="rejectModalTitle">Từ chối đơn hàng</h3>
+            <p id="rejectModalOrderInfo"></p>
+            <label for="rejectReasonInput">Lý do từ chối (bắt buộc):</label>
+            <textarea id="rejectReasonInput" rows="3" placeholder="Ví dụ: Hết nguyên liệu, quá tải khung giờ..."></textarea>
+            <p id="rejectReasonError" class="reject-error"></p>
+            <div class="reject-modal-actions">
+                <button type="button" id="cancelRejectBtn" class="btn-secondary-outline">Hủy</button>
+                <button type="button" id="confirmRejectBtn" class="btn-reject">Xác nhận từ chối</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="../js/config/config.js"></script>
+    <script src="../js/api/api.js"></script>
+    <script src="../js/pages/kitchen/kitchen_orders.js"></script>
+</body>
+
+</html>

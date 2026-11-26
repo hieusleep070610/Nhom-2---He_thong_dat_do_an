@@ -18,8 +18,15 @@ class Settings(BaseSettings):
     DB_NAME: str = "quickbite_db_demo"
 
     CORS_ORIGINS: str = "*"
+    ADMIN_USER_IDS: str = ""
+    KITCHEN_USER_IDS: str = ""
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+    CLOUDINARY_FOLDER: str = "quickbite/dishes"
+    CLOUDINARY_MAX_IMAGE_SIZE_MB: int = 10
 
-    SECRET_KEY: str = "dev-secret-change-me"
+    SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -36,6 +43,13 @@ class Settings(BaseSettings):
             return value.strip()
         return value
 
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def require_private_secret(cls, value: str) -> str:
+        if len(value) < 32:
+            raise ValueError("SECRET_KEY must be a private value of at least 32 characters")
+        return value
+
     @property
     def DATABASE_URL(self) -> str:
         password = quote_plus(self.DB_PASSWORD)
@@ -48,6 +62,20 @@ class Settings(BaseSettings):
     def cors_origin_list(self) -> list[str]:
         origins = [item.strip() for item in self.CORS_ORIGINS.split(",") if item.strip()]
         return origins or ["*"]
+
+    @property
+    def admin_user_ids(self) -> set[int]:
+        try:
+            return {int(value.strip()) for value in self.ADMIN_USER_IDS.split(",") if value.strip()}
+        except ValueError as error:
+            raise ValueError("ADMIN_USER_IDS must be a comma-separated list of user IDs") from error
+
+    @property
+    def kitchen_user_ids(self) -> set[int]:
+        try:
+            return {int(value.strip()) for value in self.KITCHEN_USER_IDS.split(",") if value.strip()}
+        except ValueError as error:
+            raise ValueError("KITCHEN_USER_IDS must be a comma-separated list of user IDs") from error
 
 
 @lru_cache

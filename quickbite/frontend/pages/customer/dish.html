@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bún bò Huế đặc biệt | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm món ăn, nhà hàng..." aria-label="Tìm món ăn, nhà hàng">
+      </label>
+
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../../index.html">Trang chủ</a>
+        <a class="is-active" href="menu.html">Thực đơn</a>
+        <a href="orders.html">Đơn hàng</a>
+        <a href="wallet.html">Ví</a>
+        <a href="checkout.html">Giỏ hàng</a>
+      </nav>
+
+      <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </a>
+
+      <div class="fd-user">
+        <span>Xin chào, Vương</span>
+        <span class="fd-avatar" aria-hidden="true">V</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="fd-main">
+    <p class="fd-crumb">Trang chủ / Thực đơn / Bún bò Huế</p>
+
+    <div class="fd-detail">
+      <section class="fd-gallery" aria-label="Ảnh món">
+        <div class="fd-hero">
+          <img id="dish-hero" alt="Bún bò Huế đặc biệt">
+        </div>
+        <div class="fd-thumbs" id="dish-thumbs"></div>
+      </section>
+
+      <section class="fd-info">
+        <h1>Bún bò Huế đặc biệt</h1>
+        <p class="fd-desc" id="dish-description">Đang tải thông tin món ăn…</p>
+        <p class="fd-price" id="dish-price">—</p>
+        <p class="ck-hint">Giá và thành phần được lấy theo món trong thực đơn.</p>
+
+        <div class="fd-buy">
+          <div>
+            <h2>Số lượng</h2>
+            <div class="fd-qty">
+              <button type="button" id="qty-minus" aria-label="Giảm">−</button>
+              <span id="qty-value">1</span>
+              <button type="button" id="qty-plus" aria-label="Tăng">+</button>
+            </div>
+          </div>
+          <button class="fd-add" id="btn-add" type="button">Thêm vào giỏ hàng</button>
+        </div>
+
+        <p class="fd-ship">Nhận món tại khung giờ bạn chọn khi thanh toán.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/customer/cart-store.js"></script>
+  <script src="../../js/pages/customer/dish.js"></script>
+</body>
+</html>

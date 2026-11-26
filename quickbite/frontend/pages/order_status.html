@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie - Chi tiết đơn hàng</title>
+    <link rel="stylesheet" href="../css/common/style.css">
+    <link rel="stylesheet" href="../css/order_status.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-logo">foodie</span>
+            <span class="brand-title">Ăn ngon mỗi ngày</span>
+        </div>
+
+        <div class="topbar-right">
+            <div class="search-box-top">
+                <input id="top-search-input" type="text" class="search-input-top"
+                    placeholder="⌕  Tìm kiếm mã đơn / món...">
+            </div>
+
+            <nav class="topbar-nav">
+                <a href="#">Trang chủ</a>
+                <a href="#">Thực đơn</a>
+                <a href="#">Đơn hàng</a>
+            </nav>
+        </div>
+    </header>
+    <main class="main-context">
+        <section class="page-header">
+            <h2 id="page-status-title">Đơn hàng đang được chuẩn bị</h2>
+            <p id="page-status-subtitle">Quản lý và theo dõi hoạt động Foodie</p>
+        </section>
+        <section class="stats-grid">
+
+            <div class="stat-card border-orange">
+                <span class="stat-label">Mã đơn</span>
+                <strong id="stat-order-code" class="stat-value">ORD2026112201</strong>
+            </div>
+
+            <div class="stat-card border-green">
+                <span class="stat-label">Món / Khách hàng</span>
+                <strong id="stat-restaurant-name" class="stat-value">Cơm gà</strong>
+            </div>
+
+            <div class="stat-card border-blue">
+                <span class="stat-label">Tổng tiền</span>
+                <strong id="stat-delivery-address" class="stat-value">95.000đ</strong>
+            </div>
+
+            <div class="stat-card border-red">
+                <span class="stat-label">Trạng thái</span>
+                <strong id="stat-order-status" class="stat-value">Đã giao</strong>
+            </div>
+
+        </section>
+        <section class="tracking-card">
+            <div class="progress-container">
+
+                <div class="progress-line">
+                    <div id="progress-line-active" class="progress-line-active"></div>
+                </div>
+
+                <div class="progress-step" data-step="confirmed">
+                    <div class="step-circle"></div>
+                    <span>Đã xác nhận</span>
+                </div>
+
+                <div class="progress-step" data-step="preparing">
+                    <div class="step-circle"></div>
+                    <span>Đang chuẩn bị</span>
+                </div>
+
+                <div class="progress-step" data-step="ready">
+                    <div class="step-circle"></div>
+                    <span>Đang giao</span>
+                </div>
+
+                <div class="progress-step" data-step="completed">
+                    <div class="step-circle"></div>
+                    <span>Đã giao</span>
+                </div>
+
+            </div>
+            <div class="delivery-info">
+                <h3>Thông tin đơn hàng</h3>
+
+                <div id="selected-order-detail" class="delivery-detail">
+                    <span>Khách hàng:</span>
+                    <strong id="driver-name">Nguyen Van An</strong>
+
+                    <span class="separator">•</span>
+
+                    <span id="driver-phone">Thanh toán: unpaid • 22/11/2026 19:45</span>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="../js/config/config.js"></script>
+    <script src="../js/api/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/pages/kitchen/order_status.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch sử đơn hàng | foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/customer/orders.css">
+</head>
+<body class="foodie-body" data-role="customer">
+  <main class="fd-main orders-page">
+    <div class="orders-header-row">
+      <div>
+        <h1>Lịch sử đơn hàng</h1>
+        <p class="ck-lead">Theo dõi trạng thái đơn và xem chi tiết từng đơn hàng của bạn</p>
+      </div>
+      <div class="orders-toolbar">
+        <label class="orders-filter-select-wrap" for="order-status-select">
+          <span>Trạng thái:</span>
+          <select id="order-status-select" class="orders-select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="pending">Chờ xác nhận</option>
+            <option value="confirmed">Đã xác nhận</option>
+            <option value="preparing">Đang chuẩn bị</option>
+            <option value="ready">Sẵn sàng nhận</option>
+            <option value="completed">Hoàn tất</option>
+            <option value="cancelled">Đã hủy</option>
+          </select>
+        </label>
+        <input
+          type="search"
+          id="order-search"
+          class="orders-search-input"
+          placeholder="Tìm theo mã đơn hoặc ngày..."
+          aria-label="Tìm theo mã đơn hoặc ngày"
+        >
+      </div>
+    </div>
+
+    <div class="status-tabs" id="order-status-tabs" role="tablist" aria-label="Lọc theo trạng thái đơn hàng">
+      <button class="status-tab is-active" type="button" role="tab" aria-selected="true" data-status="">Tất cả</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="pending">Chờ xác nhận</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="confirmed">Đã xác nhận</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="preparing">Đang chuẩn bị</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="ready">Sẵn sàng nhận</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="completed">Hoàn tất</button>
+      <button class="status-tab" type="button" role="tab" aria-selected="false" data-status="cancelled">Đã hủy</button>
+    </div>
+
+    <section class="panel orders-panel">
+      <div class="orders-panel-top">
+        <h2>Danh sách đơn hàng</h2>
+        <span id="orders-summary-text" class="orders-summary-text"></span>
+      </div>
+
+      <div id="order-list" aria-live="polite"></div>
+
+      <nav class="orders-pagination" id="order-pagination" aria-label="Phân trang đơn hàng"></nav>
+    </section>
+  </main>
+
+  <!-- Modal xem chi tiết đơn hàng -->
+  <div class="order-modal-backdrop" id="order-detail-modal" hidden>
+    <div class="order-modal" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
+      <div class="order-modal-header">
+        <div>
+          <h2 id="order-detail-title">Chi tiết đơn hàng</h2>
+          <p id="order-detail-subtitle" class="order-modal-sub"></p>
+        </div>
+        <button type="button" class="order-modal-close" id="close-order-detail" aria-label="Đóng chi tiết">&times;</button>
+      </div>
+      <div class="order-modal-body" id="order-detail-body"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/customer/orders.js" defer></script>
+</body>
+</html>

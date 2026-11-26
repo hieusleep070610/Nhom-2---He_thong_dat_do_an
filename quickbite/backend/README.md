@@ -1,165 +1,53 @@
-# Backend base: Python FastAPI + MySQL
+# Foodie backend
 
-Khung backend chung cho các nhóm thực tập lớp **HN-KS25-CNTT1**. Đã có sẵn:
+FastAPI + SQLAlchemy + MySQL backend for the Foodie ordering application.
 
-- Kết nối **MySQL** bằng SQLAlchemy + PyMySQL, cấu hình đọc từ file `.env`
-- **CRUD mẫu** cho bảng `items` (thêm / xem / sửa / xoá / tìm kiếm)
-- Endpoint **health-check** `GET /api/health` kiểm tra kết nối DB
-- **CORS** đã bật để frontend gọi được
-- File `sql/init.sql` tạo database + bảng + dữ liệu mẫu, chạy bằng **MySQL Workbench**
-- Trang tài liệu API tự sinh: http://127.0.0.1:8000/docs
+## Run locally
 
-## 1. Cần cài trước
+1. Install Python 3.10+ and MySQL 8.
+2. From this directory, copy `.env.example` to `.env`, then set the MySQL password and a private random `SECRET_KEY`. Generate a key with `python -c "import secrets; print(secrets.token_urlsafe(48))"`. The secret must have at least 32 characters. For existing accounts, optionally list admin IDs in `ADMIN_USER_IDS` and kitchen IDs in `KITCHEN_USER_IDS` to assign those roles during startup. New registrations always receive the customer role.
+3. Install dependencies and start the API:
 
-| Phần mềm | Ghi chú |
-|---|---|
-| Python **3.10 trở lên** | https://www.python.org/downloads/ (Windows: tick **Add python.exe to PATH** khi cài) |
-| MySQL Server 8 + MySQL Workbench | Bản các bạn đang dùng trên lớp là được |
+   ```powershell
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload
+   ```
 
-Kiểm tra Python: mở terminal gõ `python --version` (Mac: `python3 --version`).
+   On startup, the backend creates the configured database and any missing tables from the SQLAlchemy models. It does not alter existing tables. For an existing database, update its tables to match `app/models/` before using the changed endpoints; alternatively, create a fresh database.
+   For an existing database, apply `sql/migrations/2026_11_20_add_customer_and_order_address.sql` once to add saved profile and order addresses.
+   For an existing database, also apply `sql/migrations/2026_11_20_add_dish_cloudinary_images.sql` once to add Cloudinary image fields to dishes.
+   Apply `sql/migrations/2026_11_20_add_dish_categories.sql` once to create dish categories and connect dishes to them.
+4. To load a local sample dataset, select the configured database and run `sql/seed_database.sql`. It adds sample dishes, categories, stock, recipes, menus, pickup slots, quotas, a demo customer, and a wallet. The script is safe to re-run and preserves existing stock quantities and wallet balances. The demo login is `demo@quickbite.local` / `Foodie@123`. To add sample order states for the Admin screens, run `sql/demo_data.sql` after the seed; it creates pending, confirmed, and cancelled examples and reconciles today's reserved quota with the sample orders.
+5. For an existing database, run `sql/migrations/2026_11_26_seed_pickup_slots_and_index_orders.sql` to add any missing sample pickup slots and index orders by pickup date and slot. Run this migration once; its slot inserts are safe to re-run.
 
-## 2. Cấu trúc thư mục
+### Docker MySQL
 
-```
-backend/
-├── app/
-│   ├── main.py            # Điểm khởi động: tạo app, bật CORS, gắn các router
-│   ├── core/config.py     # Đọc cấu hình từ .env
-│   ├── db/session.py      # Kết nối MySQL, hàm get_db()
-│   ├── models/            # Model = bảng trong DB (item.py)
-│   ├── schemas/           # Schema = dữ liệu vào/ra của API (item.py)
-│   ├── crud/              # Hàm đọc/ghi DB (item.py)
-│   └── routers/           # Khai báo các API (health.py, items.py)
-├── sql/init.sql           # Tạo database + bảng + dữ liệu mẫu (chạy bằng Workbench)
-├── requirements.txt       # Danh sách thư viện Python
-├── .env.example           # Mẫu file cấu hình
-└── docker-compose.yml     # KHÔNG bắt buộc, xem mục 8
-```
+From this directory, run `docker compose up -d`, then set `.env` to `DB_HOST=127.0.0.1`, `DB_PORT=3307`, `DB_USER=app_user`, `DB_PASSWORD=app_password`, and `DB_NAME=app_db`. Start the backend once so SQLAlchemy creates the tables. Run `sql/demo_data.sql` manually afterward if you want sample data; it is not an initialization schema.
 
-Một request đi qua các lớp như sau:
+API docs: <http://127.0.0.1:8000/docs>
+Health check: <http://127.0.0.1:8000/api/health>
 
-```
-Frontend --HTTP--> routers/items.py --> crud/item.py --> models/item.py --> MySQL
-                   (kiểm tra dữ liệu bằng schemas/item.py)
-```
+## Order flow
 
-## 3. Bước 1: tạo database bằng MySQL Workbench
+- Register or log in through `/api/auth/register` or `/api/auth/login`; send the returned bearer token on authenticated requests.
+- `GET /api/auth/me` returns the saved address. `PUT /api/auth/me` updates it with `{ "address": "..." }`.
+- Roles are seeded with fixed IDs: `1=admin`, `2=kitchen`, `3=customer`. The `roles` and `user_roles` tables are created automatically. Existing users without a role become customers; IDs configured in `ADMIN_USER_IDS` or `KITCHEN_USER_IDS` are assigned their corresponding role. Admins can assign a role with `PUT /api/auth/users/{user_id}/role` and body `{ "role_id": 1|2|3 }`. Admins manage dishes and all orders; kitchen users see the active preparation queue and can move orders to `preparing` or `ready`; customers create and manage their own orders and wallet.
+- Checkout preloads the profile address, lets customers edit and save it, and stores the effective address on the created order. If the checkout field is blank, the saved profile address is used.
+- The customer pages in `../frontend` load dishes, remaining daily servings, pickup slots, the customer's wallet, and order history from the API.
+- Configure `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in `.env` to enable dish image uploads. `CLOUDINARY_FOLDER` defaults to `quickbite/dishes`; the upload endpoint accepts JPG, PNG, and WebP images up to `CLOUDINARY_MAX_IMAGE_SIZE_MB` (10 MB by default). Admins upload through `POST /api/menu/dishes/{dish_id}/image` using multipart field `image`.
+- Admin pages use `/api/categories`, `/api/ingredients`, `/api/recipes`, `/api/orders`, and `/api/users`; admin-only catalog, stock, recipe, and account endpoints require a bearer token with the admin role.
+- `POST /api/orders` accepts `pickup_date`, `pickup_slot_id`, dish IDs and quantities, an optional note, and `payment_method: "wallet"` or `"cod"`. The server prices items from the database and atomically reserves capacity and configured recipe stock. Wallet orders are charged immediately; COD orders remain unpaid until collection.
+- Send an `Idempotency-Key` header to safely retry an order request. Wallet top-ups, coupons, and bank payments are not implemented.
+- Orders with recipes require a configured `Ingredient.stock_quantity`; null stock is treated as unavailable. Cancelling an eligible paid order refunds the wallet and restores tracked stock and pickup capacity.
+- Customers can read and cancel only their own orders and can access only their own wallet. Administrative dish/menu mutations and staff order transitions require the caller's ID in `ADMIN_USER_IDS`.
 
-1. Mở **MySQL Workbench**, bấm vào connection **Local instance MySQL80** (hoặc connection bạn hay dùng), nhập mật khẩu root.
-2. Menu **File → Open SQL Script...**, chọn file `backend/sql/init.sql`.
-3. Bấm nút **tia sét ⚡ (Execute)** để chạy cả file.
-4. Ở khung **SCHEMAS** bên trái, bấm nút **Refresh ⟳**. Thấy `app_db` → `Tables` → `items` là xong.
-5. Chuột phải bảng `items` → **Select Rows - Limit 1000** để xem 2 dòng dữ liệu mẫu.
+## Tests
 
-> Nhớ lại thông tin connection (chuột phải connection ở màn hình Home → **Edit Connection**): **Hostname** (thường `127.0.0.1`), **Port** (thường `3306`), **Username** (thường `root`) và mật khẩu. Bước sau sẽ điền đúng các thông tin này.
-
-## 4. Bước 2: tạo file `.env`
-
-Mở terminal **trong thư mục `backend/`** (VS Code: chuột phải thư mục `backend` → *Open in Integrated Terminal*).
-
-```bash
-# Windows
-copy .env.example .env
-# Mac / Linux
-cp .env.example .env
+```powershell
+pip install -r requirements-dev.txt
+python -m pytest -q
 ```
 
-Mở file `.env`, điền **mật khẩu root MySQL** của bạn:
-
-```
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=mat_khau_root_cua_ban
-DB_NAME=app_db
-```
-
-## 5. Bước 3: cài thư viện Python
-
-Tạo môi trường ảo (chỉ làm 1 lần):
-
-```bash
-python -m venv .venv
-```
-
-Kích hoạt môi trường ảo (làm lại **mỗi lần mở terminal mới**):
-
-| Hệ điều hành | Lệnh |
-|---|---|
-| Windows PowerShell | `.venv\Scripts\Activate.ps1` |
-| Windows CMD | `.venv\Scripts\activate.bat` |
-| Mac / Linux | `source .venv/bin/activate` |
-
-> PowerShell báo lỗi "running scripts is disabled"? Chạy một lần:
-> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
-
-Khi đầu dòng terminal hiện `(.venv)` là đã kích hoạt. Cài thư viện:
-
-```bash
-pip install -r requirements.txt
-```
-
-## 6. Bước 4: chạy server
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Terminal in ra `[DB] Đã kết nối MySQL ...` là thành công. `--reload` giúp server tự khởi động lại mỗi khi bạn lưu code. Tắt server: `Ctrl + C`.
-
-Kiểm tra:
-
-- http://127.0.0.1:8000/api/health → `{"status":"ok","database":"connected"}`
-- http://127.0.0.1:8000/docs → thử trực tiếp mọi API bằng nút **Try it out**
-- Thêm 1 item ở `/docs` (hoặc từ frontend), rồi quay lại Workbench chạy `SELECT * FROM app_db.items;` sẽ thấy dòng mới.
-
-## 7. Danh sách API mẫu
-
-| Method | URL | Việc làm | Body (JSON) |
-|---|---|---|---|
-| GET | `/api/health` | Kiểm tra server + DB | |
-| GET | `/api/items` | Danh sách, tìm theo tên `?q=com` | |
-| GET | `/api/items/{id}` | Chi tiết | |
-| POST | `/api/items` | Thêm mới | `{"name": "Trà đá", "description": "...", "price": 5000}` |
-| PUT | `/api/items/{id}` | Sửa (gửi trường nào sửa trường đó) | `{"price": 6000}` |
-| DELETE | `/api/items/{id}` | Xoá | |
-
-Khi lỗi, API trả về JSON dạng `{"detail": "..."}`. Ví dụ: 404 khi không tìm thấy, 422 khi dữ liệu gửi lên sai.
-
-## 8. Frontend nối với backend thế nào?
-
-- Frontend gọi tới `http://127.0.0.1:8000/api/...` (cấu hình ở `frontend/js/config.js`).
-- Trình duyệt chặn web ở địa chỉ khác gọi API nếu backend không cho phép. Đó là **CORS**. Backend đã cho phép bằng `CORS_ORIGINS` trong `.env`:
-  - `CORS_ORIGINS=*` cho phép mọi nơi (mặc định, tiện khi học)
-  - Khi deploy thật, ghi rõ domain: `CORS_ORIGINS=https://nhom1.example.com`
-- Sửa `.env` xong phải **tắt (`Ctrl + C`) và chạy lại** uvicorn.
-
-## 9. Thêm chức năng cho đề tài (vd: bảng `products`)
-
-1. **Tạo bảng trong MySQL:** viết câu `CREATE TABLE products (...)` vào file mới `sql/products.sql`, chạy bằng Workbench như bước 1. Lưu file `.sql` lại để cả nhóm cùng chạy.
-2. `app/models/product.py`: copy `item.py`, đổi tên class, `__tablename__ = "products"` và các cột cho **giống bảng vừa tạo**.
-3. `app/models/__init__.py`: thêm `from app.models.product import Product`.
-4. `app/schemas/product.py`: copy `schemas/item.py`, sửa các trường.
-5. `app/crud/product.py`: copy `crud/item.py`, đổi `Item` thành `Product`.
-6. `app/routers/products.py`: copy `routers/items.py`, đổi `prefix="/products"`.
-7. `app/main.py`: thêm `app.include_router(products.router, prefix="/api")`.
-8. Chạy lại server, mở `/docs` sẽ thấy nhóm API **Products**.
-
-> Mẹo: nếu quên bước 1, server cũng tự tạo bảng còn thiếu theo model khi khởi động. Nhưng nó **không sửa** bảng đã có. Muốn thêm/sửa cột, hãy dùng `ALTER TABLE ...` trong Workbench rồi sửa model cho khớp.
-
-## 10. Lỗi hay gặp
-
-| Lỗi | Cách sửa |
-|---|---|
-| `Access denied for user 'root'@'localhost'` | Sai `DB_PASSWORD` trong `.env`. Dùng đúng mật khẩu đăng nhập Workbench |
-| `Can't connect to MySQL server on '127.0.0.1'` | MySQL chưa bật. Windows: mở **Services**, tìm **MySQL80**, bấm **Start**. Hoặc kiểm tra lại `DB_PORT` |
-| `Unknown database 'app_db'` | Chưa chạy `sql/init.sql` trong Workbench (bước 1) |
-| `ModuleNotFoundError: No module named 'fastapi'` | Chưa kích hoạt `.venv` hoặc chưa `pip install -r requirements.txt` |
-| `Error loading ASGI app. Could not import module "app.main"` | Đang đứng sai thư mục. Phải `cd` vào `backend/` rồi mới chạy uvicorn |
-| `'python' is not recognized...` / mở ra Microsoft Store | Cài lại Python và tick **Add python.exe to PATH** |
-| Cổng 8000 đã bị dùng | `uvicorn app.main:app --reload --port 8001`, nhớ sửa `frontend/js/config.js` theo |
-| Tiếng Việt bị lỗi font trong DB | Database/bảng phải là `utf8mb4`. Tạo bằng `sql/init.sql` là đúng sẵn |
-
-## 11. (Không bắt buộc) Chạy MySQL bằng Docker
-
-Chỉ dành cho bạn nào đã biết Docker và không muốn cài MySQL. Trong `backend/` chạy `docker compose up -d`: MySQL chạy ở cổng **3307**, tự tạo bảng từ `sql/init.sql`. Khi đó sửa `.env` thành `DB_PORT=3307`, `DB_USER=app_user`, `DB_PASSWORD=app_password`.
+The order service tests use an isolated SQLite database. MySQL-specific locking still needs verification against a running MySQL 8 instance.

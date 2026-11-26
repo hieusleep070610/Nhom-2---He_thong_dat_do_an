@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý đơn hàng · QuickBite</title>
+  <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/admin/menu.css">
+</head>
+<body data-admin-page="orders">
+  <div class="admin-shell">
+    <aside class="admin-side"></aside>
+    <main class="admin-main">
+      <header class="admin-page-heading">
+        <div>
+          <h1>Quản lý đơn hàng</h1>
+          <p id="adminUserSub">Theo dõi đơn hàng và tình trạng phục vụ.</p>
+        </div>
+        <div class="admin-heading-actions">
+          <span id="adminUserBadge" class="admin-user-badge">Đang kiểm tra tài khoản…</span>
+          <button id="ordersExport" class="btn btn-primary" type="button">Xuất danh sách</button>
+        </div>
+      </header>
+
+      <section class="dashboard-metrics">
+        <article class="inventory-metric"><span>Tổng đơn</span><strong id="ordersTotal">—</strong></article>
+        <article class="inventory-metric"><span>Chờ xác nhận</span><strong id="ordersPending">—</strong></article>
+        <article class="inventory-metric"><span>Đang chuẩn bị</span><strong id="ordersPreparing">—</strong></article>
+        <article class="inventory-metric"><span>Đang giao / sẵn sàng</span><strong id="ordersReady">—</strong></article>
+      </section>
+
+      <section class="admin-section card">
+        <div class="admin-section-heading">
+          <label class="admin-search">Mã đơn hoặc tên khách
+            <input id="orderSearch" type="search" placeholder="Tìm đơn hàng">
+          </label>
+          <label class="admin-search">Ngày đặt
+            <input id="orderDateFilter" type="date">
+          </label>
+          <label class="admin-search">Trạng thái
+            <select id="orderStatusFilter">
+              <option value="">Tất cả trạng thái</option>
+              <option value="pending">pending</option>
+              <option value="confirmed">confirmed</option>
+              <option value="preparing">preparing</option>
+              <option value="ready">ready</option>
+              <option value="completed">completed</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+          </label>
+          <button id="reloadOrders" class="btn btn-secondary" type="button">Làm mới</button>
+        </div>
+
+        <div id="ordersState" class="admin-state">Đang tải đơn hàng…</div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Món đã đặt</th>
+                <th>Tổng tiền</th>
+                <th>PTTT</th>
+                <th>Thanh toán</th>
+                <th>Đơn hàng</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="orderRows" data-page-body="orders"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="orderDetail" class="admin-section card">
+        <h2>Chọn đơn hàng để xem chi tiết</h2>
+        <p class="admin-muted">Cập nhật trạng thái sẽ được backend kiểm tra theo luồng đơn hàng.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/pages/admin/shell.js"></script>
+  <script src="../../js/pages/admin/ui.js"></script>
+  <script src="../../js/pages/admin/orders.js" defer></script>
+</body>
+</html>

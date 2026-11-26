@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ví Foodie</title>
+  <link rel="icon" href="../../assets/images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/common/style.css">
+</head>
+<body class="foodie-body">
+  <header class="fd-header">
+    <div class="fd-header-inner">
+      <a class="fd-logo" href="../../index.html">
+        <span class="fd-logo-name">foodie</span>
+        <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
+      </a>
+      <label class="fd-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16.5 20 20.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
+      </label>
+      <nav class="fd-nav" aria-label="Chính">
+        <a href="../../index.html">Trang chủ</a>
+        <a href="menu.html">Thực đơn</a>
+        <a href="orders.html">Đơn hàng</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="fd-main">
+    <h1>Ví Foodie</h1>
+    <p class="ck-lead">Quản lý và theo dõi hoạt động Foodie</p>
+    <!-- <p id="db-status-badge" class="ck-hint">Đang kiểm tra kết nối...</p> -->
+
+    <section class="metric-grid">
+      <article class="metric-card">
+        <i></i>
+        <div>
+          <small>Số dư khả dụng</small>
+          <strong id="lbl-balance">--</strong>
+        </div>
+      </article>
+      <article class="metric-card green">
+        <i></i>
+        <div>
+          <small>Chủ ví</small>
+          <strong id="lbl-owner">--</strong>
+        </div>
+      </article>
+      <article class="metric-card red">
+        <i></i>
+        <div>
+          <small>Trạng thái ví</small>
+          <strong id="lbl-status">--</strong>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Thông tin ví của bạn</h2>
+      <p id="wallet-message" role="status">Đang tải thông tin ví…</p>
+      <a class="data-row" href="orders.html"><span>Lịch sử đơn hàng</span><span>Xem →</span></a>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/api/api.js"></script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/layout.js"></script>
+  <script src="../../js/pages/customer/wallet.js"></script>
+</body>
+</html>

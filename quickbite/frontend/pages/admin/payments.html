@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý thanh toán · QuickBite</title>
+  <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/admin/menu.css">
+</head>
+<body data-admin-page="payments">
+  <div class="admin-shell">
+    <aside class="admin-side"></aside>
+    <main class="admin-main">
+      <header class="admin-page-heading">
+        <div>
+          <h1>Quản lý thanh toán</h1>
+          <p>Đối soát trạng thái thanh toán của các đơn hàng.</p>
+        </div>
+        <button id="paymentsExport" type="button" class="btn btn-primary">Xuất giao dịch</button>
+      </header>
+
+      <section class="dashboard-metrics">
+        <article class="inventory-metric"><span>Đơn hàng</span><strong id="paymentTotal">—</strong></article>
+        <article class="inventory-metric"><span>Đã thanh toán</span><strong id="paymentSuccess">—</strong></article>
+        <article class="inventory-metric"><span>Chưa thanh toán</span><strong id="paymentPending">—</strong></article>
+        <article class="inventory-metric"><span>Đã hoàn tiền</span><strong id="paymentRefunded">—</strong></article>
+      </section>
+
+      <section class="admin-section card">
+        <div class="admin-section-heading">
+          <label class="admin-search">Tìm mã đơn
+            <input id="paymentSearch" type="search" placeholder="Tìm giao dịch">
+          </label>
+          <label class="admin-search">Phương thức
+            <select id="paymentMethod">
+              <option value="">Tất cả</option>
+              <option value="wallet">Ví Foodie</option>
+              <option value="cod">Tiền mặt (COD)</option>
+              <option value="bank">Chuyển khoản</option>
+            </select>
+          </label>
+          <label class="admin-search">Trạng thái
+            <select id="paymentStatus">
+              <option value="">Tất cả</option>
+              <option value="paid">Đã thanh toán</option>
+              <option value="unpaid">Chưa thanh toán</option>
+              <option value="refunded">Đã hoàn tiền</option>
+            </select>
+          </label>
+          <button id="paymentReload" type="button" class="btn btn-secondary">Làm mới</button>
+        </div>
+
+        <div class="admin-modal-note">
+          Dữ liệu hiện lấy từ đơn hàng; backend chưa có API giao dịch và đối soát độc lập.
+        </div>
+        <div id="paymentState" class="admin-state">Đang tải giao dịch…</div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Giao dịch tham chiếu</th>
+                <th>Mã đơn</th>
+                <th>Số tiền</th>
+                <th>Phương thức</th>
+                <th>Thanh toán</th>
+                <th>Đơn hàng</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="paymentRows" data-page-body="payments"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="paymentDetail" class="admin-section card">
+        <h2>Chọn giao dịch để xem chi tiết</h2>
+        <p class="admin-muted">
+          Thông tin thanh toán được lấy từ đơn hàng; không thay đổi trạng thái khi chưa có xác nhận nghiệp vụ.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script src="../../js/config/config.js"></script>
+  <script src="../../js/pages/admin/shell.js"></script>
+  <script src="../../js/pages/admin/ui.js"></script>
+  <script src="../../js/pages/admin/payments.js"></script>
+</body>
+</html>
