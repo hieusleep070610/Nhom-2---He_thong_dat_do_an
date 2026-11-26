@@ -145,6 +145,8 @@ def list_orders(customer: User = Depends(get_current_user), db: Session = Depend
             "status": row.status,
             "total_amount": float(row.total_amount),
             "created_at": row.created_at,
+            "pickup_date": getattr(row, "pickup_date", None),
+            "pickup_slot_id": getattr(row, "pickup_slot_id", None),
             "payment_method": row.payment_method,
             "payment_status": row.payment_status,
             "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
