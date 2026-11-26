@@ -1,6 +1,8 @@
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from concurrent.futures import ThreadPoolExecutor
 import re
+from threading import Barrier
 
 import pytest
 from sqlalchemy import create_engine, event
@@ -485,3 +487,89 @@ def test_failure_after_order_insert_rolls_back_everything(world, monkeypatch):
     assert world["db"].query(OrderItem).count() == 0
     assert world["db"].query(SlotDailyQuota).count() == 0
     assert Decimal(world["db"].query(WalletModel).first().balance) == balance
+
+
+def test_two_customers_competing_for_last_dish_serving(tmp_path):
+    """Independent sessions racing for one menu serving must never oversell."""
+    engine = create_engine(f"sqlite:///{tmp_path / 'concurrent-orders.db'}", connect_args={"timeout": 10})
+
+    @event.listens_for(engine, "connect")
+    def register_regexp(connection, _record):
+        connection.create_function("regexp", 2, lambda pattern, value: bool(re.search(pattern, value or "")))
+
+    Base.metadata.create_all(engine)
+    sessions = sessionmaker(bind=engine, expire_on_commit=False)
+    setup = sessions()
+    pickup_date = date.today() + timedelta(days=1)
+    customers = [
+        User(email=f"racer-{index}@example.test", phone=f"090123456{index}", password="x", full_name=f"Racer {index}", address="Address")
+        for index in (1, 2)
+    ]
+    slot = PickupSlot(label="19:00", start_time=time(19), end_time=time(19, 30), max_servings=10, is_active=1)
+    dish = Dish(name="Last serving", price=Decimal("10000"), is_available=True)
+    setup.add_all([*customers, slot, dish])
+    setup.flush()
+    setup.add_all([
+        DailyMenu(menu_date=pickup_date, dish_id=dish.id, quantity=1),
+        *(WalletModel(user_id=customer.user_id, balance=Decimal("100000"), status="active") for customer in customers),
+    ])
+    setup.commit()
+    customer_ids = [customer.user_id for customer in customers]
+    slot_id, dish_id = slot.id, dish.id
+    setup.close()
+
+    start = Barrier(2)
+
+    def place_order(customer_id):
+        db = sessions()
+        try:
+            customer = db.get(User, customer_id)
+            start.wait(timeout=5)
+            return create_order(
+                db,
+                customer=customer,
+                pickup_date=pickup_date,
+                pickup_slot_id=slot_id,
+                items=[(dish_id, 1)],
+                note=None,
+                payment_method="wallet",
+                coupon_code=None,
+                idempotency_key=None,
+            )
+        except Exception as error:
+            return error
+        finally:
+            db.close()
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = list(pool.map(place_order, customer_ids))
+        successes = [outcome for outcome in outcomes if isinstance(outcome, dict)]
+        failures = [outcome for outcome in outcomes if isinstance(outcome, Exception)]
+        assert len(successes) == 1
+        assert len(failures) == 1
+        assert isinstance(failures[0], ConflictException)
+        assert failures[0].details["code"] in {"INSUFFICIENT_SERVINGS", "ORDER_CONFLICT"}
+
+        verify = sessions()
+        assert verify.query(Order).count() == 1
+        assert verify.query(OrderItem).filter_by(dish_id=dish_id).with_entities(OrderItem.quantity).scalar() == 1
+        verify.close()
+    finally:
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+
+
+def test_pickup_slot_is_closed_at_exact_end_time(world, monkeypatch):
+    from app.services import pickup_slot_quota_service
+
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime.combine(date.today(), world["slot"].end_time).replace(tzinfo=tz)
+
+    monkeypatch.setattr(pickup_slot_quota_service, "datetime", FrozenDateTime)
+    with pytest.raises(ConflictException) as error:
+        submit(world, pickup_date=date.today())
+    assert error.value.details["code"] == "SLOT_PAST"
+    assert world["db"].query(Order).count() == 0
