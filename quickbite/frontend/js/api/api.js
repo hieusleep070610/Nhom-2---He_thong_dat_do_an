@@ -1,28 +1,14 @@
-// Module gọi API bằng axios: cấu hình 1 lần, mọi trang dùng chung.
-// (axios được nạp từ CDN bằng thẻ <script> trong từng trang HTML, trước file này)
-//
-// Cách dùng (trong các file js/pages/*.js):
-//   const rows = await api.get("/orders");
-//   const rows = await api.get("/orders", { q: "com" });          // -> /orders?q=com
-//   const created = await api.post("/orders", { note: "Ít cay" });
-//   await api.put("/orders/1", { note: "Ghi chú mới" });
-//   await api.delete("/orders/1");
-//
-// Các hàm trả về thẳng dữ liệu JSON (đã lấy sẵn response.data).
-// Nếu lỗi, hàm sẽ throw ApiError -> bắt bằng try/catch và hiện error.message cho người dùng.
-
 class ApiError extends Error {
   constructor(message, status, data) {
     super(message);
-    this.status = status; // mã HTTP: 404, 422, 500... (0 = không gọi được server)
-    this.data = data; // nội dung lỗi gốc server trả về
+    this.status = status;
+    this.data = data;
   }
 }
 
-// Instance axios dùng chung: mọi request tự nối thêm baseURL phía trước
 const http = axios.create({
   baseURL: CONFIG.API_BASE_URL,
-  timeout: 10000, // quá 10 giây không phản hồi thì báo lỗi
+  timeout: 10000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -32,7 +18,6 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-// Lấy câu thông báo lỗi dễ đọc từ response của FastAPI
 function getErrorMessage(data, status) {
   if (data && Array.isArray(data.details) && data.details.length) {
     return data.details
@@ -47,16 +32,13 @@ function getErrorMessage(data, status) {
   return `Lỗi ${status}`;
 }
 
-// Gom xử lý lỗi một chỗ: đổi lỗi của axios thành ApiError dễ dùng
 http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Server có trả lời nhưng là lỗi (4xx, 5xx)
       const { status, data } = error.response;
       return Promise.reject(new ApiError(getErrorMessage(data, status), status, data));
     }
-    // Không có response: server tắt, sai URL, bị chặn CORS, hoặc quá thời gian chờ
     return Promise.reject(new ApiError(
       "Không kết nối được backend. Backend đã chạy chưa? Kiểm tra CONFIG.API_BASE_URL.", 0,
     ));
@@ -67,5 +49,15 @@ const api = {
   get: (path, params) => http.get(path, { params }).then((res) => res.data),
   post: (path, body, config = {}) => http.post(path, body, config).then((res) => res.data),
   put: (path, body) => http.put(path, body).then((res) => res.data),
+  patch: (path, body) => http.patch(path, body).then((res) => res.data),
   delete: (path) => http.delete(path).then((res) => res.data),
+};
+
+const dishPriceApi = {
+  updatePrice: (dishId, newPrice, reason = "") =>
+    api.patch(`/menu/dishes/${dishId}/price`, {
+      new_price: Number(newPrice),
+      reason: reason && reason.trim() ? reason.trim() : null,
+    }),
+  getPriceHistory: (dishId) => api.get(`/menu/dishes/${dishId}/price-history`),
 };
