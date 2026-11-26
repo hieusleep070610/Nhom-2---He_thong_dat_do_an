@@ -49,6 +49,10 @@
     box-sizing: border-box;
 }
 
+html, body {
+    overflow-x: clip;
+}
+
 body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-page);
@@ -191,11 +195,31 @@ input, select {
     color: var(--dark);
 }
 
-/* Nav Actions */
 .nav-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.nav-detail-link {
+    padding: 7px 14px;
+    font-size: 0.86rem;
+    white-space: nowrap;
+}
+
+.api-status-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: #e0f2fe;
+    color: #0284c7;
+    margin-left: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
 }
 
 .cart-btn {
@@ -1281,6 +1305,34 @@ input, select {
     color: #f59e0b;
 }
 
+.empty-filter-state {
+    border-style: dashed;
+}
+
+.empty-filter-icon {
+    width: 78px;
+    height: 78px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: #fff7ed;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.1rem;
+}
+
+.empty-filter-icon.is-positive {
+    background: #ecfdf5;
+    color: var(--success);
+}
+
+.cart-empty-cta {
+    margin-top: 16px;
+    padding: 9px 18px;
+    font-size: 0.86rem;
+}
+
 .empty-state h3 {
     font-size: 1.35rem;
     font-weight: 800;
@@ -1429,7 +1481,8 @@ input, select {
 .modal-meta-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     margin-bottom: 16px;
 }
 
@@ -2402,5 +2455,502 @@ input, select {
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-muted);
+    text-align: center;
+}
+
+/* ==========================================================================
+   TASK TF1AB64: RESPONSIVE MOBILE HOÀN CHỈNH CHO TRANG THỰC ĐƠN
+   ========================================================================== */
+@media (max-width: 1100px) {
+    .badge-task-fe {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 14px;
+    }
+
+    .nav-container {
+        height: auto;
+        padding: 10px 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .logo {
+        flex: 1;
+        min-width: 0;
+        gap: 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .logo-text {
+        font-size: 1.2rem;
+    }
+
+    .api-status-badge {
+        display: none !important;
+    }
+
+    .nav-actions {
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .nav-detail-link {
+        padding: 7px 10px;
+        font-size: 0.8rem;
+    }
+
+    .cart-btn {
+        padding: 8px 12px;
+        gap: 6px;
+        font-size: 0.84rem;
+    }
+
+    .cart-label,
+    .user-name {
+        display: none;
+    }
+
+    .user-profile {
+        padding-left: 0;
+        border-left: none;
+    }
+
+    .user-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+    .search-box {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+        margin-top: 2px;
+    }
+
+    .search-box input {
+        padding: 10px 36px 10px 38px;
+        font-size: 0.88rem;
+    }
+
+    .search-icon {
+        left: 13px;
+        font-size: 0.88rem;
+    }
+
+    .search-suggestions-dropdown {
+        top: calc(100% + 6px);
+        border-radius: var(--radius-md);
+    }
+
+    .suggestions-header {
+        padding: 8px 12px;
+        font-size: 0.72rem;
+    }
+
+    .suggestions-list {
+        max-height: 280px;
+    }
+
+    .suggestion-item {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .suggestion-thumb {
+        width: 42px;
+        height: 42px;
+    }
+
+    .suggestion-stock-tag {
+        margin-left: 0;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        padding: 26px 0 24px;
+    }
+
+    .hero-badge {
+        font-size: 0.76rem;
+        padding: 5px 11px;
+        margin-bottom: 10px;
+    }
+
+    .hero-title {
+        font-size: 1.55rem;
+        margin-bottom: 8px;
+    }
+
+    .hero-desc {
+        font-size: 0.92rem;
+        margin-bottom: 18px;
+    }
+
+    .hero-stats {
+        gap: 14px 20px;
+        padding-top: 16px;
+    }
+
+    .stat-item {
+        gap: 10px;
+    }
+
+    .stat-item i {
+        font-size: 1.35rem;
+    }
+
+    .stat-item strong {
+        font-size: 1rem;
+    }
+
+    .stat-item span {
+        font-size: 0.78rem;
+    }
+
+    /* Main & Date Picker */
+    .main-layout {
+        padding-top: 20px;
+        padding-bottom: 48px;
+    }
+
+    .date-picker-section {
+        padding: 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 18px;
+    }
+
+    .section-header {
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .section-title {
+        font-size: 1.15rem;
+    }
+
+    .section-subtitle {
+        font-size: 0.84rem;
+    }
+
+    .custom-date-wrapper {
+        width: 100%;
+        justify-content: space-between;
+        padding: 8px 12px;
+    }
+
+    .date-tabs-container {
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+
+    .date-nav-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 0.8rem;
+    }
+
+    .date-tabs {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .date-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .date-tab-card {
+        min-width: 82px;
+        padding: 10px 8px;
+        flex-shrink: 0;
+        scroll-snap-align: start;
+    }
+
+    .tab-date-num {
+        font-size: 1.05rem;
+    }
+
+    .active-date-banner {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .active-date-info {
+        gap: 6px 10px;
+    }
+
+    .active-date-info strong {
+        font-size: 0.96rem;
+    }
+
+    .serving-time-badge {
+        font-size: 0.75rem;
+        padding: 4px 9px;
+    }
+
+    .active-date-stats {
+        width: 100%;
+        gap: 6px;
+    }
+
+    /* Filter & Sort Bar */
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .category-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .category-filters::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cat-pill {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 7px 14px;
+        font-size: 0.84rem;
+    }
+
+    .sort-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .sort-select {
+        flex: 1;
+        max-width: 220px;
+    }
+
+    .active-filter-indicator {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+    }
+
+    .btn-clear-category-filter {
+        align-self: flex-end;
+    }
+
+    /* Search Banner */
+    .search-results-banner {
+        padding: 16px;
+        gap: 12px;
+        border-radius: var(--radius-md);
+        margin-bottom: 18px;
+    }
+
+    .search-results-heading {
+        font-size: 1.15rem;
+    }
+
+    .search-banner-actions {
+        width: 100%;
+    }
+
+    .btn-clear-search-mode {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Grid & Cards */
+    .menu-grid,
+    .skeleton-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .loading-indicator {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    /* Empty States */
+    .empty-state {
+        padding: 36px 18px;
+        border-radius: var(--radius-md);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+    }
+
+    .empty-search-icon,
+    .empty-filter-icon {
+        width: 66px;
+        height: 66px;
+        font-size: 1.75rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.15rem;
+    }
+
+    .empty-state p {
+        font-size: 0.88rem;
+        margin-bottom: 18px;
+    }
+
+    .popular-suggestions-box {
+        padding: 14px;
+        margin: 16px auto;
+    }
+
+    /* Pagination */
+    .search-pagination-bar {
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 18px 0 8px;
+    }
+
+    .btn-page-nav {
+        padding: 8px 12px;
+        font-size: 0.82rem;
+    }
+
+    /* Modal & Cart Drawer & Toast */
+    .modal-overlay {
+        padding: 12px;
+    }
+
+    .modal-dish-img {
+        height: 210px;
+    }
+
+    .modal-info-padding {
+        padding: 18px 16px 22px;
+    }
+
+    .modal-info-padding h2 {
+        font-size: 1.28rem;
+    }
+
+    .cart-drawer {
+        max-width: 100%;
+        right: -100%;
+    }
+
+    .toast-container {
+        left: 12px;
+        right: 12px;
+        bottom: 16px;
+    }
+
+    .toast {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 36px 0 0;
+        margin-top: 28px;
+    }
+
+    .footer-bottom-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .badge-team {
+        display: none;
+    }
+
+    .nav-detail-link span {
+        display: none;
+    }
+
+    .nav-detail-link {
+        padding: 8px 10px;
+    }
+
+    .hero-title {
+        font-size: 1.38rem;
+    }
+
+    .date-nav-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
+
+    .date-tab-card {
+        min-width: 74px;
+        padding: 8px 6px;
+    }
+
+    .card-media,
+    .skeleton-media {
+        height: 175px;
+    }
+
+    .card-body {
+        padding: 14px 15px 16px;
+    }
+
+    .card-title {
+        font-size: 1.02rem;
+    }
+
+    .card-price {
+        font-size: 1.12rem;
+    }
+
+    .btn-add-dish {
+        padding: 9px 12px;
+        font-size: 0.84rem;
+    }
+
+    .nutrition-grid {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .empty-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .empty-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .cart-drawer-header,
+    .cart-drawer-items,
+    .cart-drawer-footer {
+        padding: 16px;
+    }
 }
 

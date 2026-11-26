@@ -24,7 +24,7 @@
                 <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
                 <span class="logo-text">Foodie<span>Hub</span></span>
                 <span class="badge-team">Nhóm 2</span>
-                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Task: <strong>TF1A86F</strong></span>
+                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A86F & TF1AB64</strong></span>
             </a>
 
             <div class="search-box">
@@ -34,7 +34,7 @@
             </div>
 
             <div class="nav-actions">
-                <a href="daily-menu.html" class="btn-back-menu" title="Quay lại danh sách thực đơn">
+                <a href="daily-menu.html" class="btn-back-menu nav-back-btn" title="Quay lại danh sách thực đơn">
                     <i class="fa-solid fa-calendar-days"></i> <span>Xem thực đơn ngày</span>
                 </a>
                 <button class="cart-btn" id="cartBtn" title="Xem giỏ món ăn">
@@ -84,14 +84,22 @@
             </div>
         </div>
 
-        <!-- 2. ERROR / NOT FOUND STATE -->
-        <div class="dish-error-state" id="dishDetailError" style="display: none;">
-            <div class="dish-error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <!-- 2. ERROR / EMPTY / NOT FOUND STATE (TASK TF1AB64) -->
+        <div class="empty-state dish-error-state" id="dishDetailError" style="display: none;">
+            <div class="empty-icon dish-error-icon"><i class="fa-solid fa-utensils"></i></div>
+            <div class="empty-badge-row">
+                <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1AB64</strong></span>
+            </div>
             <h2 id="errorMessageTitle">Không tìm thấy món ăn</h2>
             <p id="errorMessageDesc">Món ăn này có thể không tồn tại hoặc đã tạm ngưng phục vụ trong hệ thống.</p>
-            <a href="daily-menu.html" class="btn btn-primary">
-                <i class="fa-solid fa-arrow-left"></i> Khám phá các món ăn hôm nay
-            </a>
+            <div class="empty-actions">
+                <a href="daily-menu.html" class="btn btn-primary" id="btnErrorBackMenu">
+                    <i class="fa-solid fa-arrow-left"></i> Khám phá các món ăn hôm nay
+                </a>
+                <a href="dish-detail.html?id=dish-1" class="btn btn-secondary" id="btnErrorFeaturedDish">
+                    <i class="fa-solid fa-fire text-primary"></i> Xem món nổi bật
+                </a>
+            </div>
         </div>
 
         <!-- 3. CHI TIẾT MÓN ĂN CHÍNH (ĐƯỢC RENDER HOẶC LOAD TỪ API TF1A785 & TF1A86F) -->
@@ -471,8 +479,8 @@
                 </div>
                 <p class="footer-desc">Hệ thống đặt đồ ăn theo ngày tiện lợi, đảm bảo an toàn vệ sinh thực phẩm, phục vụ cơm trưa và bữa tối văn phòng, sinh viên.</p>
                 <div class="team-meta">
-                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A86F</strong></span>
-                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Trang chi tiết món ăn)</span>
+                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Tasks: <strong>TF1A86F & TF1AB64</strong></span>
+                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Chi tiết món & Responsive)</span>
                 </div>
             </div>
             <div class="footer-col">
@@ -496,7 +504,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container footer-bottom-content">
-                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Trang chi tiết món ăn với ảnh, mô tả, giá, nguyên liệu và nút thêm vào đơn (Mã task: TF1A86F).</p>
+                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Trang chi tiết món ăn (TF1A86F) & Responsive hiển thị trên điện thoại, bổ sung trạng thái rỗng (Mã task: TF1AB64).</p>
                 <p class="git-link-meta">
                     <i class="fa-brands fa-github"></i> <a href="https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an" target="_blank">Nhom-2---He_thong_dat_do_an</a>
                 </p>

@@ -243,6 +243,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyMenuDesc = document.getElementById('emptyMenuDesc');
     const btnEmptyGoToday = document.getElementById('btnEmptyGoToday');
     const btnEmptyGoTomorrow = document.getElementById('btnEmptyGoTomorrow');
+    const btnEmptySelectDate = document.getElementById('btnEmptySelectDate');
+
+    // Task TF1AB64: Trạng thái rỗng khi lọc danh mục / tình trạng
+    const emptyFilterState = document.getElementById('emptyFilterState');
+    const emptyFilterIcon = document.getElementById('emptyFilterIcon');
+    const emptyFilterHeading = document.getElementById('emptyFilterHeading');
+    const emptyFilterDesc = document.getElementById('emptyFilterDesc');
+    const btnFilterEmptyReset = document.getElementById('btnFilterEmptyReset');
+    const btnFilterEmptyGoTomorrow = document.getElementById('btnFilterEmptyGoTomorrow');
 
     // Task TF1A94A: Ô tìm kiếm, gợi ý khi gõ & trang kết quả
     const searchBoxWrapper = document.getElementById('searchBoxWrapper');
@@ -262,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptySearchHeading = document.getElementById('emptySearchHeading');
     const emptySearchDesc = document.getElementById('emptySearchDesc');
     const popularKeywordsList = document.getElementById('popularKeywordsList');
+    const btnSearchAllCategories = document.getElementById('btnSearchAllCategories');
     const resetFilterBtn = document.getElementById('resetFilterBtn');
 
     const searchPaginationBar = document.getElementById('searchPaginationBar');
@@ -311,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (logo && !document.getElementById('apiStatusBadge')) {
             const apiBadge = document.createElement('span');
             apiBadge.id = 'apiStatusBadge';
-            apiBadge.style.cssText = 'font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px; background: #e0f2fe; color: #0284c7; margin-left: 6px; display: inline-flex; align-items: center; gap: 5px;';
+            apiBadge.className = 'api-status-badge';
             apiBadge.innerHTML = '<i class="fa-solid fa-cloud"></i> Đang kết nối API...';
             logo.appendChild(apiBadge);
         }
@@ -592,7 +602,9 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingTextSubtitle.textContent = `Đang đồng bộ thực đơn ngày ${dateStr} từ máy chủ FoodieHub...`;
             menuGrid.style.display = 'none';
             emptyMenuState.style.display = 'none';
+            if (emptyFilterState) emptyFilterState.style.display = 'none';
             emptySearchState.style.display = 'none';
+            if (searchPaginationBar) searchPaginationBar.style.display = 'none';
         } else {
             menuLoadingState.style.display = 'none';
         }
@@ -631,13 +643,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // TRƯỜNG HỢP 1: TRẠNG THÁI RỖNG - NGÀY NÀY KHÔNG CÓ THỰC ĐƠN
         // =====================================================================
         if (allDishes.length === 0) {
-            console.log(`[TF1A6E9] Trạng thái rỗng: Thực đơn ngày ${dateFormatted} trống.`);
+            console.log(`[TF1A6E9 & TF1AB64] Trạng thái rỗng: Thực đơn ngày ${dateFormatted} trống.`);
             menuGrid.style.display = 'none';
             emptySearchState.style.display = 'none';
+            if (emptyFilterState) emptyFilterState.style.display = 'none';
+            if (activeFilterIndicator) activeFilterIndicator.style.display = 'none';
+            if (searchResultsBanner) searchResultsBanner.style.display = 'none';
+            if (searchPaginationBar) searchPaginationBar.style.display = 'none';
             emptyMenuState.style.display = 'block';
 
             emptyMenuTitle.textContent = `Chưa có thực đơn cho ${dayName} (${dateFormatted})`;
             emptyMenuDesc.textContent = `Nhà hàng hiện chưa lên thực đơn hoặc tạm ngưng phục vụ trong ngày đã chọn. Quý khách vui lòng chọn ngày khác để tiếp tục đặt món nhé!`;
+
+            if (btnEmptyGoToday) {
+                const isViewingToday = isSameDate(state.selectedDate, new Date()) && !state.isDemoEmptyDate;
+                btnEmptyGoToday.style.display = isViewingToday ? 'none' : 'inline-flex';
+            }
             return;
         }
 
@@ -677,38 +698,58 @@ document.addEventListener('DOMContentLoaded', () => {
         // TRƯỜNG HỢP 2: TRẠNG THÁI RỖNG - KHÔNG TÌM THẤY KẾT QUẢ TÌM KIẾM / LỌC
         // =====================================================================
         if (filteredDishes.length === 0) {
-            console.log(`[TF1A6E9 & TF1A94A] Trạng thái rỗng: Không tìm thấy món ăn phù hợp.`);
+            console.log(`[TF1A6E9, TF1A94A & TF1AB64] Trạng thái rỗng: Không có món ăn phù hợp.`);
             menuGrid.style.display = 'none';
             emptyMenuState.style.display = 'none';
-            emptySearchState.style.display = 'block';
-
             if (activeFilterIndicator) activeFilterIndicator.style.display = 'none';
 
             if (state.searchTerm.trim()) {
+                if (emptyFilterState) emptyFilterState.style.display = 'none';
+                emptySearchState.style.display = 'block';
+                if (btnSearchAllCategories) {
+                    btnSearchAllCategories.style.display = state.selectedCategory !== 'all' ? 'inline-flex' : 'none';
+                }
                 if (emptySearchHeading) {
                     emptySearchHeading.textContent = `Không tìm thấy món ăn phù hợp với "${state.searchTerm}"`;
                 }
                 emptySearchDesc.innerHTML = `Rất tiếc, hệ thống không tìm thấy món ăn nào khớp với từ khóa <strong>"${state.searchTerm}"</strong>. Hãy thử kiểm tra lại chính tả hoặc chọn các từ khóa món ăn phổ biến dưới đây:`;
-            } else if (state.selectedCategory === 'out-of-stock-only') {
-                if (emptySearchHeading) emptySearchHeading.textContent = 'Tất cả các món đều còn suất';
-                emptySearchDesc.textContent = `Tuyệt vời! Ngày hôm nay hiện không có món nào bị hết suất. Tất cả các món đều sẵn sàng phục vụ!`;
-            } else if (state.selectedCategory === 'available-only') {
-                if (emptySearchHeading) emptySearchHeading.textContent = 'Danh mục này đã hết suất';
-                emptySearchDesc.textContent = `Hiện các món trong danh mục này đã hết suất phục vụ cho ngày này.`;
-            } else if (state.selectedCategory === 'mon-canh') {
-                if (emptySearchHeading) emptySearchHeading.textContent = 'Chưa có món canh cho ngày này';
-                emptySearchDesc.innerHTML = `Thực đơn ngày này hiện chưa có món canh phù hợp. Quý khách vui lòng chọn loại món khác (Món chính, Món nước,...) hoặc chọn ngày khác nhé!`;
             } else {
-                const catMapText = {
-                    'mon-chinh': 'Món chính',
-                    'mon-canh': 'Canh / Súp',
-                    'mon-nuoc': 'Món nước / Bún Phở',
-                    'mon-chay': 'Món chay',
-                    'trang-mieng': 'Đồ uống & Tráng miệng'
-                };
-                const catName = catMapText[state.selectedCategory] || 'loại món này';
-                if (emptySearchHeading) emptySearchHeading.textContent = `Chưa có món thuộc loại "${catName}"`;
-                emptySearchDesc.textContent = `Thực đơn ngày này hiện chưa có món ăn thuộc loại ${catName}. Quý khách vui lòng chọn loại món khác hoặc bấm xem tất cả.`;
+                emptySearchState.style.display = 'none';
+                if (emptyFilterState) {
+                    emptyFilterState.style.display = 'block';
+                    if (emptyFilterIcon) {
+                        emptyFilterIcon.classList.remove('is-positive');
+                    }
+
+                    if (state.selectedCategory === 'out-of-stock-only') {
+                        if (emptyFilterIcon) {
+                            emptyFilterIcon.classList.add('is-positive');
+                            emptyFilterIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                        }
+                        if (emptyFilterHeading) emptyFilterHeading.textContent = 'Tất cả các món đều còn suất';
+                        if (emptyFilterDesc) emptyFilterDesc.textContent = `Tuyệt vời! Ngày hôm nay hiện không có món nào bị hết suất. Tất cả các món đều sẵn sàng phục vụ!`;
+                    } else if (state.selectedCategory === 'available-only') {
+                        if (emptyFilterIcon) emptyFilterIcon.innerHTML = '<i class="fa-solid fa-hourglass-end"></i>';
+                        if (emptyFilterHeading) emptyFilterHeading.textContent = 'Các món trong ngày đã hết suất';
+                        if (emptyFilterDesc) emptyFilterDesc.textContent = `Hiện tất cả các món trong thực đơn ngày này đã hết suất phục vụ. Quý khách vui lòng xem thực đơn ngày mai nhé!`;
+                    } else if (state.selectedCategory === 'mon-canh') {
+                        if (emptyFilterIcon) emptyFilterIcon.innerHTML = '<i class="fa-solid fa-bowl-food"></i>';
+                        if (emptyFilterHeading) emptyFilterHeading.textContent = 'Chưa có món canh cho ngày này';
+                        if (emptyFilterDesc) emptyFilterDesc.textContent = `Thực đơn ngày này hiện chưa có món canh phù hợp. Quý khách vui lòng chọn loại món khác (Món chính, Món nước,...) hoặc chọn ngày khác nhé!`;
+                    } else {
+                        const catMapText = {
+                            'mon-chinh': 'Món chính',
+                            'mon-canh': 'Canh / Súp',
+                            'mon-nuoc': 'Món nước / Bún Phở',
+                            'mon-chay': 'Món chay',
+                            'trang-mieng': 'Đồ uống & Tráng miệng'
+                        };
+                        const catName = catMapText[state.selectedCategory] || 'loại món này';
+                        if (emptyFilterIcon) emptyFilterIcon.innerHTML = '<i class="fa-solid fa-filter-circle-xmark"></i>';
+                        if (emptyFilterHeading) emptyFilterHeading.textContent = `Chưa có món thuộc loại "${catName}"`;
+                        if (emptyFilterDesc) emptyFilterDesc.textContent = `Thực đơn ngày này hiện chưa có món ăn thuộc loại ${catName}. Quý khách vui lòng chọn loại món khác hoặc bấm xem tất cả.`;
+                    }
+                }
             }
             return;
         }
@@ -742,6 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // HIỂN THỊ DANH SÁCH MÓN ĂN
         emptyMenuState.style.display = 'none';
+        if (emptyFilterState) emptyFilterState.style.display = 'none';
         emptySearchState.style.display = 'none';
         menuGrid.style.display = 'grid';
         menuGrid.innerHTML = '';
@@ -961,8 +1003,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fa-solid fa-basket-shopping"></i>
                     <p>Chưa có suất ăn nào được chọn</p>
                     <small>Chọn ngày và bấm "Chọn món" để lên thực đơn của bạn</small>
+                    <div>
+                        <button type="button" class="btn btn-primary cart-empty-cta" id="cartEmptyExploreBtn">
+                            <i class="fa-solid fa-utensils"></i> Khám phá thực đơn ngay
+                        </button>
+                    </div>
                 </div>
             `;
+            const exploreBtn = document.getElementById('cartEmptyExploreBtn');
+            if (exploreBtn) {
+                exploreBtn.addEventListener('click', () => closeCartDrawer());
+            }
             return;
         }
 
@@ -1255,6 +1306,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // Nút xem ngày mai khi gặp Empty Menu State
     if (btnEmptyGoTomorrow) {
         btnEmptyGoTomorrow.addEventListener('click', () => {
+            if (state.isLoading) return;
+            state.isDemoEmptyDate = false;
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            state.selectedDate = tomorrow;
+            onDateChanged();
+            showToast('Đã chuyển sang thực đơn ngày mai!', 'success');
+        });
+    }
+
+    // Nút chọn ngày khác khi gặp Empty Menu State (Task TF1AB64)
+    if (btnEmptySelectDate && customDatePicker) {
+        btnEmptySelectDate.addEventListener('click', () => {
+            customDatePicker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (typeof customDatePicker.showPicker === 'function') {
+                try {
+                    customDatePicker.showPicker();
+                } catch (err) {
+                    customDatePicker.focus();
+                }
+            } else {
+                customDatePicker.focus();
+            }
+        });
+    }
+
+    const resetCategoryToAll = () => {
+        state.selectedCategory = 'all';
+        categoryFilters.querySelectorAll('.cat-pill').forEach(btn => {
+            const isAll = btn.getAttribute('data-category') === 'all';
+            btn.classList.toggle('active', isAll);
+            btn.setAttribute('aria-selected', isAll ? 'true' : 'false');
+        });
+    };
+
+    if (btnFilterEmptyReset) {
+        btnFilterEmptyReset.addEventListener('click', () => {
+            resetCategoryToAll();
+            renderMenuGrid();
+            showToast('Đã hiển thị lại tất cả các loại món ăn', 'success');
+        });
+    }
+
+    if (btnFilterEmptyGoTomorrow) {
+        btnFilterEmptyGoTomorrow.addEventListener('click', () => {
             if (state.isLoading) return;
             state.isDemoEmptyDate = false;
             const tomorrow = new Date();
@@ -1565,8 +1661,9 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResultQueryText.textContent = `"${cleanKwd}"`;
         searchResultCountText.innerHTML = `Tìm thấy <strong>${searchResult.total_items}</strong> món ăn phù hợp với từ khóa của bạn`;
 
-        // Ẩn Empty Menu State
+        // Ẩn Empty Menu & Empty Filter State
         emptyMenuState.style.display = 'none';
+        if (emptyFilterState) emptyFilterState.style.display = 'none';
 
         if (searchResult.total_items === 0 || searchResult.data.length === 0) {
             // =================================================================
@@ -1575,6 +1672,9 @@ document.addEventListener('DOMContentLoaded', () => {
             menuGrid.style.display = 'none';
             searchPaginationBar.style.display = 'none';
             emptySearchState.style.display = 'block';
+            if (btnSearchAllCategories) {
+                btnSearchAllCategories.style.display = state.selectedCategory !== 'all' ? 'inline-flex' : 'none';
+            }
 
             emptySearchHeading.textContent = `Không tìm thấy món ăn phù hợp với "${cleanKwd}"`;
             emptySearchDesc.innerHTML = `Rất tiếc, hệ thống không tìm thấy món ăn nào có tên khớp với từ khóa <strong>"${cleanKwd}"</strong>. Bạn hãy thử kiểm tra lại chính tả hoặc chọn các món ăn gợi ý phổ biến dưới đây nhé:`;
@@ -1618,6 +1718,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuGrid.style.display = 'none';
                 searchPaginationBar.style.display = 'none';
                 emptySearchState.style.display = 'block';
+                if (btnSearchAllCategories) {
+                    btnSearchAllCategories.style.display = state.selectedCategory !== 'all' ? 'inline-flex' : 'none';
+                }
                 emptySearchHeading.textContent = `Không có món phù hợp trong danh mục này`;
                 emptySearchDesc.innerHTML = `Không có món ăn nào thuộc danh mục đã chọn phù hợp với từ khóa <strong>"${cleanKwd}"</strong>. Bạn có thể chọn danh mục "Tất cả" để xem toàn bộ kết quả.`;
             } else {
@@ -1741,13 +1844,19 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = '';
         state.searchTerm = '';
         clearSearchBtn.style.display = 'none';
-        state.selectedCategory = 'all';
-        categoryFilters.querySelectorAll('.cat-pill').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('data-category') === 'all');
-        });
+        resetCategoryToAll();
         hideSuggestions();
         executeSearch('');
     });
+
+    // Nút tìm trong tất cả danh mục khi đang lọc danh mục + tìm kiếm không có kết quả (Task TF1AB64)
+    if (btnSearchAllCategories) {
+        btnSearchAllCategories.addEventListener('click', () => {
+            resetCategoryToAll();
+            executeSearch(state.searchKeyword, 1);
+            showToast('Đang tìm kiếm trong tất cả danh mục...', 'success');
+        });
+    }
 
     // Gắn sự kiện cho các chip từ khóa gợi ý phổ biến (Task TF1A94A - Not Found State)
     if (popularKeywordsList) {
@@ -1820,6 +1929,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     // KHỞI CHẠY LẦN ĐẦU
     // =========================================================================
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const dateParam = urlParams.get('date');
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+        const [y, m, d] = dateParam.split('-').map(Number);
+        const parsedDate = new Date(y, m - 1, d);
+        if (!isNaN(parsedDate.getTime())) {
+            state.selectedDate = parsedDate;
+        }
+    }
+
+    if (urlParams.get('empty') === '1') {
+        state.isDemoEmptyDate = true;
+    }
+
     try {
         const saved = localStorage.getItem('foodiehub_cart');
         if (saved) {

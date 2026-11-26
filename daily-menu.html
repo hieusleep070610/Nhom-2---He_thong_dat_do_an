@@ -22,7 +22,7 @@
                 <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
                 <span class="logo-text">Foodie<span>Hub</span></span>
                 <span class="badge-team">Nhóm 2</span>
-                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A6E9, TF1A86F, TF1A8D7, TF1A94A & TF1B44A</strong></span>
+                <span class="badge-task-fe" id="feTaskBadge"><i class="fa-solid fa-code-branch"></i> Tasks: <strong>TF1A6E9, TF1A86F, TF1A8D7, TF1A94A, TF1B44A & TF1AB64</strong></span>
             </a>
 
             <div class="search-box" id="searchBoxWrapper">
@@ -49,7 +49,7 @@
             </div>
 
             <div class="nav-actions">
-                <a href="dish-detail.html?id=dish-1" class="btn btn-secondary" style="padding: 7px 14px; font-size: 0.86rem;" title="Xem trang chi tiết món ăn (Task TF1A86F)">
+                <a href="dish-detail.html?id=dish-1" class="btn btn-secondary nav-detail-link" title="Xem trang chi tiết món ăn (Task TF1A86F)">
                     <i class="fa-solid fa-eye text-primary"></i> <span>Trang chi tiết món</span>
                 </a>
                 <button class="cart-btn" id="cartBtn" title="Giỏ hàng">
@@ -247,11 +247,29 @@
             <!-- 3. TRẠNG THÁI RỖNG: NGÀY ĐƯỢC CHỌN KHÔNG CÓ MÓN NÀO (EMPTY MENU STATE) -->
             <div class="empty-state empty-menu-state" id="emptyMenuState" style="display: none;">
                 <div class="empty-icon"><i class="fa-regular fa-calendar-xmark"></i></div>
+                <div class="empty-badge-row">
+                    <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1AB64</strong></span>
+                </div>
                 <h3 id="emptyMenuTitle">Chưa có thực đơn cho ngày này</h3>
                 <p id="emptyMenuDesc">Nhà hàng hiện chưa cập nhật thực đơn hoặc tạm ngưng phục vụ trong ngày đã chọn. Quý khách vui lòng chọn ngày khác để tiếp tục đặt món nhé!</p>
                 <div class="empty-actions">
-                    <button class="btn btn-primary" id="btnEmptyGoToday"><i class="fa-solid fa-calendar-day"></i> Xem thực đơn hôm nay</button>
-                    <button class="btn btn-secondary" id="btnEmptyGoTomorrow"><i class="fa-solid fa-arrow-right"></i> Xem ngày mai</button>
+                    <button type="button" class="btn btn-primary" id="btnEmptyGoToday"><i class="fa-solid fa-calendar-day"></i> Xem thực đơn hôm nay</button>
+                    <button type="button" class="btn btn-secondary" id="btnEmptyGoTomorrow"><i class="fa-solid fa-arrow-right"></i> Xem ngày mai</button>
+                    <button type="button" class="btn btn-secondary" id="btnEmptySelectDate"><i class="fa-regular fa-calendar"></i> Chọn ngày khác</button>
+                </div>
+            </div>
+
+            <!-- 3B. TRẠNG THÁI RỖNG: BỘ LỌC DANH MỤC / TRẠNG THÁI KHÔNG CÓ MÓN (TASK TF1AB64) -->
+            <div class="empty-state empty-filter-state" id="emptyFilterState" style="display: none;">
+                <div class="empty-icon empty-filter-icon" id="emptyFilterIcon"><i class="fa-solid fa-filter-circle-xmark"></i></div>
+                <div class="empty-badge-row">
+                    <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1AB64</strong></span>
+                </div>
+                <h3 id="emptyFilterHeading">Chưa có món ăn trong danh mục này</h3>
+                <p id="emptyFilterDesc">Thực đơn ngày đã chọn hiện chưa có món ăn phù hợp với bộ lọc của bạn. Quý khách vui lòng xem tất cả món ăn hoặc chuyển sang ngày khác nhé!</p>
+                <div class="empty-actions">
+                    <button type="button" class="btn btn-primary" id="btnFilterEmptyReset"><i class="fa-solid fa-border-all"></i> Xem tất cả món ăn</button>
+                    <button type="button" class="btn btn-secondary" id="btnFilterEmptyGoTomorrow"><i class="fa-solid fa-arrow-right"></i> Xem thực đơn ngày mai</button>
                 </div>
             </div>
 
@@ -259,7 +277,7 @@
             <div class="empty-state empty-search-state" id="emptySearchState" style="display: none;">
                 <div class="empty-icon empty-search-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
                 <div class="empty-badge-row">
-                    <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A94A</strong></span>
+                    <span class="badge-task-mini"><i class="fa-solid fa-code-commit"></i> Task: <strong>TF1A94A & TF1AB64</strong></span>
                 </div>
                 <h3 id="emptySearchHeading">Không tìm thấy món ăn phù hợp</h3>
                 <p id="emptySearchDesc">Rất tiếc, chúng tôi không tìm thấy món ăn nào phù hợp với từ khóa của bạn.</p>
@@ -278,7 +296,8 @@
                 </div>
 
                 <div class="empty-actions">
-                    <button class="btn btn-primary" id="resetFilterBtn"><i class="fa-solid fa-rotate-left"></i> Xem tất cả món ăn trong thực đơn</button>
+                    <button type="button" class="btn btn-secondary" id="btnSearchAllCategories" style="display: none;"><i class="fa-solid fa-layer-group"></i> Tìm trong tất cả danh mục</button>
+                    <button type="button" class="btn btn-primary" id="resetFilterBtn"><i class="fa-solid fa-rotate-left"></i> Xem tất cả món ăn trong thực đơn</button>
                 </div>
             </div>
 
@@ -341,8 +360,8 @@
                 </div>
                 <p class="footer-desc">Hệ thống đặt đồ ăn theo ngày tiện lợi, đảm bảo an toàn vệ sinh thực phẩm, phục vụ cơm trưa và bữa tối văn phòng, sinh viên.</p>
                 <div class="team-meta">
-                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Tasks: <strong>TF1A6E9, TF1A94A & TF1B44A</strong></span>
-                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Lọc món theo loại món & Tìm kiếm)</span>
+                    <span class="badge-task"><i class="fa-solid fa-code-commit"></i> Tasks: <strong>TF1A6E9, TF1A94A, TF1B44A & TF1AB64</strong></span>
+                    <span class="badge-role">Phụ trách: Frontend Team - Nhóm 2 ([FE] Responsive & Trạng thái rỗng)</span>
                 </div>
             </div>
             <div class="footer-col">
@@ -366,7 +385,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container footer-bottom-content">
-                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Thực đơn theo ngày (TF1A6E9), Chi tiết món ăn (TF1A86F), API tìm kiếm (TF1A8D7), Gợi ý tìm kiếm (TF1A94A) & Lọc món theo loại trên trang thực đơn (Mã task: TF1B44A).</p>
+                <p>© 2026 Nhóm 2 - Hệ thống đặt đồ ăn. Thực đơn theo ngày (TF1A6E9), Chi tiết món ăn (TF1A86F), API tìm kiếm (TF1A8D7), Gợi ý tìm kiếm (TF1A94A), Lọc món theo loại (TF1B44A) & Responsive, trạng thái rỗng (Mã task: TF1AB64).</p>
                 <p class="git-link-meta">
                     <i class="fa-brands fa-github"></i> <a href="https://github.com/hieusleep070610/Nhom-2---He_thong_dat_do_an" target="_blank">Nhom-2---He_thong_dat_do_an</a>
                 </p>

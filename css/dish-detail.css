@@ -258,7 +258,8 @@
 .dish-rating-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 6px 10px;
     margin-bottom: 20px;
     padding-bottom: 18px;
     border-bottom: 1px solid var(--border-color);
@@ -619,6 +620,12 @@
     background: #f8fafc;
     border-bottom: 1.5px solid var(--border-color);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.detail-tabs-header::-webkit-scrollbar {
+    display: none;
 }
 
 .detail-tab-btn {
@@ -1090,13 +1097,15 @@
 .sticky-dish-mini-meta {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-width: 0;
 }
 
 .sticky-dish-title {
     font-size: 0.88rem;
     font-weight: 700;
     color: var(--dark);
-    max-width: 140px;
+    max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1120,26 +1129,33 @@
     gap: 6px;
 }
 
-/* ================= TRẠNG THÁI KHÔNG TÌM THẤY MÓN (404 / ERROR) ================= */
+/* ================= TRẠNG THÁI KHÔNG TÌM THẤY MÓN & RỖNG (404 / EMPTY - TASK TF1AB64) ================= */
 .dish-error-state {
     text-align: center;
-    padding: 80px 20px;
+    padding: 56px 24px;
     background: #fff;
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
+    border: 2px dashed var(--border-color);
     box-shadow: var(--shadow-sm);
-    margin: 40px auto;
-    max-width: 600px;
+    margin: 28px auto 40px;
+    max-width: 640px;
 }
 
 .dish-error-icon {
-    font-size: 4rem;
-    color: var(--text-subtle);
-    margin-bottom: 16px;
+    width: 82px;
+    height: 82px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: #fff7ed;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
 }
 
 .dish-error-state h2 {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 800;
     color: var(--dark);
     margin-bottom: 10px;
@@ -1148,16 +1164,55 @@
 .dish-error-state p {
     color: var(--text-muted);
     font-size: 0.95rem;
-    margin-bottom: 24px;
+    margin: 0 auto 24px;
+    max-width: 480px;
 }
 
-/* ================= RESPONSIVE ================= */
+.tab-empty-state,
+.related-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 32px 20px;
+    background: #f8fafc;
+    border: 1.5px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-empty-state i,
+.related-empty-state i {
+    font-size: 2rem;
+    color: var(--text-subtle);
+}
+
+.tab-empty-state.is-safe i {
+    color: var(--success);
+}
+
+.tab-empty-state strong,
+.related-empty-state strong {
+    color: var(--dark);
+    font-size: 1rem;
+}
+
+.tab-empty-state p,
+.related-empty-state p {
+    font-size: 0.88rem;
+    margin: 0;
+    max-width: 420px;
+}
+
+/* ================= RESPONSIVE (TASK TF1AB64) ================= */
 @media (max-width: 992px) {
     .dish-detail-grid {
         grid-template-columns: 1fr;
-        gap: 28px;
+        gap: 24px;
     }
-    
+
     .dish-media-col {
         position: static;
     }
@@ -1172,41 +1227,276 @@
 }
 
 @media (max-width: 768px) {
+    .nav-back-btn {
+        padding: 7px 11px;
+        font-size: 0.82rem;
+    }
+
+    .nav-back-btn span {
+        display: none;
+    }
+
+    .breadcrumb-section {
+        padding: 12px 0 6px;
+    }
+
+    .breadcrumb {
+        font-size: 0.82rem;
+        gap: 6px;
+    }
+
+    .top-action-bar {
+        margin-bottom: 14px;
+        gap: 8px;
+    }
+
+    .btn-back-menu,
+    .serving-date-pill {
+        padding: 7px 12px;
+        font-size: 0.82rem;
+    }
+
+    .dish-detail-grid {
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
     .dish-info-col {
-        padding: 24px 20px;
+        padding: 20px 16px;
+        border-radius: var(--radius-md);
     }
 
     .dish-name-title {
-        font-size: 1.55rem;
+        font-size: 1.45rem;
+        margin-bottom: 10px;
+    }
+
+    .dish-rating-wrap {
+        margin-bottom: 16px;
+        padding-bottom: 14px;
+    }
+
+    .dish-price-banner {
+        padding: 14px 16px;
+        gap: 8px 12px;
+        margin-bottom: 16px;
     }
 
     .price-current-large {
-        font-size: 1.8rem;
+        font-size: 1.7rem;
+    }
+
+    .price-original-cross {
+        font-size: 1.05rem;
+    }
+
+    .price-unit-note {
+        margin-left: 0;
+        width: 100%;
+        font-size: 0.8rem;
+    }
+
+    .dish-stock-status-card {
+        padding: 14px 16px;
+        margin-bottom: 18px;
+    }
+
+    .stock-status-header {
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 0.88rem;
+    }
+
+    .dish-description-wrapper {
+        margin-bottom: 18px;
+    }
+
+    .dish-full-description {
+        font-size: 0.94rem;
+    }
+
+    .order-action-box {
+        padding: 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 18px;
+    }
+
+    .quantity-row {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .subtotal-preview-row {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .subtotal-amount {
+        font-size: 1.3rem;
     }
 
     .action-buttons-flex {
         grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .btn-add-order,
+    .btn-quick-order {
+        padding: 12px 16px;
+        font-size: 0.96rem;
+    }
+
+    .dish-details-tabs-section {
+        border-radius: var(--radius-md);
+        margin-bottom: 32px;
+    }
+
+    .detail-tab-btn {
+        padding: 12px 16px;
+        font-size: 0.86rem;
+        gap: 7px;
+    }
+
+    .tab-pane-content {
+        padding: 20px 16px;
     }
 
     .ingredients-grid-chips {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
 
-    .mobile-sticky-action-bar {
+    .section-title-large {
+        font-size: 1.25rem;
+    }
+
+    .related-dishes-section {
+        margin-bottom: 24px;
+    }
+
+    .mobile-sticky-action-bar.visible {
         display: flex;
     }
 
+    .btn-sticky-add {
+        flex-shrink: 0;
+        padding: 10px 16px;
+        font-size: 0.88rem;
+    }
+
     .dish-detail-main {
-        padding-bottom: 90px;
+        padding-bottom: 24px;
+    }
+
+    body.has-sticky-bar .dish-detail-main {
+        padding-bottom: 84px;
+    }
+
+    body.has-sticky-bar .toast-container {
+        bottom: 82px;
+    }
+
+    body.has-sticky-bar .footer {
+        padding-bottom: 72px;
+    }
+
+    .dish-error-state {
+        padding: 36px 18px;
+        margin: 16px auto 28px;
+        border-radius: var(--radius-md);
+    }
+
+    .dish-error-icon {
+        width: 66px;
+        height: 66px;
+        font-size: 1.75rem;
+    }
+
+    .dish-error-state h2 {
+        font-size: 1.22rem;
     }
 }
 
 @media (max-width: 480px) {
+    .dish-main-image-card {
+        border-radius: var(--radius-md);
+        max-height: 280px;
+    }
+
+    .dish-out-overlay {
+        font-size: 1.05rem;
+        text-align: center;
+        padding: 0 16px;
+    }
+
     .dish-quick-specs {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .quick-spec-item {
+        padding: 10px 6px;
+        border-radius: var(--radius-sm);
+    }
+
+    .quick-spec-icon {
+        font-size: 1.05rem;
+    }
+
+    .quick-spec-label {
+        font-size: 0.68rem;
+    }
+
+    .quick-spec-value {
+        font-size: 0.78rem;
+    }
+
+    .dish-code-badge {
+        margin-left: 0;
+    }
+
+    .dish-name-title {
+        font-size: 1.32rem;
+    }
+
+    .trust-badges-list {
+        justify-content: flex-start;
+        gap: 8px 14px;
+        padding-top: 14px;
+    }
+
+    .ingredients-quality-banner,
+    .allergy-alert-banner {
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px;
     }
 
     .nutrition-grid-four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .nutrition-stat-card {
+        padding: 16px 10px;
+    }
+
+    .nutrition-stat-card .nutri-val {
+        font-size: 1.4rem;
+    }
+
+    .related-dishes-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .quick-order-modal-card {
+        padding: 20px 16px;
+    }
+
+    .order-modal-actions {
+        flex-direction: column-reverse;
     }
 }
