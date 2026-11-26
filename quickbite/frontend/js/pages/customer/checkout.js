@@ -3,7 +3,7 @@ const timeSlots = document.getElementById("time-slots");
 const slotStatus = document.getElementById("slot-status");
 const pickupSummary = document.getElementById("pickup-summary");
 const confirmButton = document.getElementById("btn-confirm");
-const state = { slotId: null, slotLabel: "", slots: [], loading: false, wallet: null, customer: null };
+const state = { slotId: null, slotLabel: "", slots: [], loading: false, wallet: null, customer: null, notice: "" };
 const PENDING_ORDER_KEY = "foodie_pending_order";
 
 function todayString(date = new Date()) {
@@ -48,6 +48,7 @@ function renderSlots() {
   pickupSummary.textContent = state.slotId
     ? `${formatDate(pickupDate.value)} · ${state.slotLabel}` : "Chưa chọn";
   if (state.loading) slotStatus.textContent = "Đang tải khung giờ và số suất còn lại…";
+  else if (state.notice) slotStatus.textContent = state.notice;
   else if (!state.slots.length) slotStatus.textContent = slotStatus.dataset.error || "Ngày này chưa có khung giờ nhận món.";
   else if (!validSlots.length) slotStatus.textContent = "Không còn khung giờ hợp lệ đủ chỗ cho giỏ hàng.";
   else slotStatus.textContent = `Chọn khung giờ · ${validSlots.length} khung đủ chỗ`;
@@ -64,8 +65,10 @@ function renderSlots() {
       <strong>${escapeHtml(label)}</strong><small>${escapeHtml(status)} · ${Number(slot.remaining_servings) || 0} suất</small></button>`;
   }).join("");
 }
-async function loadDateData() {
-  state.loading = true; state.slots = []; state.slotId = null; slotStatus.dataset.error = ""; renderSlots();
+async function loadDateData({ preserveNotice = false } = {}) {
+  state.loading = true; state.slots = []; state.slotId = null; slotStatus.dataset.error = "";
+  if (!preserveNotice) state.notice = "";
+  renderSlots();
   try {
     const [menuResponse, slotResponse] = await Promise.all([
       fetch(`${CONFIG.API_BASE_URL}/menu/daily-menus/remaining?menu_date=${encodeURIComponent(pickupDate.value)}`),
@@ -205,9 +208,22 @@ confirmButton.addEventListener("click", async () => {
     showToast(`Đặt hàng thành công · ${order.order_code} · ${money(order.total_amount)}`, "success");
     setTimeout(() => { window.location.href = "orders.html"; }, 900);
   } catch (error) {
-    showToast(error.message || "Không thể tạo đơn. Hãy thử lại.", "error");
-    if (["INSUFFICIENT_SERVINGS", "SLOT_FULL", "INSUFFICIENT_INGREDIENTS"].includes(error.data?.details?.code)) {
-      await loadDateData();
+    const details = error.data?.details;
+    const code = details?.code;
+    if (code === "INSUFFICIENT_SERVINGS") {
+      const unavailable = (details.dishes || []).filter((dish) => !dish.enough);
+      const dishNames = unavailable.map((dish) => dish.dish_name).filter(Boolean);
+      state.notice = dishNames.length
+        ? `${dishNames.join(", ")} đã hết hoặc không còn đủ suất. Hãy giảm số lượng, xóa món đó hoặc chọn ngày khác.`
+        : "Món trong giỏ đã hết hoặc không còn đủ suất. Hãy giảm số lượng, xóa món đó hoặc chọn ngày khác.";
+    } else if (code === "SLOT_FULL") {
+      state.notice = "Khung giờ vừa đầy trước khi đơn được xác nhận. Hãy chọn khung giờ khác còn chỗ.";
+    } else if (code === "INSUFFICIENT_INGREDIENTS") {
+      state.notice = "Nguyên liệu cho món trong giỏ vừa hết. Hãy chọn món khác hoặc thử lại sau.";
+    }
+    showToast(state.notice || error.message || "Không thể tạo đơn. Hãy thử lại.", "error");
+    if (["INSUFFICIENT_SERVINGS", "SLOT_FULL", "INSUFFICIENT_INGREDIENTS"].includes(code)) {
+      await loadDateData({ preserveNotice: true });
     }
   } finally {
     confirmButton.disabled = false;

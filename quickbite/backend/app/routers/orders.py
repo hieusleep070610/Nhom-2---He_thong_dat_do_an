@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session, selectinload
-
+from datetime import date
 from app.database.db import get_db
 from app.models.order import Order
 from app.models.order_status_history import OrderStatusHistory
@@ -129,7 +129,6 @@ def list_orders(customer=Depends(get_current_user), db: Session = Depends(get_db
             "created_at": row.created_at,
             "payment_method": row.payment_method,
             "payment_status": row.payment_status,
-            # Lấy tên món từ mảng items
             "title": row.items[0].item_name if row.items else f"Đơn hàng #{row.id}",
         }
         for row in rows
@@ -145,20 +144,29 @@ def change_order_status(
     order = db.query(Order).filter(Order.id == order_id).first()
     if order is None:
         raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
+
     is_owner = order.user_id == customer.user_id
     is_admin = has_role(customer, "admin")
     is_kitchen = has_role(customer, "kitchen")
     new_status = request.new_status.strip().lower()
+
     if is_admin:
         pass
     elif is_kitchen:
-        if new_status not in {"preparing", "ready"}:
-            raise HTTPException(status_code=403, detail="Nhân viên bếp chỉ được chuyển đơn sang đang chế biến hoặc sẵn sàng.")
+        if new_status not in {"preparing", "ready", "completed"}:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Nhân viên bếp chỉ được chuyển trạng thái trong quy trình chế biến/nhận đơn.",
+            )
     elif has_role(customer, "customer") and is_owner and new_status == "cancelled":
         pass
     else:
-        raise NotFoundException(message=f"Không tìm thấy đơn hàng có ID {order_id}")
-    order = update_order_status(
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền cập nhật trạng thái đơn hàng này.",
+        )
+
+    updated_order = update_order_status(
         db=db,
         order_id=order_id,
         new_status=new_status,
@@ -169,12 +177,10 @@ def change_order_status(
         "status": "success",
         "message": "Cập nhật trạng thái đơn hàng thành công",
         "data": {
-            "order_id": order.id,
-            "order_status": order.status
-        }
+            "order_id": updated_order.id,
+            "order_status": updated_order.status,
+        },
     }
-
-
 @router.get("/{order_id}/status-history")
 def get_order_status_history(
     order_id: int,
@@ -217,3 +223,32 @@ def get_order_status_history(
         ]
     }
 
+@router.get("/filter")
+def filter_orders(
+    pickup_date: date | None = Query(default=None, description="Lọc theo ngày nhận (YYYY-MM-DD)"),
+    status: str | None = Query(default=None, description="Lọc theo trạng thái đơn hàng"),
+    pickup_slot_id: int | None = Query(default=None, ge=1, description="Lọc theo ID khung giờ nhận"),
+    slot_label: str | None = Query(default=None, description="Lọc theo nhãn khung giờ, vd: 11:00"),
+    page: int = Query(default=1, ge=1, description="Trang hiện tại"),
+    limit: int = Query(default=10, ge=1, le=100, description="Số bản ghi mỗi trang"),
+    customer=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not (
+        has_role(customer, "admin")
+        or has_role(customer, "kitchen")
+        or has_role(customer, "customer")
+    ):
+        raise HTTPException(status_code=403, detail="Tài khoản chưa được gán vai trò.")
+
+    return order_service.list_filtered_orders(
+        db=db,
+        current_user=customer,
+        has_role_fn=has_role,
+        pickup_date=pickup_date,
+        status=status,
+        pickup_slot_id=pickup_slot_id,
+        slot_label=slot_label,
+        page=page,
+        limit=limit,
+    )
