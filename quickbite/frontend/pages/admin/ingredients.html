@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nguyên liệu &amp; tồn kho · QuickBite</title>
-  <link rel="stylesheet" href="../../css/common/style.css"><link rel="stylesheet" href="../../css/admin/menu.css">
+  <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/admin/menu.css">
+  <link rel="stylesheet" href="../../css/admin/ingredients.css">
 </head>
 <body data-admin-page="ingredients">
   <div class="admin-shell">
@@ -17,6 +19,7 @@
         <article class="inventory-metric"><span>Sắp hết hàng</span><strong id="ingredientLow">—</strong></article>
         <article class="inventory-metric"><span>Hết hàng</span><strong id="ingredientEmpty">—</strong></article>
       </section>
+      <section id="inventoryAlertSection" class="inventory-alert-box" aria-live="polite" hidden></section>
       <section id="ingredientFormPanel" class="admin-section card" aria-labelledby="ingredientFormTitle" hidden><div class="admin-section-heading"><div><h2 id="ingredientFormTitle">Thêm nguyên liệu</h2><p>Nhập lượng tồn hiện tại và ngưỡng cảnh báo.</p></div></div>
         <form id="ingredientForm" class="admin-form-grid">
           <input type="hidden" id="ingredientId">

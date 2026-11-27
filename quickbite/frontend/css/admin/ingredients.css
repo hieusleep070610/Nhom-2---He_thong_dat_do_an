@@ -1,0 +1,73 @@
+.inventory-alert-box {
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: #fffaf5;
+}
+
+.inventory-alert-box.has-empty {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.inventory-alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.inventory-alert-header h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #9a3412;
+}
+
+.inventory-alert-box.has-empty .inventory-alert-header h2 {
+  color: #991b1b;
+}
+
+.inventory-alert-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.inventory-alert-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inventory-alert-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.inventory-alert-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.inventory-alert-item strong {
+  display: block;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.inventory-alert-item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
