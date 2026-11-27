@@ -187,6 +187,14 @@ body {
   margin: 0 auto;
 }
 
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -368,6 +376,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: var(--bg-surface);
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 
@@ -556,4 +565,196 @@ body {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 4px;
+}
+
+/* Bộ lọc đơn hàng */
+.order-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 170px;
+  flex: 1 1 170px;
+  max-width: 240px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.filter-input {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-reset-filter {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-reset-filter:hover {
+  border-color: var(--primary);
+  background-color: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* Chi tiết chế biến (Kitchen 20) */
+.detail-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-kitchen {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-kitchen:hover {
+  background-color: var(--bg-page);
+}
+
+.btn-kitchen-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--bg-surface);
+}
+
+.btn-kitchen-primary:hover {
+  background-color: #EA580C;
+}
+
+.btn-kitchen-success {
+  background-color: #16A34A;
+  border-color: #16A34A;
+  color: var(--bg-surface);
+}
+
+.btn-kitchen-success:hover {
+  background-color: #15803D;
+}
+
+.detail-card-value {
+  font-size: 20px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.detail-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 16px;
+}
+
+.dish-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dish-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.dish-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.dish-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.empty-filter-state {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background-color: var(--bg-page);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+}
+
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-group {
+    max-width: none;
+    flex: 1 1 100%;
+  }
 }

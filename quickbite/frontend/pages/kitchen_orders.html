@@ -17,7 +17,7 @@
 
         <div class="topbar-right">
             <div class="search-box-top">
-                <input type="text" id="kitchenSearchInput" class="search-input-top" placeholder="Tìm mã đơn, món...">
+                <input type="text" class="search-input-top" placeholder="Tìm kiếm mã đơn, trạng thái, giờ nhận...">
             </div>
             <nav class="topbar-nav">
                 <a href="#">Trang chủ</a>
@@ -32,69 +32,152 @@
             <div class="sidebar-top">
                 <div class="menu-category-label">BẾP</div>
                 <div class="nav-menu">
-                    <a href="kitchen_orders.html" class="nav-item active">Hàng đợi bếp</a>
-                    <a href="order_detail.html" class="nav-item">Chi tiết chế biến</a>
-                    <a href="order_status.html" class="nav-item">Lịch sử chế biến</a>
+                    <a href="#queue" class="nav-item active" data-view="queueView">Hàng đợi bếp</a>
+                    <a href="#detail" class="nav-item" data-view="detailView">Chi tiết chế biến</a>
+                    <a href="#history" class="nav-item" data-view="historyView">Lịch sử chế biến</a>
                 </div>
             </div>
             <div class="sidebar-bottom"></div>
         </aside>
 
         <div class="content">
-            <div class="main-context">
+            <!-- HÀNG ĐỢI BẾP -->
+            <div class="main-context view-section active" id="queueView">
                 <section class="page-header">
                     <div>
                         <h2 class="page-title">Hàng đợi chế biến</h2>
-                        <p class="page-description">Quản lý và theo dõi hoạt động Foodie — Sắp xếp theo giờ nhận</p>
-                    </div>
-                    <div class="kitchen-filters">
-                        <label for="pickupDateInput">Ngày nhận:</label>
-                        <input type="date" id="pickupDateInput">
-                        <select id="pickupSlotSelect">
-                            <option value="">Tất cả khung giờ nhận</option>
-                        </select>
-                        <button type="button" id="refreshKitchenBtn" class="btn-secondary-outline">Tải lại</button>
+                        <p class="page-description">Quản lý và theo dõi hoạt động Foodie</p>
                     </div>
                 </section>
 
                 <section class="stats-grid">
                     <div class="stat-card border-orange">
                         <span class="stat-label">Đơn mới</span>
-                        <strong class="stat-value" id="statPendingCount">0</strong>
+                        <strong class="stat-value" id="statNewCount">0</strong>
                     </div>
                     <div class="stat-card border-green">
-                        <span class="stat-label">Đã tiếp nhận</span>
-                        <strong class="stat-value" id="statConfirmedCount">0</strong>
+                        <span class="stat-label">Đang chế biến</span>
+                        <strong class="stat-value" id="statPreparingCount">0</strong>
                     </div>
                     <div class="stat-card border-blue">
-                        <span class="stat-label">Tổng trong ngày</span>
-                        <strong class="stat-value" id="statTotalCount">0</strong>
+                        <span class="stat-label">Sắp trễ</span>
+                        <strong class="stat-value" id="statLateCount">0</strong>
                     </div>
                     <div class="stat-card border-red">
-                        <span class="stat-label">Đã hủy / Từ chối</span>
-                        <strong class="stat-value" id="statCancelledCount">0</strong>
+                        <span class="stat-label">Hoàn thành hôm nay</span>
+                        <strong class="stat-value" id="statCompletedCount">0</strong>
                     </div>
                 </section>
 
                 <div id="kitchenFeedbackBanner" class="kitchen-feedback" role="status" aria-live="polite"></div>
 
                 <section class="table-card">
-                    <div class="queue-tabs" id="kitchenQueueTabs">
-                        <button type="button" class="tab-active" data-status="pending">Đơn mới</button>
-                        <button type="button" class="tab-inactive" data-status="confirmed">Đã tiếp nhận</button>
-                        <button type="button" class="tab-inactive" data-status="all">Tất cả</button>
+                    <div class="order-filters" id="orderFilters">
+                        <div class="filter-group">
+                            <label for="filterDate">Ngày</label>
+                            <input type="date" id="filterDate" class="filter-input">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filterStatus">Trạng thái</label>
+                            <select id="filterStatus" class="filter-input">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Chờ xác nhận</option>
+                                <option value="confirmed">Đã xác nhận</option>
+                                <option value="preparing">Đang chế biến</option>
+                                <option value="ready">Sẵn sàng nhận</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="cancelled">Đã hủy</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filterPickupTime">Giờ nhận</label>
+                            <select id="filterPickupTime" class="filter-input">
+                                <option value="">Tất cả khung giờ</option>
+                                <option value="morning">Sáng (06:00 - 11:00)</option>
+                                <option value="noon">Trưa (11:00 - 14:00)</option>
+                                <option value="afternoon">Chiều (14:00 - 18:00)</option>
+                                <option value="evening">Tối (18:00 - 22:00)</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="button" id="resetFiltersBtn" class="btn-reset-filter">Đặt lại</button>
+                        </div>
                     </div>
 
-                    <div class="queue-list" id="kitchenQueueList">
-                        <div class="queue-item">
-                            <div class="item-title">Đang tải danh sách đơn...</div>
-                        </div>
+                    <div class="queue-tabs">
+                        <span class="tab-active">Đơn mới</span>
+                        <span class="tab-inactive">Đang chế biến</span>
+                        <span class="tab-inactive">Sắp trễ</span>
+                    </div>
+
+                    <div class="queue-list">
+                        <div class="empty-filter-state">Đang tải dữ liệu đơn hàng...</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- CHI TIẾT CHẾ BIẾN -->
+            <div class="main-context view-section" id="detailView">
+                <section class="page-header detail-header-row">
+                    <div>
+                        <h2 class="page-title">Chi tiết đơn hàng</h2>
+                        <p class="page-description">Quản lý và theo dõi hoạt động Foodie</p>
+                    </div>
+                    <div class="detail-actions">
+                        <button type="button" class="btn-kitchen" id="backToQueueBtn">← Quay lại hàng đợi</button>
+                        <button type="button" class="btn-kitchen btn-kitchen-primary" id="startPrepBtn">Bắt đầu chế biến</button>
+                        <button type="button" class="btn-kitchen btn-kitchen-success" id="markReadyBtn">Sẵn sàng nhận</button>
+                    </div>
+                </section>
+
+                <section class="stats-grid">
+                    <div class="stat-card border-orange">
+                        <span class="stat-label">Mã đơn</span>
+                        <strong class="stat-value detail-card-value" id="detailOrderCode">—</strong>
+                    </div>
+                    <div class="stat-card border-green">
+                        <span class="stat-label">Thời gian nhận</span>
+                        <strong class="stat-value detail-card-value" id="detailPickupTime">—</strong>
+                    </div>
+                    <div class="stat-card border-blue">
+                        <span class="stat-label">Ghi chú bếp</span>
+                        <strong class="stat-value detail-card-value" id="detailKitchenNote">—</strong>
+                    </div>
+                    <div class="stat-card border-red">
+                        <span class="stat-label">Trạng thái</span>
+                        <strong class="stat-value detail-card-value" id="detailOrderStatus">—</strong>
+                    </div>
+                </section>
+
+                <section class="table-card">
+                    <h3 class="detail-section-title">Các món trong đơn</h3>
+                    <div class="dish-list" id="detailDishList">
+                        <div class="empty-filter-state">Chọn một đơn hàng để xem chi tiết món ăn.</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- LỊCH SỬ CHẾ BIẾN -->
+            <div class="main-context view-section" id="historyView">
+                <section class="page-header">
+                    <div>
+                        <h2 class="page-title">Lịch sử chế biến</h2>
+                        <p class="page-description">Danh sách các đơn đã hoàn thành trong ngày</p>
+                    </div>
+                </section>
+                <section class="table-card">
+                    <div class="queue-list" id="historyList">
+                        <div class="empty-filter-state">Chọn ngày hoặc tải dữ liệu để xem lịch sử chế biến.</div>
                     </div>
                 </section>
             </div>
         </div>
     </main>
 
+    <!-- MODAL TỪ CHỐI ĐƠN -->
     <div id="rejectReasonModal" class="reject-modal hidden" aria-hidden="true">
         <div class="reject-modal-backdrop" id="rejectModalBackdrop"></div>
         <div class="reject-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
@@ -110,10 +193,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="../js/config/config.js"></script>
-    <script src="../js/api/api.js"></script>
-    <script src="../js/pages/kitchen/kitchen_orders.js"></script>
+    <script src="../js/pages/kitchen/kitchen_order.js"></script>
 </body>
 
 </html>

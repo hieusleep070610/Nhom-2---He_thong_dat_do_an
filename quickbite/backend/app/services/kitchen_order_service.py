@@ -10,6 +10,7 @@ from app.schemas.kitchen_order import (
     KitchenOrderDecisionResponse,
     OrderStatusEnum,
 )
+from app.services.order_notification_service import create_order_status_notification
 from app.services.order_service import update_order_status
 
 
@@ -86,6 +87,13 @@ def decide_order(
             new_status=OrderStatusEnum.CONFIRMED.value,
             changed_by=changed_by,
         )
+        create_order_status_notification(
+            db=db,
+            order=updated_order,
+            old_status=previous_status.value,
+            new_status=updated_order.status,
+        )
+        db.commit()
         message = f"Đã tiếp nhận đơn {updated_order.code}."
 
     elif payload.action == KitchenDecisionEnum.REJECT:
@@ -102,6 +110,13 @@ def decide_order(
             new_status=OrderStatusEnum.CANCELLED.value,
             changed_by=changed_by,
         )
+        create_order_status_notification(
+            db=db,
+            order=updated_order,
+            old_status=previous_status.value,
+            new_status=updated_order.status,
+        )
+        db.commit()
         message = f"Đã từ chối đơn {updated_order.code}."
 
     db.refresh(updated_order)
