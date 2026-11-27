@@ -9,7 +9,11 @@ from datetime import timezone, timedelta
 from app.core.exceptions import NotFoundException
 from app.database.db import get_db
 from app.models.food import Dish, DishPriceHistory, DailyMenu
+from app.models.dish_topping import DishTopping
+from app.schemas.dish_topping import DishToppingsUpdate
 from app.models.dish_category import DishCategory
+from app.models.order_item import OrderItem
+from app.models.order import Order
 from app.models.pickup_slot import PickupSlot, SlotDailyQuota
 from app.schemas.menu import (
     RemainingMenuResponse,
@@ -18,7 +22,6 @@ from app.schemas.menu import (
     DishPriceUpdateResponse,
     DishPriceHistoryResponse,
 )
-from app.schemas.dish import DishOut
 from app.services.menu_availability_service import get_remaining_by_date
 from app.services.cloudinary_service import (
     CloudinaryNotConfigured,
@@ -125,9 +128,54 @@ def search_dishes(
         ],
     }
 
-@router.get("/dishes", response_model=list[DishOut])
+@router.get("/dishes")
 def get_dishes(db: Session = Depends(get_db)):
-    return db.query(Dish).filter(Dish.is_available.is_(True)).all()
+    from sqlalchemy import case, func
+    rows = (
+        db.query(Dish, func.coalesce(func.sum(case((Order.id.is_not(None), OrderItem.quantity), else_=0)), 0).label("sold_count"))
+        .outerjoin(OrderItem, OrderItem.dish_id == Dish.id)
+        .outerjoin(Order, (Order.id == OrderItem.order_id) & (Order.status != "cancelled"))
+        .filter(Dish.is_available.is_(True))
+        .group_by(Dish.id)
+        .all()
+    )
+    topping_rows = db.query(DishTopping).order_by(DishTopping.dish_id, DishTopping.id).all()
+    toppings_by_dish = {}
+    for topping in topping_rows:
+        toppings_by_dish.setdefault(topping.dish_id, []).append({"name": topping.name, "price": topping.price})
+    return [{
+        "id": dish.id, "name": dish.name, "price": dish.price,
+        "description": dish.description, "is_available": dish.is_available,
+        "image_url": dish.image_url, "category_id": dish.category_id,
+        "category_name": dish.category.name if dish.category else None,
+        "sold_count": int(sold_count or 0),
+        "toppings": toppings_by_dish.get(dish.id, []),
+    } for dish, sold_count in rows]
+
+
+@router.put("/dishes/{dish_id}/toppings")
+def update_dish_toppings(
+    dish_id: int,
+    payload: DishToppingsUpdate,
+    _admin=Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    dish = db.query(Dish).filter(Dish.id == dish_id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Không tìm thấy món ăn.")
+    normalized = []
+    seen = set()
+    for topping in payload.toppings:
+        name = topping.name.strip()
+        key = name.casefold()
+        if not name or key in seen:
+            raise HTTPException(status_code=422, detail="Tên topping không được trống hoặc trùng nhau.")
+        seen.add(key)
+        normalized.append(DishTopping(dish_id=dish_id, name=name, price=topping.price))
+    db.query(DishTopping).filter(DishTopping.dish_id == dish_id).delete(synchronize_session=False)
+    db.add_all(normalized)
+    db.commit()
+    return {"dish_id": dish_id, "toppings": [{"name": row.name, "price": row.price} for row in normalized]}
 
 @router.post("/dishes", status_code=status.HTTP_201_CREATED)
 def create_dish(

@@ -76,6 +76,7 @@ function renderLayout() {
   }
 
   document.body.dataset.layoutRole = role;
+  if (!document.getElementById("top")) document.body.id = "top";
   const currentPath = window.location.pathname;
 
   const navSource =
@@ -92,6 +93,38 @@ function renderLayout() {
       return `<a class="${activeClass.trim()}" href="${root}${item.href}">${item.label}</a>`;
     })
     .join("");
+
+  if (role === "customer" && !document.querySelector(".site-footer")) {
+    const footer = document.createElement("footer");
+    footer.className = "site-footer";
+    footer.innerHTML = `
+      <div class="site-footer-inner">
+        <div class="site-footer-main">
+          <a class="site-footer-brand" href="${root}index.html">
+            <img src="${root}assets/images/logo.png" alt="" width="42" height="42" loading="lazy">
+            <span><strong>QuickBite</strong><small>Ăn ngon mỗi ngày</small></span>
+          </a>
+          <p>Chọn món yêu thích, đặt trước và nhận món theo khung giờ phù hợp với bạn.</p>
+        </div>
+        <nav class="site-footer-links" aria-label="Liên kết nhanh">
+          <h2>Khám phá</h2>
+          <a href="${root}pages/customer/menu.html">Thực đơn</a>
+          <a href="${root}pages/customer/cart.html">Giỏ hàng</a>
+          <a href="${root}pages/customer/wallet.html">Ví của tôi</a>
+        </nav>
+        <nav class="site-footer-links" aria-label="Hỗ trợ khách hàng">
+          <h2>Hỗ trợ</h2>
+          <a href="${root}pages/customer/orders.html">Theo dõi đơn hàng</a>
+          <a href="${root}pages/customer/profile.html">Tài khoản của tôi</a>
+          <p>Đơn có thể hủy trước khi bếp bắt đầu chuẩn bị.</p>
+        </nav>
+      </div>
+      <div class="site-footer-bottom">
+        <span>© ${new Date().getFullYear()} QuickBite. Ăn ngon mỗi ngày.</span>
+        <a href="#top" aria-label="Lên đầu trang">Lên đầu trang ↑</a>
+      </div>`;
+    document.body.appendChild(footer);
+  }
 
   const displayName = user && (user.full_name || user.username);
   const accountLabel = displayName ? `Xin chào, ${displayName}` : "Đăng nhập";

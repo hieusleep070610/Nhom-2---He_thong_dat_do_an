@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import datetime, timezone
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -10,32 +11,14 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 ERROR_RESPONSE_SCHEMA = {
     "type": "object",
     "properties": {
-        "status": {
-            "type": "string",
-            "enum": ["error"],
-            "description": "Trạng thái của phản hồi.",
-        },
-        "code": {
-            "type": "integer",
-            "description": "Mã trạng thái HTTP.",
-        },
-        "message": {
-            "type": "string",
-            "description": "Mô tả lỗi.",
-        },
-        "details": {
-            "description": "Thông tin lỗi bổ sung; có thể là object, danh sách hoặc null.",
-            "oneOf": [
-                {"type": "object"},
-                {"type": "array"},
-                {"type": "string"},
-                {"type": "number"},
-                {"type": "boolean"},
-                {"type": "null"},
-            ],
-        },
+        "statusCode": {"type": "integer", "description": "Mã trạng thái HTTP."},
+        "error": {"type": "string", "nullable": True},
+        "message": {"type": "string", "description": "Mô tả lỗi."},
+        "data": {"type": "null"},
+        "path": {"type": "string"},
+        "timestamp": {"type": "string", "format": "date-time"},
     },
-    "required": ["status", "code", "message", "details"],
+    "required": ["statusCode", "error", "message", "data", "path", "timestamp"],
 }
 
 
@@ -60,100 +43,100 @@ ERROR_RESPONSES = {
     "400": _error_response(
         "Yêu cầu không hợp lệ hoặc vi phạm quy tắc nghiệp vụ.",
         {
-            "status": "error",
-            "code": 400,
+            "statusCode": 400,
+            "error": "Dữ liệu không hợp lệ",
             "message": "Dữ liệu không hợp lệ",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "401": _error_response(
         "Chưa xác thực hoặc thông tin xác thực không hợp lệ.",
         {
-            "status": "error",
-            "code": 401,
+            "statusCode": 401,
+            "error": "Token không hợp lệ",
             "message": "Token không hợp lệ",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "403": _error_response(
         "Người dùng không có quyền thực hiện thao tác.",
         {
-            "status": "error",
-            "code": 403,
+            "statusCode": 403,
+            "error": "Bạn không có quyền thực hiện hành động này",
             "message": "Bạn không có quyền thực hiện hành động này",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "404": _error_response(
         "Không tìm thấy tài nguyên được yêu cầu.",
         {
-            "status": "error",
-            "code": 404,
+            "statusCode": 404,
+            "error": "Không tìm thấy tài nguyên",
             "message": "Không tìm thấy tài nguyên",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "409": _error_response(
         "Yêu cầu xung đột với trạng thái hoặc dữ liệu hiện tại.",
         {
-            "status": "error",
-            "code": 409,
+            "statusCode": 409,
+            "error": "Trạng thái đơn hàng không hợp lệ",
             "message": "Trạng thái đơn hàng không hợp lệ",
-            "details": {"code": "INVALID_ORDER_STATE"},
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "413": _error_response(
         "Nội dung gửi lên vượt quá giới hạn cho phép.",
         {
-            "status": "error",
-            "code": 413,
+            "statusCode": 413,
+            "error": "Kích thước tệp vượt quá giới hạn cho phép",
             "message": "Kích thước tệp vượt quá giới hạn cho phép",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "415": _error_response(
         "Định dạng nội dung gửi lên không được hỗ trợ.",
         {
-            "status": "error",
-            "code": 415,
+            "statusCode": 415,
+            "error": "Định dạng tệp không được hỗ trợ",
             "message": "Định dạng tệp không được hỗ trợ",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "422": _error_response(
         "Dữ liệu đầu vào không đúng định dạng hoặc không vượt qua kiểm tra.",
         {
-            "status": "error",
-            "code": 422,
+            "statusCode": 422,
+            "error": "Dữ liệu đầu vào không đúng định dạng",
             "message": "Dữ liệu đầu vào không đúng định dạng",
-            "details": [{"field": "quantity", "msg": "Input should be greater than 0"}],
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "500": _error_response(
         "Đã xảy ra lỗi không mong muốn trên máy chủ.",
         {
-            "status": "error",
-            "code": 500,
+            "statusCode": 500,
+            "error": "Lỗi máy chủ nội bộ. Vui lòng thử lại sau.",
             "message": "Lỗi máy chủ nội bộ. Vui lòng thử lại sau.",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "502": _error_response(
         "Dịch vụ bên thứ ba trả về phản hồi không hợp lệ.",
         {
-            "status": "error",
-            "code": 502,
+            "statusCode": 502,
+            "error": "Không thể tải ảnh lên dịch vụ lưu trữ",
             "message": "Không thể tải ảnh lên dịch vụ lưu trữ",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
     "503": _error_response(
         "Dịch vụ hiện không khả dụng; vui lòng thử lại sau.",
         {
-            "status": "error",
-            "code": 503,
+            "statusCode": 503,
+            "error": "Dịch vụ tạm thời không khả dụng",
             "message": "Dịch vụ tạm thời không khả dụng",
-            "details": None,
+            "data": None, "path": "/api/example", "timestamp": "2026-01-01T00:00:00Z",
         },
     ),
 }
@@ -189,13 +172,18 @@ class ConflictException(BaseAPIException):
 
 # 2. Hàm Format Response Lỗi Thống Nhất
 def unified_error_response(status_code: int, message: str, details: any = None) -> JSONResponse:
+    from fastapi import Request
+    request = details.get("_request") if isinstance(details, dict) else None
+    error = message
     return JSONResponse(
         status_code=status_code,
         content={
-            "status": "error",
-            "code": status_code,
+            "statusCode": status_code,
+            "error": error,
             "message": message,
-            "details": details
+            "data": None,
+            "path": str(request.url.path) if isinstance(request, Request) else "",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     )
 
@@ -208,7 +196,7 @@ def setup_exception_handlers(app):
         return unified_error_response(
             status_code=exc.status_code,
             message=exc.message,
-            details=exc.details
+            details={"_request": request, "details": exc.details}
         )
 
     # Xử lý lỗi validation của Pydantic (422)
@@ -218,7 +206,7 @@ def setup_exception_handlers(app):
         return unified_error_response(
             status_code=422,
             message="Dữ liệu đầu vào không đúng định dạng",
-            details=errors
+            details={"_request": request, "details": errors}
         )
 
     # Xử lý các HTTP Exception mặc định của FastAPI/Starlette
@@ -226,7 +214,7 @@ def setup_exception_handlers(app):
     def http_exception_handler(request: Request, exc: StarletteHTTPException):
         return unified_error_response(
             status_code=exc.status_code,
-            message=exc.detail
+            message=str(exc.detail), details={"_request": request}
         )
 
     # Xử lý lỗi 500 (Catch-all cho các lỗi code/logic chưa được bắt)
@@ -235,7 +223,7 @@ def setup_exception_handlers(app):
         print(f"Bugs: {exc}")
         return unified_error_response(
             status_code=500,
-            message="Lỗi máy chủ nội bộ. Vui lòng thử lại sau.",
+            message="Lỗi máy chủ nội bộ. Vui lòng thử lại sau.", details={"_request": request},
         )
 
     def custom_openapi():

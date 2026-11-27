@@ -48,8 +48,9 @@ async function paymentLoad() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`);
-    paymentOrders = Array.isArray(data) ? data : (data.data || []);
+    if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`);
+    const rows = data?.statusCode ? data.data : data;
+    paymentOrders = Array.isArray(rows) ? rows : (rows?.data || []);
     renderPayments();
   } catch (error) {
     state.textContent = `${error.message} · Không tải được giao dịch.`;
@@ -157,7 +158,7 @@ document.getElementById("paymentRows").addEventListener("click", async (event) =
             });
             const payload = await res.json().catch(() => ({}));
             if (!res.ok) {
-              throw new Error(payload.detail || payload.message || "Không hoàn tiền được.");
+              throw new Error(payload.message || "Không hoàn tiền được.");
             }
             await paymentLoad();
           }

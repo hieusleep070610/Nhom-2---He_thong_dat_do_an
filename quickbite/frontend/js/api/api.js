@@ -64,8 +64,12 @@ http.interceptors.response.use(
 );
 
 const api = {
-  get: (path, params) => http.get(path, { params }).then((res) => res.data),
-  post: (path, body, config = {}) => http.post(path, body, config).then((res) => res.data),
-  put: (path, body) => http.put(path, body).then((res) => res.data),
-  delete: (path) => http.delete(path).then((res) => res.data),
+  get: (path, params) => http.get(path, { params }).then((res) => unwrap(res.data)),
+  post: (path, body, config = {}) => http.post(path, body, config).then((res) => unwrap(res.data)),
+  put: (path, body) => http.put(path, body).then((res) => unwrap(res.data)),
+  delete: (path) => http.delete(path).then((res) => unwrap(res.data)),
 };
+
+function unwrap(payload) {
+  return payload && typeof payload === "object" && "statusCode" in payload ? payload.data : payload;
+}

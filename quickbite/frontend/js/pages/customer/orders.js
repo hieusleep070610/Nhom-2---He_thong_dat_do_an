@@ -166,6 +166,7 @@ function renderList() {
                 >
                   Xem chi tiết
                 </button>
+                ${["pending", "confirmed"].includes(order.status) ? `<button type="button" class="orders-btn orders-btn--ghost btn-cancel-order" data-order-id="${escapeHtml(order.id)}" data-order-code="${escapeHtml(order.code || `#${order.id}`)}">Hủy đơn</button>` : ""}
               </div>
             </article>
           `;
@@ -379,6 +380,16 @@ searchEl.addEventListener("input", (event) => {
 });
 
 listEl.addEventListener("click", (event) => {
+  const cancelBtn = event.target.closest(".btn-cancel-order");
+  if (cancelBtn) {
+    event.stopPropagation();
+    const reason = window.prompt("Lý do hủy đơn (có thể để trống):", "");
+    if (reason === null) return;
+    api.post(`/orders/${encodeURIComponent(cancelBtn.dataset.orderId)}/cancel`, { reason })
+      .then(() => loadOrders())
+      .catch((error) => window.alert(error.message || "Không thể hủy đơn hàng."));
+    return;
+  }
   const btn = event.target.closest(".btn-view-detail");
   const card = event.target.closest(".order-card");
   const orderId = btn?.dataset.orderId || card?.dataset.orderId;

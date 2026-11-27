@@ -2,7 +2,7 @@ let adminOrders = [];
 const orderApi = async (path = "", options = {}) => {
   const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
   const response = await fetch(`${CONFIG.API_BASE_URL}/orders${path}`, { ...options, headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.body ? { "Content-Type": "application/json" } : {}) } });
-  const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`); return data;
+  const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`); return data?.statusCode ? data.data : data;
 };
 const orderEscape = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const orderLocalDate = (value) => { const date = new Date(value); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; };

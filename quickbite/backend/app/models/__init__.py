@@ -1,5 +1,6 @@
 from app.models.ingredient import Ingredient, DishIngredient
 from app.models.food import Dish, DishPriceHistory, DailyMenu
+from app.models.dish_topping import DishTopping
 from app.models.dish_category import DishCategory
 from app.models.order import Order
 from app.models.order_item import OrderItem
@@ -17,6 +18,7 @@ __all__ = [
     "DishIngredient",
     "Dish",
     "DishPriceHistory",
+    "DishTopping",
     "DailyMenu",
     "DishCategory",
     "Order",

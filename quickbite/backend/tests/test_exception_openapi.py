@@ -21,8 +21,8 @@ def test_openapi_documents_error_responses_and_preserves_request_schema():
     assert set(ERROR_RESPONSES).issubset(operation["responses"])
     assert operation["responses"]["422"]["description"] == ERROR_RESPONSES["422"]["description"]
     example = operation["responses"]["409"]["content"]["application/json"]["examples"]["error"]["value"]
-    assert example["code"] == 409
-    assert example["details"]["code"] == "INVALID_ORDER_STATE"
+    assert example["statusCode"] == 409
+    assert set(example) == {"statusCode", "error", "message", "data", "path", "timestamp"}
     assert operation["requestBody"]["content"]["application/json"]["schema"]["$ref"].endswith(
         "/ItemRequest"
     )

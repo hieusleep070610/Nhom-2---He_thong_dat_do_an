@@ -11,6 +11,7 @@ from app.database.db import Base
 from app.models import (  # noqa: F401
     DailyMenu,
     Dish,
+    DishTopping,
     DishIngredient,
     Ingredient,
     Order,
@@ -103,6 +104,41 @@ def test_creates_wallet_paid_order_and_history(world):
     assert result["delivery_address"] == world["customer"].address
     assert world["db"].query(Order).count() == 1
     assert world["db"].query(OrderStatusHistory).count() == 1
+
+
+def test_small_size_applies_price_and_ingredient_reduction(world):
+    ingredient = Ingredient(Ingredient_Name="Gạo", Unit="g", stock_quantity=Decimal("90"), min_stock=0)
+    world["db"].add(ingredient)
+    world["db"].flush()
+    world["db"].add(DishIngredient(Dish_ID=world["dish1"].id, Ingredient_ID=ingredient.Ingredient_ID, Quantity=100))
+    world["db"].commit()
+
+    result = submit(world, items=[(world["dish1"].id, 1, [], "small")])
+
+    assert result["total_amount"] == Decimal("34000")
+    snapshot = world["db"].query(OrderItemIngredientSnapshot).one()
+    assert snapshot.required_quantity == Decimal("85.000")
+    assert world["db"].get(Ingredient, ingredient.Ingredient_ID).stock_quantity == Decimal("5.000")
+
+
+def test_topping_surcharge_and_large_size_are_in_order_price(world):
+    dish = world["dish1"]
+    world["db"].add(DishTopping(dish_id=dish.id, name="Phô mai", price=Decimal("5000")))
+    world["db"].commit()
+
+    result = submit(world, items=[(dish.id, 1, ["Phô mai"], "large")])
+
+    assert result["total_amount"] == Decimal("51000")
+    item = world["db"].query(OrderItem).one()
+    assert "Lớn" in item.item_name and "Phô mai" in item.item_name
+
+
+def test_unknown_topping_is_rejected(world):
+    from app.core.exceptions import BadRequestException
+
+    with pytest.raises(BadRequestException) as error:
+        submit(world, items=[(world["dish1"].id, 1, ["Topping không tồn tại"], "medium")])
+    assert "topping" in error.value.message.lower()
 
 
 def test_explicit_delivery_address_is_saved_on_order(world):
@@ -422,6 +458,36 @@ def test_cancelled_order_restores_wallet_quota_and_tracked_ingredients(world):
     assert Decimal(world["db"].query(WalletModel).first().balance) == balance
     assert ingredient.stock_quantity == Decimal("1000.000")
     assert world["db"].query(SlotDailyQuota).first().booked_servings == 0
+
+
+def test_customer_can_cancel_confirmed_order_before_kitchen_prepares_it(world):
+    from app.services.cancel_order_service import cancel_order
+
+    created = submit(world)
+    result = cancel_order(
+        world["db"], order_id=created["order_id"], actor=world["customer"],
+        reason="Đổi kế hoạch",
+    )
+
+    assert result["status"] == "cancelled"
+    assert result["refunded_amount"] == Decimal("40000")
+    order = world["db"].query(Order).filter_by(id=created["order_id"]).one()
+    assert "Lý do hủy: Đổi kế hoạch" in order.note
+
+
+def test_customer_cannot_cancel_order_after_kitchen_started_preparing(world):
+    from app.services.cancel_order_service import cancel_order
+
+    created = submit(world)
+    order = world["db"].query(Order).filter_by(id=created["order_id"]).one()
+    order.status = "preparing"
+    world["db"].commit()
+
+    with pytest.raises(ConflictException) as error:
+        cancel_order(world["db"], order_id=order.id, actor=world["customer"])
+
+    assert error.value.details["code"] == "ORDER_ALREADY_IN_PREPARATION"
+    assert world["db"].query(Order).filter_by(id=order.id).one().status == "preparing"
 
 
 def test_same_idempotency_key_from_another_user_is_rejected(world):

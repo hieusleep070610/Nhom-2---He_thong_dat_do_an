@@ -6,7 +6,7 @@
     })
       .then(async (response) => {
         if (!response.ok) throw new Error("Phiên đăng nhập không hợp lệ.");
-        return response.json();
+        return response.json().then((payload) => payload?.statusCode ? payload.data : payload);
       })
       .then((user) => {
         const roles = Array.isArray(user.roles)

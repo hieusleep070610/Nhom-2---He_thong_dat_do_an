@@ -4,7 +4,7 @@ const recipeAuth = () => { const token = localStorage.getItem("access_token") ||
 async function recipeRequest(path = "", options = {}) {
   const headers = { ...recipeAuth(), ...(options.body ? { "Content-Type": "application/json" } : {}) };
   const response = await fetch(`${RECIPE_API}${path}`, { ...options, headers }); const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`); return data;
+  if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`); return data?.statusCode ? data.data : data;
 }
 function recipeStatus(text, type = "info") { const el = document.getElementById("recipeState"); el.textContent = text; el.className = `admin-state is-${type}`; el.hidden = false; }
 const recipeEscape = (s) => String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");

@@ -15,10 +15,19 @@ function escapeHtml(value) {
 }
 
 function optionText(item) {
-  const toppings = (item.toppings || []).map((name) => `Thêm ${name.toLowerCase()}`);
   const parts = [];
-  if (item.size) parts.push(`Size ${item.size.toLowerCase()}`);
-  return [...parts, ...toppings].join(" · ");
+  if (item.size) parts.push(`Size ${{small:"nhỏ",medium:"vừa",large:"lớn"}[item.size] || item.size.toLowerCase()}`);
+  if (item.toppings?.length) parts.push(`Topping: ${item.toppings.join(", ")}`);
+  return parts.join(" · ");
+}
+
+function createNoImage() {
+  const fallback = document.createElement("div");
+  fallback.className = "no-image no-image--compact";
+  fallback.setAttribute("role", "img");
+  fallback.setAttribute("aria-label", "No image");
+  fallback.innerHTML = '<span aria-hidden="true">▧</span><small>No image</small>';
+  return fallback;
 }
 
 function renderCart() {
@@ -33,7 +42,7 @@ function renderCart() {
       <article class="cart-line">
         <div class="cart-product">
           <div class="cart-thumb ${item.tone === "green" ? "art-green" : "art-peach"}">
-            <div class="plate"><span><i></i><i></i><i></i></span></div>
+            ${item.image_url ? `<img class="cart-dish-image" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" loading="lazy">` : '<div class="no-image no-image--compact" role="img" aria-label="No image"><span aria-hidden="true">▧</span><small>No image</small></div>'}
           </div>
           <div>
             <h3>${escapeHtml(item.name)}</h3>
@@ -48,6 +57,7 @@ function renderCart() {
         </div>
         <strong class="cart-price">${dong(item.unitPrice * item.qty)}</strong>
       </article>`).join("");
+    linesEl.querySelectorAll(".cart-dish-image").forEach((image) => image.addEventListener("error", () => image.replaceWith(createNoImage()), { once: true }));
   }
 
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);

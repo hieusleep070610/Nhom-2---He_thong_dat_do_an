@@ -73,7 +73,7 @@ async function cancelOrderById(orderId, row) {
       if (orderStatusCell) {
         orderStatusCell.innerHTML = `<span class="status status-neutral">Đã hủy</span>`;
       }
-      if (data.payment_status === "refunded") {
+      if ((data?.statusCode ? data.data : data)?.payment_status === "refunded") {
         row.dataset.paymentLabel = "Đã hoàn tiền";
         const paymentCell = row.querySelector(".col-payment");
         if (paymentCell) {

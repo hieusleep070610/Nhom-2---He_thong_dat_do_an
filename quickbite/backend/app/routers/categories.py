@@ -22,6 +22,11 @@ def list_categories(_admin=Depends(get_current_admin), db: Session = Depends(get
     return [serialize(row, db) for row in db.query(DishCategory).filter(DishCategory.is_active.is_(True)).order_by(DishCategory.id).all()]
 
 
+@router.get("/public")
+def list_public_categories(db: Session = Depends(get_db)):
+    return [serialize(row, db) for row in db.query(DishCategory).filter(DishCategory.is_active.is_(True)).order_by(DishCategory.id).all()]
+
+
 @router.post("", status_code=201)
 def create_category(data: CategoryCreate, _admin=Depends(get_current_admin), db: Session = Depends(get_db)):
     row = DishCategory(name=data.name.strip(), description=(data.description or "").strip() or None)

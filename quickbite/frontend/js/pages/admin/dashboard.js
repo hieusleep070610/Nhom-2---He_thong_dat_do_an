@@ -6,8 +6,8 @@ async function adminGet(path) {
   const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
   const response = await fetch(`${ADMIN_API}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`);
-  return data;
+  if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`);
+  return data?.statusCode ? data.data : data;
 }
 
 function showDashboardError(message) {

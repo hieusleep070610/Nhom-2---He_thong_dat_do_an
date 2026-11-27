@@ -16,8 +16,8 @@ function authHeaders(json = false) {
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers: { ...authHeaders(), ...(options.headers || {}) } });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`);
-  return data;
+  if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`);
+  return data?.statusCode ? data.data : data;
 }
 
 function setState(id, message, kind = "info") {
@@ -112,8 +112,8 @@ async function loadDishCategories() {
   try {
     const response = await fetch(`${CONFIG.API_BASE_URL}/categories`, { headers: authHeaders() });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.detail || `Lỗi ${response.status}`);
-    state.categories = data;
+    if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`);
+    state.categories = data?.statusCode ? data.data : data;
     select.innerHTML = '<option value="">Chưa phân loại</option>' + state.categories.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("");
     const filter = document.getElementById("dishCategoryFilter");
     filter.innerHTML = '<option value="">Tất cả danh mục</option>' + state.categories.map((category) => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join("");
@@ -168,6 +168,7 @@ function startEditDish(id) {
   document.getElementById("dishPrice").value = Number(dish.price).toLocaleString("vi-VN");
   document.getElementById("dishDesc").value = dish.description || "";
   document.getElementById("dishCategory").value = dish.category_id || "";
+  document.getElementById("dishToppings").value = (dish.toppings || []).map((item) => `${item.name}${Number(item.price) ? ` | ${Number(item.price)}` : ""}`).join("\n");
   document.getElementById("dishFormMessage").textContent = "Đang sửa món này. Lưu để cập nhật; để trống ảnh nếu muốn giữ ảnh hiện tại.";
   document.getElementById("dishFormMessage").hidden = false;
   const form = document.getElementById("addDishForm");
@@ -210,9 +211,16 @@ async function submitDish(event) {
   const price = parseDishPrice(document.getElementById("dishPrice").value);
   const description = document.getElementById("dishDesc").value.trim();
   const categoryId = document.getElementById("dishCategory").value;
+  const toppings = document.getElementById("dishToppings").value.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+    const [label, rawPrice = ""] = line.split("|");
+    return { name: label.trim(), price: Number(rawPrice.replace(/\D/g, "")) || 0 };
+  });
   const image = document.getElementById("dishImage").files[0];
   const button = form.querySelector("button[type=submit]");
   const message = document.getElementById("dishFormMessage");
+  if (toppings.some((item) => !item.name) || new Set(toppings.map((item) => item.name.toLocaleLowerCase("vi"))).size !== toppings.length) {
+    message.textContent = "Topping cần có tên và không được trùng nhau."; message.className = "admin-inline-message is-error"; message.hidden = false; return;
+  }
   if (image && (!/^image\/(jpeg|png|webp)$/.test(image.type) || image.size > 10 * 1024 * 1024)) {
     message.textContent = "Ảnh phải là JPG, PNG hoặc WebP và có dung lượng tối đa 10 MB.";
     message.className = "admin-inline-message is-error";
@@ -240,6 +248,7 @@ async function submitDish(event) {
       dishId = result.dish?.id || result.id;
     }
     if (dishId) {
+      await apiRequest(`/dishes/${dishId}/toppings`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ toppings }) });
       form.dataset.editId = String(dishId);
       form.querySelector("button[type=submit]").textContent = "Lưu thay đổi";
     }

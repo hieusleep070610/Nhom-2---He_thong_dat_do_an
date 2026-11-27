@@ -11,6 +11,7 @@ class DishResponse(BaseModel):
     image_url: Optional[str] = None
     category_id: Optional[int] = None
     category_name: Optional[str] = None
+    sold_count: int = 0
 
     model_config = {"from_attributes": True}
 
@@ -23,5 +24,6 @@ class DishOut(BaseModel):
     image_url: Optional[str] = None
     category_id: Optional[int] = None
     category_name: Optional[str] = None
+    sold_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)

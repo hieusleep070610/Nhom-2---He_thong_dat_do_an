@@ -17,8 +17,8 @@ async function ingredientRequest(path = "", options = {}) {
   if (options.body) headers["Content-Type"] = "application/json";
   const response = await fetch(`${INGREDIENTS_API}${path}`, { ...options, headers });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`);
-  return data;
+  if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`);
+  return data?.statusCode ? data.data : data;
 }
 
 function ingredientState(message, type = "info") {

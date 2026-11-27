@@ -118,7 +118,8 @@ async function fetchOrders(todayStr, statusFilter) {
     throw new Error(`HTTP ${res.status}`);
   }
 
-  const raw = await res.json();
+  const payload = await res.json();
+  const raw = payload?.statusCode ? payload.data : payload;
   const todayItems = extractOrders(raw);
   if (todayItems.length > 0) {
     return { orders: todayItems, isFallbackAll: false };
@@ -127,7 +128,8 @@ async function fetchOrders(todayStr, statusFilter) {
   // Nếu hôm nay chưa có đơn nào, fallback lấy danh sách đơn để có thể xem/tìm kiếm đơn gần nhất
   const fallbackRes = await fetch(`${baseUrl}/api/orders`, { headers });
   if (fallbackRes.ok) {
-    const fallbackRaw = await fallbackRes.json();
+    const fallbackPayload = await fallbackRes.json();
+    const fallbackRaw = fallbackPayload?.statusCode ? fallbackPayload.data : fallbackPayload;
     const allItems = extractOrders(fallbackRaw);
     return { orders: allItems, isFallbackAll: true };
   }

@@ -16,8 +16,8 @@ async function categoryRequest(path = "", options = {}) {
   if (options.body) headers["Content-Type"] = "application/json";
   const response = await fetch(`${CATEGORY_API}${path}`, { ...options, headers });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`);
-  return data;
+  if (!response.ok) throw new Error(data.message || `Lỗi ${response.status}`);
+  return data?.statusCode ? data.data : data;
 }
 
 function categoryState(message, type = "info") {
@@ -53,7 +53,8 @@ async function loadCategories() {
     try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/menu/dishes`, { headers: categoryToken() ? { Authorization: `Bearer ${categoryToken()}` } : {} });
       if (!response.ok) throw new Error(`Lỗi ${response.status}`);
-      const dishes = await response.json();
+      const payload = await response.json();
+      const dishes = payload?.statusCode ? payload.data : payload;
       document.getElementById("uncategorizedCount").textContent = dishes.filter((dish) => !dish.category_id).length.toLocaleString("vi-VN");
     } catch (_) { document.getElementById("uncategorizedCount").textContent = "—"; }
   }

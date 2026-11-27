@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import OperationalError
 
 from app.core.config import settings
+from app.core.api_response import wrap_api_response
 from app.core.exceptions import setup_exception_handlers
 from app.database.db import init_db
 from app.routers import auth, categories, dish, health, ingredients, orders, recipes, users, wallet, kitchen_orders, notifications
@@ -26,6 +27,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 setup_exception_handlers(app)
+
+
+@app.middleware("http")
+async def api_response_envelope(request, call_next):
+    return await wrap_api_response(request, call_next)
 
 app.add_middleware(
     CORSMiddleware,

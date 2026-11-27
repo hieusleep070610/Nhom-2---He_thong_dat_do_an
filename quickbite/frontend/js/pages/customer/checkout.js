@@ -3,7 +3,7 @@ const timeSlots = document.getElementById("time-slots");
 const slotStatus = document.getElementById("slot-status");
 const pickupSummary = document.getElementById("pickup-summary");
 const confirmButton = document.getElementById("btn-confirm");
-const state = { slotId: null, slotLabel: "", slots: [], loading: false, wallet: null, customer: null, notice: "" };
+const state = { slotId: null, slotLabel: "", slots: [], remaining: {}, loading: false, wallet: null, customer: null, notice: "" };
 const PENDING_ORDER_KEY = "foodie_pending_order";
 
 function todayString(date = new Date()) {
@@ -35,9 +35,12 @@ function renderSummary() {
   document.getElementById("checkout-shipping").textContent = money(0);
   document.getElementById("checkout-total").textContent = money(subtotal);
   document.getElementById("checkout-lines").innerHTML = cart.length ? cart.map((item) => `
-    <article class="ck-line"><div class="cart-thumb ${item.tone === "green" ? "art-green" : "art-peach"}"><div class="plate"><span><i></i><i></i><i></i></span></div></div>
-      <div><strong>${escapeHtml(item.name)} × ${Number(item.qty) || 0}</strong><span>${money(Number(item.unitPrice || 0) * Number(item.qty || 0))}</span></div>
+    <article class="ck-line"><div class="cart-thumb ${item.tone === "green" ? "art-green" : "art-peach"}">${item.image_url ? `<img class="cart-dish-image" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" loading="lazy">` : '<div class="no-image no-image--compact" role="img" aria-label="No image"><span aria-hidden="true">▧</span><small>No image</small></div>'}</div>
+      <div><strong>${escapeHtml(item.name)} × ${Number(item.qty) || 0}</strong><small>Size ${escapeHtml(({small:"nhỏ",medium:"vừa",large:"lớn"})[item.size] || "vừa")}</small>${item.toppings?.length ? `<small>${escapeHtml(item.toppings.join(" · "))}</small>` : ""}<small class="ck-remaining" hidden></small><span>${money(Number(item.unitPrice || 0) * Number(item.qty || 0))}</span></div>
     </article>`).join("") : '<p class="cart-empty">Giỏ hàng đang trống.</p>';
+  document.querySelectorAll("#checkout-lines .cart-dish-image").forEach((image) => image.addEventListener("error", () => {
+    const fallback = document.createElement("div"); fallback.className = "no-image no-image--compact"; fallback.setAttribute("role", "img"); fallback.setAttribute("aria-label", "No image"); fallback.innerHTML = '<span aria-hidden="true">▧</span><small>No image</small>'; image.replaceWith(fallback);
+  }, { once: true }));
   renderSlots();
 }
 function renderSlots() {
@@ -45,6 +48,7 @@ function renderSlots() {
     && Number(slot.remaining_servings) >= totalServings());
   const selected = state.slots.find((slot) => Number(slot.pickup_slot_id) === state.slotId);
   if (!selected || !validSlots.includes(selected)) state.slotId = null;
+  updateRemainingLabels();
   pickupSummary.textContent = state.slotId
     ? `${formatDate(pickupDate.value)} · ${state.slotLabel}` : "Chưa chọn";
   if (state.loading) slotStatus.textContent = "Đang tải khung giờ và số suất còn lại…";
@@ -65,8 +69,20 @@ function renderSlots() {
       <strong>${escapeHtml(label)}</strong><small>${escapeHtml(status)} · ${Number(slot.remaining_servings) || 0} suất</small></button>`;
   }).join("");
 }
+function updateRemainingLabels() {
+  const cart = cartNow();
+  document.querySelectorAll("#checkout-lines .ck-remaining").forEach((label, index) => {
+    const item = cart[index];
+    const remaining = item ? state.remaining[item.dish_id] : null;
+    label.hidden = !state.slotId || remaining == null;
+    if (label.hidden) return;
+    const insufficient = Number(remaining) < Number(item.qty);
+    label.textContent = `Còn ${Number(remaining)} suất trong ngày${insufficient ? " · Không đủ số lượng" : ""}`;
+    label.classList.toggle("is-insufficient", insufficient);
+  });
+}
 async function loadDateData({ preserveNotice = false } = {}) {
-  state.loading = true; state.slots = []; state.slotId = null; slotStatus.dataset.error = "";
+  state.loading = true; state.slots = []; state.remaining = {}; state.slotId = null; slotStatus.dataset.error = "";
   if (!preserveNotice) state.notice = "";
   renderSlots();
   try {
@@ -75,11 +91,14 @@ async function loadDateData({ preserveNotice = false } = {}) {
       fetch(`${CONFIG.API_BASE_URL}/menu/pickup-slots?service_date=${encodeURIComponent(pickupDate.value)}`),
     ]);
     if (!menuResponse.ok || !slotResponse.ok) throw new Error("Không lấy được dữ liệu ngày nhận từ máy chủ.");
-    const [menu, slotData] = await Promise.all([menuResponse.json(), slotResponse.json()]);
+    const [menuPayload, slotPayload] = await Promise.all([menuResponse.json(), slotResponse.json()]);
+    const menu = menuPayload?.statusCode ? menuPayload.data : menuPayload;
+    const slotData = slotPayload?.statusCode ? slotPayload.data : slotPayload;
     if (!menu || !Array.isArray(menu.items) || !slotData || !Array.isArray(slotData.slots)) {
       throw new Error("Dữ liệu ngày nhận không đúng định dạng.");
     }
     state.slots = slotData.slots;
+    state.remaining = Object.fromEntries(menu.items.map((item) => [Number(item.dish_id), Number(item.remaining_quantity || 0)]));
     if (!menu.items.length) slotStatus.dataset.error = "Ngày này chưa có thực đơn.";
   } catch (error) {
     slotStatus.dataset.error = error.message || "Không tải được dữ liệu. Hãy thử lại.";
@@ -191,7 +210,7 @@ confirmButton.addEventListener("click", async () => {
   const orderRequest = {
     pickup_date: pickupDate.value,
     pickup_slot_id: state.slotId,
-    items: cart.map((item) => ({ dish_id: Number(item.dish_id), quantity: Number(item.qty) })),
+    items: cart.map((item) => ({ dish_id: Number(item.dish_id), quantity: Number(item.qty), toppings: item.toppings || [], size: ["small", "medium", "large"].includes(item.size) ? item.size : "medium" })),
     payment_method: paymentMethod,
     delivery_address: deliveryAddress,
     note: document.getElementById("checkout-note").value.trim() || null,

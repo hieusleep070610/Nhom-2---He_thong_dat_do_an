@@ -32,11 +32,13 @@ function addToCart(item) {
       size: item.size || "",
       toppings: item.toppings || [],
       unitPrice: Number(item.unitPrice) || 0,
+      image_url: item.image_url || "",
       qty: Math.min(10, Number(item.qty) || 1),
       tone: item.tone || "peach",
     });
   }
   if (found && !found.dish_id && item.dish_id) found.dish_id = Number(item.dish_id);
+  if (found && item.image_url) found.image_url = item.image_url;
   writeCart(cart);
   return cart;
 }

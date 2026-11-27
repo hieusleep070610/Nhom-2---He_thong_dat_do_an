@@ -1,5 +1,6 @@
 let selectedDish = null;
 let quantity = 1;
+let selectedSize = "medium";
 
 const priceEl = document.getElementById("dish-price");
 const addButton = document.getElementById("btn-add");
@@ -13,9 +14,17 @@ function money(value) {
   return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 }
 
+function getSelectedUnitPrice() {
+  if (!selectedDish) return 0;
+  const sizeFactor = { small: 0.85, medium: 1, large: 1.15 }[selectedSize] || 1;
+  const base = Number(selectedDish.price ?? selectedDish.unit_price ?? 0) * sizeFactor;
+  const toppingPrice = [...document.querySelectorAll(".fd-toppings input:checked")].reduce((sum, input) => sum + Number(input.dataset.price || 0), 0);
+  return Math.round(base + toppingPrice);
+}
+
 function renderPrice() {
   if (!selectedDish) return;
-  const unitPrice = Number(selectedDish.price ?? selectedDish.unit_price ?? 0);
+  const unitPrice = getSelectedUnitPrice();
   if (priceEl) priceEl.textContent = money(unitPrice);
   if (addButton) {
     addButton.textContent = `Thêm ${quantity} suất · ${money(unitPrice * quantity)}`;
@@ -23,15 +32,19 @@ function renderPrice() {
   if (quantityEl) quantityEl.textContent = String(quantity);
 }
 
+document.querySelectorAll('input[name="dish-size"]').forEach((input) => input.addEventListener("change", () => { selectedSize = input.value; renderPrice(); }));
+
 function showPlaceholderImage() {
   if (!heroImage) return;
   heroImage.removeAttribute("src");
   heroImage.hidden = true;
-  if (heroImage.parentElement && !heroImage.parentElement.querySelector(".plate")) {
-    const plate = document.createElement("div");
-    plate.className = "plate";
-    plate.innerHTML = "<span><i></i><i></i><i></i></span>";
-    heroImage.parentElement.appendChild(plate);
+  if (heroImage.parentElement && !heroImage.parentElement.querySelector(".no-image")) {
+    const fallback = document.createElement("div");
+    fallback.className = "no-image";
+    fallback.setAttribute("role", "img");
+    fallback.setAttribute("aria-label", "No image");
+    fallback.innerHTML = '<span aria-hidden="true">▧</span><small>No image</small>';
+    heroImage.parentElement.appendChild(fallback);
   }
 }
 
@@ -76,10 +89,7 @@ if (addButton) {
       selectedDish?.name ||
       titleEl?.textContent?.trim() ||
       "Món ăn";
-    const unitPrice =
-      Number(selectedDish?.price ?? selectedDish?.unit_price) ||
-      Number((priceEl?.textContent || "").replace(/\D/g, "")) ||
-      0;
+    const unitPrice = getSelectedUnitPrice();
 
     if (unitPrice <= 0) return;
 
@@ -87,6 +97,9 @@ if (addButton) {
       dish_id: dishId,
       name: dishName,
       unitPrice,
+      image_url: selectedDish?.image_url || "",
+      toppings: [...document.querySelectorAll(".fd-toppings input:checked")].map((input) => input.value),
+      size: selectedSize,
       qty,
       tone: "peach",
     });
@@ -123,18 +136,33 @@ async function loadDish() {
       description: found.description || "Chưa có mô tả cho món ăn này.",
       price: Number(found.price ?? found.unit_price ?? 0),
       image_url: found.image_url || "",
+      sold_count: Number(found.sold_count || 0),
+      toppings: Array.isArray(found.toppings) ? found.toppings : [],
     };
 
     if (titleEl) titleEl.textContent = selectedDish.name;
     if (crumbEl) crumbEl.textContent = `Trang chủ / Thực đơn / ${selectedDish.name}`;
     if (descEl) descEl.textContent = selectedDish.description;
+    const toppingRoot = document.getElementById("dish-topping-options");
+    if (toppingRoot) {
+      toppingRoot.innerHTML = selectedDish.toppings.length ? selectedDish.toppings.map((item, index) => `<label class="fd-topping"><input type="checkbox" value="${escapeHtml(item.name)}" data-price="${Number(item.price) || 0}"><span>${escapeHtml(item.name)}${Number(item.price) ? ` · +${money(item.price)}` : ""}</span></label>`).join("") : '<p class="ck-hint">Món này chưa có topping tùy chọn.</p>';
+      toppingRoot.querySelectorAll("input").forEach((input) => input.addEventListener("change", renderPrice));
+    }
+    let soldEl = document.getElementById("dish-sold-count");
+    if (!soldEl && titleEl) {
+      soldEl = document.createElement("p");
+      soldEl.id = "dish-sold-count";
+      soldEl.className = "dish-sold-count";
+      titleEl.insertAdjacentElement("afterend", soldEl);
+    }
+    if (soldEl) soldEl.textContent = `Đã bán ${selectedDish.sold_count.toLocaleString("vi-VN")}`;
     if (heroImage) heroImage.alt = selectedDish.name;
 
     if (heroImage && selectedDish.image_url) {
       heroImage.hidden = false;
       heroImage.src = selectedDish.image_url;
       heroImage.onerror = showPlaceholderImage;
-      heroImage.parentElement.querySelector(".plate")?.remove();
+      heroImage.onload = () => heroImage.parentElement.querySelector(".no-image")?.remove();
     } else showPlaceholderImage();
     if (addButton) addButton.disabled = selectedDish.price <= 0;
     renderPrice();

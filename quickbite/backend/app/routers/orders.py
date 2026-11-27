@@ -87,7 +87,7 @@ def create_order_endpoint(
         customer=customer,
         pickup_date=request.pickup_date,
         pickup_slot_id=request.pickup_slot_id,
-        items=[(item.dish_id, item.quantity) for item in request.items],
+        items=[(item.dish_id, item.quantity, item.toppings, item.size) for item in request.items],
         note=request.note,
         payment_method=request.payment_method,
         delivery_address=request.delivery_address,

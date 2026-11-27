@@ -30,13 +30,13 @@ function qbAddOneAndSyncOrder(newItem) {
   const cart = qbGetCart();
   const qtyToAdd = Math.max(1, Number(newItem.qty || 1));
   const unitPrice = Number(newItem.unitPrice ?? newItem.price ?? 0);
-  const size = newItem.size || "Thường";
+  const size = newItem.size || "medium";
   const toppings = Array.isArray(newItem.toppings) ? newItem.toppings : [];
   const sortedToppings = [...toppings].sort();
 
   const existingIndex = cart.findIndex((it) => {
     const sameDish = Number(it.dish_id) === Number(newItem.dish_id);
-    const sameSize = (it.size || "Thường") === size;
+    const sameSize = (it.size || "medium") === size;
     const sameToppings =
       JSON.stringify([...(it.toppings || [])].sort()) === JSON.stringify(sortedToppings);
     return sameDish && sameSize && sameToppings;
@@ -98,14 +98,14 @@ function qbSyncCartToProcessingOrder(cart = qbGetCart()) {
     const unitPrice = Number(item.unitPrice || 0);
     const qty = Number(item.qty || 1);
     const noteParts = [];
-    if (item.size) noteParts.push(`Size ${item.size}`);
+    if (item.size) noteParts.push(`Size ${{small:"nhỏ",medium:"vừa",large:"lớn"}[item.size] || item.size}`);
     if (Array.isArray(item.toppings) && item.toppings.length) {
       noteParts.push(`Topping: ${item.toppings.join(", ")}`);
     }
     return {
       dish_id: Number(item.dish_id),
       item_name: item.name,
-      size: item.size || "Thường",
+      size: item.size || "medium",
       toppings: item.toppings || [],
       unit_price: unitPrice,
       quantity: qty,

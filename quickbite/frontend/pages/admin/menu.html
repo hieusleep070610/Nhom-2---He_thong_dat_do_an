@@ -37,6 +37,7 @@
           <label class="form-group">Giá bán<input id="dishPrice" type="text" inputmode="numeric" autocomplete="off" aria-describedby="dishPriceHint" required placeholder="45.000"><span id="dishPriceHint" class="field-hint">Đơn vị VNĐ · nhập số nguyên, ví dụ 45.000</span></label>
           <label class="form-group">Danh mục<select id="dishCategory"><option value="">Chưa phân loại</option></select></label>
           <label class="form-group admin-form-wide">Mô tả<textarea id="dishDesc" maxlength="255" rows="2" placeholder="Mô tả ngắn về món ăn"></textarea></label>
+          <label class="form-group admin-form-wide">Topping có thể chọn<textarea id="dishToppings" rows="3" placeholder="Trứng lòng đào | 10000&#10;Thịt thêm | 15000"></textarea><span class="field-hint">Mỗi dòng một topping: tên | giá cộng thêm (để trống giá nếu miễn phí). Topping chỉ xuất hiện ở chi tiết món.</span></label>
           <label class="form-group admin-form-wide">Ảnh món <span class="field-hint">JPG, PNG hoặc WebP · tối đa 10 MB</span><input id="dishImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
           <div id="dishImagePreview" class="admin-image-preview admin-form-wide" hidden></div>
           <div class="admin-form-actions admin-form-wide"><button type="submit" class="btn btn-primary">Thêm món ăn</button><button id="dishCancel" type="button" class="btn btn-secondary">Hủy</button></div>

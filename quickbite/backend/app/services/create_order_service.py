@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.core.exceptions import BadRequestException, ConflictException, NotFoundException
 from app.models.food import Dish
+from app.models.dish_topping import DishTopping
 from app.models.ingredient import DishIngredient, Ingredient
 from app.models.order import Order
 from app.models.order_item import OrderItem
@@ -32,17 +33,33 @@ def create_order(
     customer: User,
     pickup_date: date,
     pickup_slot_id: int,
-    items: list[tuple[int, int]],
+    items: list[tuple],
     note: str | None,
     payment_method: str,
     coupon_code: str | None,
     idempotency_key: str | None,
     delivery_address: str | None = None,
 ) -> dict:
-    requested = _normalize_items(items)
+    topping_line_quantities: dict[tuple[int, tuple[str, ...], str], int] = {}
+    base_items = []
+    for item in items:
+        dish_id, quantity = item[:2]
+        selected_toppings = tuple(sorted(set(item[2]))) if len(item) > 2 else ()
+        size = item[3] if len(item) > 3 else "medium"
+        if size not in {"small", "medium", "large"}:
+            raise BadRequestException(message="Kích cỡ món không hợp lệ.")
+        base_items.append((dish_id, quantity))
+        line_key = (dish_id, selected_toppings, size)
+        topping_line_quantities[line_key] = topping_line_quantities.get(line_key, 0) + quantity
+    order_lines = [
+        (dish_id, quantity, list(toppings), size)
+        for (dish_id, toppings, size), quantity in sorted(topping_line_quantities.items())
+    ]
+    requested = _normalize_items(base_items)
     effective_address = (delivery_address or "").strip() or (customer.address or "").strip()
     request_hash = _request_hash(
-        pickup_date, pickup_slot_id, requested, effective_address, note, payment_method, coupon_code
+        pickup_date, pickup_slot_id, requested, effective_address, note, payment_method, coupon_code,
+        order_lines,
     )
     if idempotency_key and (prior := _find_idempotent_order(db, idempotency_key)):
         return _replay_or_conflict(prior, customer.user_id, request_hash)
@@ -56,9 +73,9 @@ def create_order(
 
         by_id = _lock_and_check_dishes(db, [dish_id for dish_id, _ in requested])
         ensure_servings_available(db, pickup_date, requested, lock=True)
-        recipe_rows, locked_ingredients = _lock_and_check_ingredients(db, requested)
+        recipe_rows, locked_ingredients = _lock_and_check_ingredients(db, requested, order_lines)
 
-        priced_items, subtotal = _price_items(requested, by_id)
+        priced_items, subtotal = _price_items(requested, by_id, order_lines, db)
         total = max(Decimal("0"), subtotal)
 
         wallet = _lock_and_check_wallet(db, customer.user_id, payment_method, total)
@@ -84,8 +101,8 @@ def create_order(
         db.flush()
 
         order_items = _create_order_items(db, order.id, priced_items)
-        _save_recipe_snapshots(db, order_items, recipe_rows)
-        _deduct_ingredients(requested, recipe_rows, locked_ingredients)
+        _save_recipe_snapshots(db, order_items, recipe_rows, priced_items)
+        _deduct_ingredients(order_lines, recipe_rows, locked_ingredients)
 
         if wallet is not None:
             wallet.balance = Decimal(wallet.balance) - total
@@ -173,12 +190,21 @@ def _lock_and_check_dishes(db: Session, dish_ids: list[int]) -> dict[int, Dish]:
     return by_id
 
 
-def _price_items(requested: list[tuple[int, int]], by_id: dict[int, Dish]) -> tuple[list[dict], Decimal]:
+def _price_items(requested: list[tuple[int, int]], by_id: dict[int, Dish], order_lines=None, db=None) -> tuple[list[dict], Decimal]:
     priced_items: list[dict] = []
     subtotal = Decimal("0")
-    for dish_id, quantity in requested:
+    lines = order_lines or [(dish_id, quantity, [], "medium") for dish_id, quantity in requested]
+    topping_rows = db.query(DishTopping).filter(DishTopping.dish_id.in_([line[0] for line in lines])).all() if db and lines else []
+    topping_prices = {(row.dish_id, row.name): Decimal(row.price) for row in topping_rows}
+    for dish_id, quantity, toppings, size in lines:
         dish = by_id[dish_id]
-        unit_price = Decimal(str(dish.price)).quantize(Decimal("1"))
+        allowed = {name: price for (owner, name), price in topping_prices.items() if owner == dish_id}
+        if any(name not in allowed for name in toppings):
+            raise BadRequestException(message="Một hoặc nhiều topping không thuộc món đã chọn.")
+        factor = {"small": Decimal("0.85"), "medium": Decimal("1"), "large": Decimal("1.15")}[size]
+        base_price = Decimal(str(dish.price)) * factor
+        topping_price = sum((allowed[name] for name in toppings), Decimal("0"))
+        unit_price = (base_price + topping_price).quantize(Decimal("1"), rounding="ROUND_HALF_UP")
         line_total = unit_price * quantity
         subtotal += line_total
         priced_items.append({
@@ -187,6 +213,8 @@ def _price_items(requested: list[tuple[int, int]], by_id: dict[int, Dish]) -> tu
             "quantity": quantity,
             "unit_price": unit_price,
             "line_total": line_total,
+            "toppings": toppings,
+            "size": size,
         })
     return priced_items, subtotal
 
@@ -216,11 +244,13 @@ def _create_order_items(db: Session, order_id: int, priced_items: list[dict]) ->
     order_items: list[OrderItem] = []
     for priced in priced_items:
         dish = priced["dish"]
+        toppings = priced.get("toppings") or []
+        size_label = {"small": "Nhỏ", "medium": "Vừa", "large": "Lớn"}.get(priced.get("size"), "Vừa")
         item = OrderItem(
             order_id=order_id,
             dish_id=dish.id,
             item_code=f"dish-{dish.id}",
-            item_name=dish.name,
+            item_name=(f"{dish.name} · {size_label}" + (f" · {', '.join(toppings)}" if toppings else ""))[:120],
             unit_price=priced["unit_price"],
             quantity=priced["quantity"],
             line_total=priced["line_total"],
@@ -232,7 +262,7 @@ def _create_order_items(db: Session, order_id: int, priced_items: list[dict]) ->
 
 
 def _deduct_ingredients(
-    requested: list[tuple[int, int]],
+    requested: list[tuple],
     recipe_rows: list[DishIngredient],
     locked_ingredients: dict[int, Ingredient],
 ) -> None:
@@ -258,7 +288,7 @@ def _normalize_items(items: list[tuple[int, int]]) -> list[tuple[int, int]]:
     return sorted(merged.items())
 
 
-def _request_hash(pickup_date, slot_id, items, delivery_address, note, payment_method, coupon_code) -> str:
+def _request_hash(pickup_date, slot_id, items, delivery_address, note, payment_method, coupon_code, order_lines=None) -> str:
     payload = {
         "pickup_date": pickup_date.isoformat(),
         "pickup_slot_id": slot_id,
@@ -268,6 +298,8 @@ def _request_hash(pickup_date, slot_id, items, delivery_address, note, payment_m
         "payment_method": payment_method,
         "coupon_code": (coupon_code or "").strip().upper(),
     }
+    if order_lines and any(toppings or size != "medium" for _, _, toppings, size in order_lines):
+        payload["options"] = order_lines
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
 
@@ -290,7 +322,7 @@ def _replay_or_conflict(order: Order, user_id: int, request_hash: str) -> dict:
     return _order_response(order, list(order.items), subtotal)
 
 
-def _lock_and_check_ingredients(db: Session, items):
+def _lock_and_check_ingredients(db: Session, items, order_lines=None):
     dish_ids = [dish_id for dish_id, _ in items]
     recipe_rows = (
         db.query(DishIngredient)
@@ -308,7 +340,7 @@ def _lock_and_check_ingredients(db: Session, items):
         .all()
     ) if ingredient_ids else []
     by_id = {row.Ingredient_ID: row for row in ingredients}
-    requirements = _ingredient_requirements(items, recipe_rows)
+    requirements = _ingredient_requirements(order_lines or items, recipe_rows)
     for ingredient_id, required in requirements.items():
         ingredient = by_id.get(ingredient_id)
         if ingredient is None or not ingredient.is_active:
@@ -338,7 +370,13 @@ def _lock_and_check_ingredients(db: Session, items):
 
 
 def _ingredient_requirements(items, recipe_rows) -> dict[int, Decimal]:
-    quantities = dict(items)
+    quantities: dict[int, Decimal] = {}
+    if items and len(items[0]) > 2:
+        for dish_id, quantity, _toppings, size in items:
+            factor = {"small": Decimal("0.85"), "medium": Decimal("1"), "large": Decimal("1.15")}[size]
+            quantities[dish_id] = quantities.get(dish_id, Decimal("0")) + Decimal(quantity) * factor
+    else:
+        quantities = {dish_id: Decimal(quantity) for dish_id, quantity in items}
     totals: dict[int, Decimal] = {}
     for row in recipe_rows:
         totals[row.Ingredient_ID] = totals.get(row.Ingredient_ID, Decimal("0")) + (
@@ -347,11 +385,14 @@ def _ingredient_requirements(items, recipe_rows) -> dict[int, Decimal]:
     return totals
 
 
-def _save_recipe_snapshots(db: Session, order_items, recipe_rows) -> None:
+def _save_recipe_snapshots(db: Session, order_items, recipe_rows, priced_items=None) -> None:
     by_dish: dict[int, list[DishIngredient]] = {}
     for row in recipe_rows:
         by_dish.setdefault(row.Dish_ID, []).append(row)
-    for order_item in order_items:
+    paired_items = zip(order_items, priced_items or [{}] * len(order_items))
+    for order_item, priced in paired_items:
+        size = priced.get("size", "medium")
+        factor = {"small": Decimal("0.85"), "medium": Decimal("1"), "large": Decimal("1.15")}[size]
         for recipe in by_dish.get(order_item.dish_id, []):
             ingredient = db.get(Ingredient, recipe.Ingredient_ID)
             if ingredient is None:
@@ -362,8 +403,8 @@ def _save_recipe_snapshots(db: Session, order_items, recipe_rows) -> None:
                     ingredient_id=ingredient.Ingredient_ID,
                     ingredient_name=ingredient.Ingredient_Name,
                     unit=ingredient.Unit,
-                    quantity_per_serving=Decimal(recipe.Quantity),
-                    required_quantity=Decimal(recipe.Quantity) * order_item.quantity,
+                    quantity_per_serving=Decimal(recipe.Quantity) * factor,
+                    required_quantity=Decimal(recipe.Quantity) * factor * order_item.quantity,
                 )
             )
 

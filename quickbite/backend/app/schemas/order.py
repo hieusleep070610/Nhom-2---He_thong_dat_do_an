@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class OrderCreateItem(BaseModel):
     dish_id: int = Field(..., gt=0)
     quantity: int = Field(..., ge=1, le=10)
+    toppings: list[str] = Field(default_factory=list, max_length=20)
+    size: Literal["small", "medium", "large"] = "medium"
 
 
 class OrderCreate(BaseModel):
