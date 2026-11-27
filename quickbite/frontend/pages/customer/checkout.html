@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/customer/checkout.css">
 </head>
 <body class="foodie-body">
   <header class="fd-header">
@@ -46,8 +47,9 @@
 
     <div class="ck-layout">
       <div class="ck-forms">
-        <section class="ck-card" aria-labelledby="receive-title">
-          <h2 id="receive-title"><span>01</span> Thông tin nhận hàng</h2>
+        <!-- 01 Thông tin nhận hàng -->
+        <section class="ck-card">
+          <h2><span>01</span> Thông tin nhận hàng</h2>
 
           <div class="ck-row">
             <label>
@@ -60,22 +62,25 @@
             </label>
           </div>
 
-          <label for="checkout-address">
+          <label>
             Địa chỉ nhận hàng
-            <textarea class="ck-input ck-address-input" id="checkout-address" rows="3" maxlength="500" autocomplete="street-address" placeholder="Nhập địa chỉ nhận hàng"></textarea>
+            <textarea class="ck-input ck-address-input" id="checkout-address" rows="3" maxlength="500" placeholder="Nhập địa chỉ nhận hàng"></textarea>
           </label>
+
           <div class="ck-address-actions">
             <button type="button" class="ck-address-save" id="btn-save-address">Lưu địa chỉ vào trang cá nhân</button>
-            <small id="checkout-address-status" aria-live="polite">Địa chỉ lưu trong hồ sơ sẽ được dùng nếu bạn để trống.</small>
+            <small id="checkout-address-status">Địa chỉ lưu trong hồ sơ sẽ được dùng nếu bạn để trống.</small>
           </div>
 
-         <label>Ghi chú cho nhà hàng (không bắt buộc)
-            <input class="ck-input" id="checkout-note" type="text" placeholder="Ví dụ: Không hành..." style="width:100%;box-sizing:border-box;margin-top:6px;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;font-size:14px;">
+          <label>
+            Ghi chú cho nhà hàng (không bắt buộc)
+            <input class="ck-input" id="checkout-note" type="text" placeholder="Ví dụ: Không hành, ít cay...">
           </label>
         </section>
 
-        <section class="ck-card" aria-labelledby="pickup-title">
-          <h2 id="pickup-title"><span>02</span> Thời gian nhận món</h2>
+        <!-- 02 Thời gian nhận món -->
+        <section class="ck-card">
+          <h2><span>02</span> Thời gian nhận món</h2>
           <p class="ck-hint">Khung giờ và số chỗ được tải trực tiếp từ hệ thống.</p>
 
           <label>
@@ -87,14 +92,15 @@
           <div class="ck-slots" id="time-slots" role="listbox" aria-label="Khung giờ nhận món"></div>
         </section>
 
-        <section class="ck-card" aria-labelledby="pay-title">
-          <h2 id="pay-title"><span>03</span> Phương thức thanh toán</h2>
+        <!-- 03 Phương thức thanh toán -->
+        <section class="ck-card">
+          <h2><span>03</span> Phương thức thanh toán</h2>
 
           <div class="ck-pays" id="pay-methods">
-            <label class="ck-pay">
+            <label class="ck-pay is-selected">
               <input type="radio" name="pay" value="cod" checked>
               <span>
-                <strong>Thanh toán trực tiếp khi nhận món (COD)</strong>
+                <strong>Thanh toán khi nhận món (COD)</strong>
                 <small>Thanh toán tiền mặt khi nhận món</small>
               </span>
             </label>
@@ -126,7 +132,7 @@
           <span id="checkout-subtotal">0đ</span>
         </div>
         <div class="ck-money">
-          <span>Phí nhận món</span>
+          <span>Phí giao hàng</span>
           <span id="checkout-shipping">0đ</span>
         </div>
         <div class="ck-money ck-pickup-line">

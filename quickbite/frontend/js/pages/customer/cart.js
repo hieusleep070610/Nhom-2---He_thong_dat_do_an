@@ -1,6 +1,7 @@
-
 const linesEl = document.getElementById("cart-lines");
 const countEl = document.getElementById("cart-count");
+
+const SHIP_FEE = 15000; // phí giao hàng cố định khi giỏ có món
 
 function dong(value) {
   return Number(value).toLocaleString("vi-VN") + "đ";
@@ -14,11 +15,13 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+// Dòng mô tả dưới tên món: "Size lớn · Thêm giò heo · ghi chú"
 function optionText(item) {
-  const toppings = (item.toppings || []).map((name) => `Thêm ${name.toLowerCase()}`);
   const parts = [];
   if (item.size) parts.push(`Size ${item.size.toLowerCase()}`);
-  return [...parts, ...toppings].join(" · ");
+  (item.toppings || []).forEach((name) => parts.push(`Thêm ${name.toLowerCase()}`));
+  if (item.note) parts.push(item.note);
+  return parts.join(" · ");
 }
 
 function renderCart() {
@@ -33,7 +36,7 @@ function renderCart() {
       <article class="cart-line">
         <div class="cart-product">
           <div class="cart-thumb ${item.tone === "green" ? "art-green" : "art-peach"}">
-            <div class="plate"><span><i></i><i></i><i></i></span></div>
+            <span class="plate"></span>
           </div>
           <div>
             <h3>${escapeHtml(item.name)}</h3>
@@ -51,7 +54,7 @@ function renderCart() {
   }
 
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
-  const ship = 0;
+  const ship = cart.length ? SHIP_FEE : 0;
   document.getElementById("cart-subtotal").textContent = dong(subtotal);
   document.getElementById("cart-ship").textContent = dong(ship);
   document.getElementById("cart-off").textContent = "- 0đ";
