@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../css/common/style.css">
+  <link rel="stylesheet" href="../../css/customer/cart.css">
 </head>
 <body class="foodie-body">
   <header class="fd-header">
@@ -25,8 +26,6 @@
         <a href="../../index.html">Trang chủ</a>
         <a href="menu.html">Thực đơn</a>
         <a href="orders.html">Đơn hàng</a>
-        <a href="checkout.html">Giỏ hàng</a>
-        <a href="wallet.html">Ví</a>
       </nav>
       <a class="fd-cart" href="cart.html" aria-label="Giỏ hàng">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 11H7L6 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 7a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -38,31 +37,37 @@
     </div>
   </header>
 
-  <main class="fd-main">
+  <main class="fd-main cart-page">
     <h1>Giỏ hàng của bạn</h1>
     <p class="cart-kicker" id="cart-count">Bạn đang có 0 món trong giỏ hàng</p>
+
     <div class="cart-layout">
+      <!-- Cột trái -->
       <section>
-        <div class="cart-table-head">
-          <span>SẢN PHẨM</span>
-          <span>SỐ LƯỢNG</span>
-          <span>THÀNH TIỀN</span>
+        <div class="cart-card">
+          <div class="cart-table-head">
+            <span>SẢN PHẨM</span>
+            <span>SỐ LƯỢNG</span>
+            <span>THÀNH TIỀN</span>
+          </div>
+          <div id="cart-lines"></div>
+          <a class="cart-back" href="menu.html">← Tiếp tục mua sắm</a>
         </div>
-        <div class="cart-card" id="cart-lines"></div>
-        <a class="cart-back" href="menu.html">← Tiếp tục mua sắm</a>
+        <div class="cart-promo">Nhập mã giảm giá ở bước thanh toán để nhận ưu đãi</div>
       </section>
+
+      <!-- Cột phải -->
       <aside class="cart-summary">
         <h2>Tóm tắt đơn hàng</h2>
-        <p class="cart-row"><span>Tạm tính</span><span id="cart-subtotal">0đ</span></p>
-        <p class="cart-row"><span>Phí nhận món</span><span id="cart-ship">0đ</span></p>
-        <p class="cart-row"><span>Giảm giá</span><span class="cart-off" id="cart-off">- 0đ</span></p>
-        <p class="cart-row total"><span>Tổng cộng</span><strong id="cart-total">0đ</strong></p>
+        <p class="cart-row"><span>Tạm tính</span><strong id="cart-subtotal">0đ</strong></p>
+        <p class="cart-row"><span>Phí giao hàng</span><strong id="cart-ship">0đ</strong></p>
+        <p class="cart-row"><span>Giảm giá</span><strong class="cart-off" id="cart-off">- 0đ</strong></p>
+        <p class="cart-row cart-total"><span>Tổng cộng</span><strong id="cart-total">0đ</strong></p>
         <button class="cart-pay" id="cart-checkout" type="button">Tiến hành thanh toán</button>
         <p class="cart-secure">Thanh toán an toàn và bảo mật</p>
-        <p class="cart-eta">Chọn ngày và khung giờ nhận ở bước tiếp theo.</p>
+        <p class="cart-eta">Dự kiến giao hàng: 25–35 phút</p>
       </aside>
     </div>
-    <p class="cart-note">Đơn hàng nhận tại khung giờ đã chọn. Thanh toán bằng ví Foodie.</p>
   </main>
 
   <script src="../../js/utils.js"></script>

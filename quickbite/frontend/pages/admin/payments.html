@@ -44,16 +44,15 @@
               <option value="">Tất cả</option>
               <option value="paid">Đã thanh toán</option>
               <option value="unpaid">Chưa thanh toán</option>
+              <option value="refund_pending">Chờ hoàn tiền</option>
               <option value="refunded">Đã hoàn tiền</option>
             </select>
           </label>
           <button id="paymentReload" type="button" class="btn btn-secondary">Làm mới</button>
         </div>
 
-        <div class="admin-modal-note">
-          Dữ liệu hiện lấy từ đơn hàng; backend chưa có API giao dịch và đối soát độc lập.
-        </div>
         <div id="paymentState" class="admin-state">Đang tải giao dịch…</div>
+
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead>
@@ -72,12 +71,21 @@
         </div>
       </section>
 
-      <section id="paymentDetail" class="admin-section card">
-        <h2>Chọn giao dịch để xem chi tiết</h2>
-        <p class="admin-muted">
-          Thông tin thanh toán được lấy từ đơn hàng; không thay đổi trạng thái khi chưa có xác nhận nghiệp vụ.
-        </p>
-      </section>
+
+      <!-- Template nội dung modal Đối soát -->
+      <div id="reconcileModalTemplate" hidden>
+        <label class="admin-modal-field">
+          Phương thức / trạng thái
+          <span id="reconcileTplMethodStatus"></span>
+        </label>
+        <label class="admin-modal-field">
+          Thời gian / trạng thái đơn
+          <span id="reconcileTplTimeStatus"></span>
+        </label>
+        <div class="admin-modal-note">
+          Backend hiện chưa có bảng/API giao dịch độc lập hoặc đối soát ngân hàng. Đây là trạng thái thanh toán trên đơn; không thể xác minh giao dịch từ ảnh biên lai.
+        </div>
+      </div>
     </main>
   </div>
 

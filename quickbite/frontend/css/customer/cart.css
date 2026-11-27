@@ -1,0 +1,65 @@
+/* Chỉ áp dụng trong trang giỏ hàng */
+.cart-page{max-width:1080px;margin:0 auto;padding:28px 20px 48px;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#1f2937}
+.cart-page h1{margin:0;font-size:26px;font-weight:700}
+.cart-kicker{margin:4px 0 20px;font-size:13px;color:#6b7280}
+
+.cart-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+
+/* Card chung */
+.cart-card,.cart-summary{background:#fff;border:1px solid #e5e7eb;border-radius:16px}
+.cart-card{padding:8px 24px 20px}
+
+/* Tiêu đề bảng + mỗi dòng dùng chung 3 cột */
+.cart-table-head,.cart-line{display:grid;grid-template-columns:1fr 130px 110px;align-items:center;gap:12px}
+.cart-table-head{padding:16px 0;border-bottom:1px solid #e5e7eb;font-size:11px;letter-spacing:.04em;color:#6b7280}
+.cart-table-head span:nth-child(2),.cart-table-head span:nth-child(3){text-align:center}
+
+/* Dòng sản phẩm */
+.cart-line{padding:22px 0;border-bottom:1px solid #eef0f3}
+.cart-product{display:flex;gap:16px;align-items:center}
+.cart-thumb{width:72px;height:72px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.art-peach{background:#ffe3c8}
+.art-green{background:#e4efd9}
+.plate{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.plate::after{content:"";width:30px;height:30px;border-radius:50%;background:#e2572b}
+.art-green .plate::after{background:#3f8f4a}
+.cart-product h3{margin:0 0 4px;font-size:15px;font-weight:600}
+.cart-product p{margin:0 0 8px;font-size:12px;color:#6b7280;min-height:16px}
+.cart-remove{background:none;border:0;padding:0;font:inherit;font-size:12px;font-weight:600;color:#dc2626;cursor:pointer}
+
+/* Số lượng: ô nhỏ "- 1 +" */
+.cart-qty{justify-self:center;display:flex;align-items:center;gap:14px;padding:6px 12px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;font-size:13px}
+.cart-qty button{background:none;border:0;font-size:15px;line-height:1;cursor:pointer;color:#1f2937}
+.cart-qty span{min-width:12px;text-align:center}
+.cart-price{text-align:center;font-size:14px}
+
+.cart-empty{padding:40px 0;text-align:center;color:#6b7280}
+.cart-back{display:inline-block;margin-top:24px;font-size:13px;font-weight:600;color:#f97316;text-decoration:none}
+
+/* Banner ưu đãi */
+.cart-promo{margin-top:20px;padding:16px 18px;background:#ffeddc;border-radius:12px;font-size:13px;font-weight:600;color:#f97316}
+
+/* Tóm tắt đơn hàng */
+.cart-summary{padding:22px}
+.cart-summary h2{margin:0 0 16px;padding-bottom:14px;border-bottom:1px solid #e5e7eb;font-size:18px}
+.cart-row{display:flex;justify-content:space-between;margin:0 0 14px;font-size:13px;color:#6b7280}
+.cart-row strong{color:#1f2937;font-weight:600}
+.cart-row .cart-off{color:#16a34a}
+.cart-row.cart-total{margin:18px 0;padding-top:18px;border-top:1px solid #e5e7eb;align-items:center}
+.cart-total span{font-size:15px;font-weight:600;color:#1f2937}
+.cart-total strong{font-size:26px;font-weight:700;color:#f97316}
+.cart-pay{width:100%;padding:12px;border:0;border-radius:10px;background:#f97316;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.cart-pay:hover{background:#ea6a0a}
+.cart-pay:disabled{opacity:.5;cursor:not-allowed}
+.cart-secure{margin:16px 0 14px;font-size:12px;color:#6b7280}
+.cart-eta{margin:0;padding-top:14px;border-top:1px solid #eef0f3;font-size:12px;color:#6b7280}
+
+/* Màn hình nhỏ: xếp 1 cột */
+@media (max-width:860px){
+  .cart-layout{grid-template-columns:1fr}
+  .cart-table-head{display:none}
+  .cart-line{grid-template-columns:1fr auto;grid-template-areas:"product product" "qty price"}
+  .cart-product{grid-area:product}
+  .cart-qty{grid-area:qty;justify-self:start}
+  .cart-price{grid-area:price}
+}

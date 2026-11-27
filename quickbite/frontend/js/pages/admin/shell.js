@@ -1,3 +1,26 @@
+// Trong hàm render sidebar của shell.js (sau khi gán HTML cho .admin-side)
+const sideEl = document.querySelector(".admin-side");
+if (sideEl) {
+  // Thêm nút Đăng xuất ở cuối sidebar nếu chưa có
+  if (!document.getElementById("adminLogoutBtn")) {
+    const logoutWrap = document.createElement("div");
+    logoutWrap.className = "admin-side-footer";
+    logoutWrap.innerHTML = `<button id="adminLogoutBtn" type="button" class="btn btn-secondary admin-logout-btn">Đăng xuất</button>`;
+    sideEl.appendChild(logoutWrap);
+  }
+
+  document.getElementById("adminLogoutBtn")?.addEventListener("click", () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("refresh_token");
+    sessionStorage.removeItem("user");
+
+    window.location.href = "";
+  });
+}
+
 (() => {
   const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
   if (token && typeof CONFIG !== "undefined") {
