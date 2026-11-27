@@ -26,19 +26,7 @@ def _token_for(user) -> TokenResponse:
 
 
 def _user_response(user) -> UserResponse:
-    roles = sorted(user.roles, key=lambda role: role.id)
-    primary_role = roles[0] if roles else None
-    return UserResponse.model_validate({
-        "user_id": user.user_id,
-        "email": user.email,
-        "full_name": user.full_name,
-        "phone": user.phone,
-        "address": user.address,
-        "role_id": primary_role.id if primary_role else None,
-        "role": primary_role.name if primary_role else None,
-        "roles": [role.name for role in roles],
-        "created_at": user.created_at,
-    })
+    return user_services.to_user_response(user)
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)

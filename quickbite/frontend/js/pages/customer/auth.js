@@ -49,8 +49,18 @@ document.querySelectorAll("[data-toggle-password]").forEach((button) => {
     const visible = input.type === "text";
     input.type = visible ? "password" : "text";
     button.textContent = visible ? "Hiện" : "Ẩn";
+    button.setAttribute("aria-label", visible ? "Hiện mật khẩu" : "Ẩn mật khẩu");
+    button.setAttribute("aria-pressed", String(!visible));
   });
 });
+
+const logoutMessage = sessionStorage.getItem("logout_message");
+if (logoutMessage && document.getElementById("login-form")) {
+  sessionStorage.removeItem("logout_message");
+  const notice = document.getElementById("login-notice");
+  notice.textContent = logoutMessage;
+  notice.hidden = false;
+}
 
 const forgot = document.getElementById("forgot-password");
 if (forgot) {
@@ -65,11 +75,18 @@ if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     showError("login-error", "");
+    const notice = document.getElementById("login-notice");
+    if (notice) notice.hidden = true;
+    const account = document.getElementById("login-account").value.trim();
+    if (!account) {
+      showError("login-error", "Vui lòng nhập số điện thoại hoặc email.");
+      return;
+    }
     const button = loginForm.querySelector("button[type='submit']");
     button.disabled = true;
     try {
       const payload = await api.post("/auth/login", {
-        account: document.getElementById("login-account").value.trim(),
+        account,
         password: document.getElementById("login-password").value,
       });
       saveSession(payload, document.getElementById("login-remember").checked);
@@ -89,6 +106,10 @@ if (registerForm) {
     const password = document.getElementById("register-password").value;
     const confirm = document.getElementById("register-confirm").value;
     const phone = document.getElementById("register-phone").value.replace(/\s/g, "");
+    if (!document.getElementById("register-name").value.trim()) {
+      showError("register-error", "Vui lòng nhập họ và tên.");
+      return;
+    }
     if (!/^0\d{8,10}$/.test(phone)) {
       showError("register-error", "Số điện thoại cần bắt đầu bằng 0 và có 9–11 chữ số.");
       return;

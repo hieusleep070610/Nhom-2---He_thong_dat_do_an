@@ -13,6 +13,7 @@ const logoutButton = document.getElementById("btn-logout");
 
 // Biến quản lý bộ đếm hết hạn token
 let expiryTimer = null;
+let savedAddress = "";
 
 
 // ============================================
@@ -148,6 +149,7 @@ function renderProfile(user) {
 
     // Địa chỉ
     const address = user.address || "Chưa cập nhật";
+    savedAddress = user.address || "";
 
     // Hiển thị dữ liệu
     document.getElementById("profile-name").textContent = fullName;
@@ -176,11 +178,18 @@ function renderProfile(user) {
 document.getElementById("btn-edit-address").addEventListener("click", () => {
     const form = document.getElementById("profile-address-form");
     form.hidden = !form.hidden;
+    document.getElementById("btn-edit-address").setAttribute("aria-expanded", String(!form.hidden));
     document.getElementById("profile-address-status").textContent = "";
+    if (!form.hidden) {
+        document.getElementById("profile-address-input").focus();
+    }
 });
 
 document.getElementById("btn-cancel-address").addEventListener("click", () => {
-    document.getElementById("profile-address-form").hidden = true;
+    const form = document.getElementById("profile-address-form");
+    form.hidden = true;
+    document.getElementById("btn-edit-address").setAttribute("aria-expanded", "false");
+    document.getElementById("profile-address-input").value = savedAddress;
     document.getElementById("profile-address-status").textContent = "";
 });
 
@@ -189,16 +198,29 @@ document.getElementById("profile-address-form").addEventListener("submit", async
     const address = document.getElementById("profile-address-input").value.trim();
     const status = document.getElementById("profile-address-status");
     const saveButton = document.getElementById("btn-save-profile-address");
-    if (!address) { status.textContent = "Vui lòng nhập địa chỉ."; return; }
+    const editButton = document.getElementById("btn-edit-address");
+    const cancelButton = document.getElementById("btn-cancel-address");
+    const originalLabel = saveButton.textContent;
     saveButton.disabled = true;
+    editButton.disabled = true;
+    cancelButton.disabled = true;
+    document.getElementById("profile-address-input").disabled = true;
+    saveButton.textContent = "Đang lưu...";
     try {
         const user = await api.put("/auth/me", { address });
-        document.getElementById("profile-address").textContent = user.address || "Chưa cập nhật";
-        document.getElementById("profile-address-input").value = user.address || "";
+        savedAddress = user.address || "";
+        document.getElementById("profile-address").textContent = savedAddress || "Chưa cập nhật";
+        document.getElementById("profile-address-input").value = savedAddress;
         status.textContent = "Địa chỉ đã được cập nhật.";
     } catch (error) {
         status.textContent = error.message || "Không thể cập nhật địa chỉ.";
-    } finally { saveButton.disabled = false; }
+    } finally {
+        saveButton.disabled = false;
+        editButton.disabled = false;
+        cancelButton.disabled = false;
+        document.getElementById("profile-address-input").disabled = false;
+        saveButton.textContent = originalLabel;
+    }
 });
 
 

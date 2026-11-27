@@ -16,7 +16,8 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("", response_model=list[UserResponse])
 def list_users(q: str | None = None, _admin=Depends(get_current_admin), db: Session = Depends(get_db)):
-    return user_services.get_users(db, keyword=q)
+    users = user_services.get_users(db, keyword=q)
+    return [user_services.to_user_response(user) for user in users]
 
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
