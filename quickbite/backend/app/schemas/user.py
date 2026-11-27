@@ -19,6 +19,7 @@ class UserLogin(BaseModel):
 
 
 class UserResponse(UserBase):
+    email: str
     id: int = Field(validation_alias="user_id")
     phone: str | None = None
     address: str | None = None

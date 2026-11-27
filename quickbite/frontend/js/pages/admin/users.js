@@ -7,7 +7,33 @@ userForm.innerHTML =
   AdminUI.formField({ label: "Số điện thoại", id: "userPhone", name: "phone", type: "tel" }) +
   AdminUI.formField({ label: "Mật khẩu tạm", id: "userPassword", name: "password", type: "password", required: true }) +
   `<div class="admin-form-actions admin-form-wide">${AdminUI.button({ label: "Tạo tài khoản", variant: "primary", type: "submit" })}${AdminUI.button({ label: "Hủy", attributes: 'id="cancelUserForm"' })}</div>`;
-async function userRequest(path, options = {}) { const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token"); const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.body ? { "Content-Type": "application/json" } : {}) }; const response = await fetch(`${CONFIG.API_BASE_URL}${path}`, { ...options, headers }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.detail || data.message || `Lỗi ${response.status}`); return data; }
+async function userRequest(path, options = {}) {
+  const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+  };
+  let response;
+  try {
+    response = await fetch(`${CONFIG.API_BASE_URL}${path}`, { ...options, headers });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(`Không thể kết nối đến backend tại ${CONFIG.API_BASE_URL}. Hãy kiểm tra FastAPI đang chạy và CORS_ORIGINS có địa chỉ frontend.`);
+    }
+    throw error;
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const data = contentType.includes("application/json") ? await response.json() : null;
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.");
+    if (response.status === 403) throw new Error("Tài khoản hiện tại không có quyền quản trị.");
+    const message = data && (data.detail || data.message);
+    throw new Error(typeof message === "string" ? message : `Backend trả về lỗi HTTP ${response.status}.`);
+  }
+  if (!data) throw new Error("Backend không trả về dữ liệu JSON hợp lệ.");
+  return data;
+}
 const userEscape = (s) => String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 function userStatus(text, type = "info") { const el = document.getElementById("userState"); el.textContent = text; el.className = `admin-state is-${type}`; el.hidden = false; }
 function renderUsers() {
@@ -23,7 +49,7 @@ function renderUsers() {
   document.getElementById("userState").hidden = rows.length > 0; if (!rows.length) userStatus(term ? "Không tìm thấy người dùng phù hợp." : "Chưa có tài khoản người dùng.", "empty");
   document.getElementById("userTotal").textContent = users.length; document.getElementById("userCustomers").textContent = users.filter((u) => u.role === "customer").length; document.getElementById("userAdmins").textContent = users.filter((u) => u.role === "admin").length; document.getElementById("userStaff").textContent = users.filter((u) => u.role === "kitchen").length;
 }
-async function loadUsers() { userStatus("Đang tải danh sách người dùng…"); try { users = await userRequest("/users"); renderUsers(); } catch (error) { userStatus(`${error.message} · Kiểm tra kết nối hoặc quyền admin.`, "error"); } }
+async function loadUsers() { userStatus("Đang tải danh sách người dùng…"); try { users = await userRequest("/users"); renderUsers(); } catch (error) { userStatus(error.message, "error"); } }
 document.getElementById("userSearch").addEventListener("input", renderUsers); document.getElementById("userRoleFilter").addEventListener("change", renderUsers);
 document.getElementById("showUserForm").addEventListener("click", () => AdminUI.openNode({ title: "Thêm người dùng", subtitle: "Tài khoản mới được tạo với vai trò Customer." }, document.getElementById("userFormPanel")));
 document.getElementById("cancelUserForm").addEventListener("click", () => { document.getElementById("userForm").reset(); document.getElementById("userFormPanel").hidden = true; AdminUI.close(); });

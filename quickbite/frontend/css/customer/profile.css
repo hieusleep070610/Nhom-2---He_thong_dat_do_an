@@ -110,7 +110,8 @@
 
 .profile-address-edit, .profile-address-form button {
     width: fit-content;
-    padding: 0;
+    min-height: 44px;
+    padding: 8px 0;
     border: 0;
     background: transparent;
     color: #e9651a;
@@ -119,11 +120,16 @@
     font-weight: 600;
     cursor: pointer;
 }
+.profile-address-edit:disabled, .profile-address-form button:disabled {
+    cursor: wait;
+    opacity: .6;
+}
 
 .profile-address-form { display: grid; gap: 8px; width: 100%; }
 .profile-address-form textarea { box-sizing: border-box; width: 100%; padding: 8px; border: 1px solid #d9dee5; border-radius: 8px; font: inherit; resize: vertical; }
 .profile-address-form > div { display: flex; gap: 12px; }
 .profile-address-form small { color: #64748b; }
+.profile-address-form textarea:focus-visible { outline: 3px solid rgba(255,118,38,.3); border-color: #ff7626; }
 
 .profile-accent {
     width: 3px;
@@ -148,14 +154,13 @@
     background: #ef4444;
 }
 
-/* Danh sách món ăn */
+/* Lối tắt tài khoản */
 
 .profile-list-card {
     background: #fff;
     border: 1px solid #e9edf0;
     border-radius: 15px;
     padding: 20px;
-    min-height: 268px;
 }
 
 .profile-list-card h2 {
@@ -165,13 +170,13 @@
     color: #263244;
 }
 
-.profile-food-list {
+.profile-quick-links {
     display: flex;
     flex-direction: column;
     gap: 9px;
 }
 
-.profile-food-item {
+.profile-quick-link {
     min-height: 46px;
     padding: 0 14px;
     display: flex;
@@ -181,29 +186,34 @@
     border: 1px solid #e9edf0;
     border-radius: 9px;
     background: #f8f9fa;
+    cursor: pointer;
     transition: 0.2s;
 }
 
-.profile-food-item:hover {
+.profile-quick-link:hover {
     border-color: #ffb27e;
     background: #fffaf7;
 }
 
-.profile-food-item span {
+.profile-quick-link span:first-child {
     font-size: 12px;
     font-weight: 600;
     color: #263244;
 }
 
-.profile-food-item a {
+.profile-quick-link span:last-child {
     color: #7c8795;
     font-size: 11px;
     text-decoration: none;
     white-space: nowrap;
 }
 
-.profile-food-item a:hover {
-    color: #ff7626;
+.profile-quick-link:focus-visible,
+.profile-logout:focus-visible,
+.profile-address-edit:focus-visible,
+.profile-address-form button:focus-visible {
+    outline: 3px solid #ff7626;
+    outline-offset: 3px;
 }
 
 /* Header */
@@ -257,11 +267,11 @@
         padding: 15px;
     }
 
-    .profile-food-item {
-        padding: 10px;
-    }
-
     .profile-header-user {
         font-size: 11px;
+    }
+
+    .profile-address-form > div {
+        flex-wrap: wrap;
     }
 }

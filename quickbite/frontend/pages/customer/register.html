@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng ký | foodie</title>
+  <title>Đăng ký | QuickBite</title>
   <link rel="icon" href="../../assets/images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,8 @@
   <main class="auth-screen">
     <section class="auth-brand">
       <a class="fd-logo" href="../../index.html">
-        <span class="fd-logo-name">foodie</span>
+        <img src="../../assets/images/logo.png" alt="" width="44" height="44">
+        <span class="fd-logo-name">QuickBite</span>
         <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
       </a>
       <h2>Ngon lành từng bữa, vui khỏe mỗi ngày</h2>
@@ -22,7 +23,7 @@
     <section class="auth-card-wrap">
       <form class="auth-card" id="register-form">
         <h1>Tạo tài khoản</h1>
-        <p class="auth-error" id="register-error" hidden></p>
+        <p class="auth-error" id="register-error" role="alert" hidden></p>
         <label class="auth-field">
           <span>Họ và tên</span>
           <span class="box"><input id="register-name" type="text" autocomplete="name" placeholder="Nguyễn Văn A" required></span>
@@ -39,14 +40,16 @@
           <span>Mật khẩu</span>
           <span class="box">
             <input id="register-password" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required>
-            <button class="auth-eye" type="button" data-toggle-password="register-password">Hiện</button>
+            <button class="auth-eye" type="button" data-toggle-password="register-password"
+                    aria-label="Hiện mật khẩu" aria-pressed="false">Hiện</button>
           </span>
         </label>
         <label class="auth-field">
           <span>Nhập lại mật khẩu</span>
           <span class="box">
             <input id="register-confirm" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" required>
-            <button class="auth-eye" type="button" data-toggle-password="register-confirm">Hiện</button>
+            <button class="auth-eye" type="button" data-toggle-password="register-confirm"
+                    aria-label="Hiện mật khẩu" aria-pressed="false">Hiện</button>
           </span>
         </label>
         <button class="auth-submit" type="submit">Đăng ký</button>

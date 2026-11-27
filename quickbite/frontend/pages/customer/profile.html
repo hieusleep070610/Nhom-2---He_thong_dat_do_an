@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Thông tin tài khoản | Foodie</title>
+    <title>Thông tin tài khoản | QuickBite</title>
 
     <link rel="icon" href="../../assets/images/logo.png">
 
@@ -26,7 +26,7 @@
         <div class="fd-header-inner">
 
             <a class="fd-logo" href="../../index.html">
-                <span class="fd-logo-name">foodie</span>
+                <span class="fd-logo-name">QuickBite</span>
                 <span class="fd-logo-tag">Ăn ngon mỗi ngày</span>
             </a>
 
@@ -66,7 +66,7 @@
         <div class="profile-heading">
             <div>
                 <h1>Thông tin tài khoản</h1>
-                <p>Quản lý và theo dõi hoạt động Foodie</p>
+                <p>Quản lý và theo dõi hoạt động QuickBite</p>
             </div>
 
             <button type="button"
@@ -84,6 +84,7 @@
 
         <div id="profile-error"
              class="profile-message profile-error"
+             role="alert"
              hidden>
         </div>
 
@@ -126,14 +127,16 @@
                     <div>
                         <small>Địa chỉ</small>
                         <strong id="profile-address">--</strong>
-                        <button type="button" class="profile-address-edit" id="btn-edit-address">Cập nhật địa chỉ</button>
+                        <button type="button" class="profile-address-edit" id="btn-edit-address"
+                                aria-controls="profile-address-form" aria-expanded="false">Cập nhật địa chỉ</button>
                         <form id="profile-address-form" class="profile-address-form" hidden>
+                            <label for="profile-address-input">Địa chỉ mới</label>
                             <textarea id="profile-address-input" maxlength="500" rows="3" placeholder="Nhập địa chỉ của bạn"></textarea>
                             <div>
                                 <button type="submit" id="btn-save-profile-address">Lưu địa chỉ</button>
                                 <button type="button" id="btn-cancel-address">Hủy</button>
                             </div>
-                            <small id="profile-address-status" aria-live="polite"></small>
+                            <small id="profile-address-status" role="status" aria-live="polite"></small>
                         </form>
                     </div>
                 </article>
@@ -141,37 +144,27 @@
             </div>
 
 
-            <!-- DANH SÁCH MÓN ĂN -->
+            <!-- TRUY CẬP NHANH -->
             <section class="profile-list-card">
 
-                <h2>Danh sách và thông tin chi tiết</h2>
+                <h2>Truy cập nhanh</h2>
 
-                <div class="profile-food-list">
+                <div class="profile-quick-links">
 
-                    <article class="profile-food-item">
-                        <span>Bún bò Huế</span>
-                        <a href="dish.html">Xem chi tiết →</a>
-                    </article>
+                    <a class="profile-quick-link" href="orders.html">
+                        <span>Đơn hàng của tôi</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
 
-                    <article class="profile-food-item">
-                        <span>Cơm gà xối mỡ</span>
-                        <a href="dish.html">Xem chi tiết →</a>
-                    </article>
+                    <a class="profile-quick-link" href="menu.html">
+                        <span>Khám phá thực đơn</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
 
-                    <article class="profile-food-item">
-                        <span>Salad cá hồi</span>
-                        <a href="dish.html">Xem chi tiết →</a>
-                    </article>
-
-                    <article class="profile-food-item">
-                        <span>Mì Ý bò bằm</span>
-                        <a href="dish.html">Xem chi tiết →</a>
-                    </article>
-
-                    <article class="profile-food-item">
-                        <span>Trà đào cam sả</span>
-                        <a href="dish.html">Xem chi tiết →</a>
-                    </article>
+                    <a class="profile-quick-link" href="wallet.html">
+                        <span>Ví của tôi</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
 
                 </div>
 
@@ -184,7 +177,7 @@
 
     <!-- FOOTER -->
     <footer class="profile-footer">
-        © 2026 Foodie - Ăn ngon mỗi ngày
+        © 2026 QuickBite - Ăn ngon mỗi ngày
     </footer>
 
 
